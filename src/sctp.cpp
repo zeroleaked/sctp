@@ -5,6 +5,7 @@
 Sctp::Sctp()
 {
     currentState = &LightOff::getInstance();
+	currentState->enter(this);
 }
 
 void Sctp::setState(SctpState& newState)
@@ -14,10 +15,16 @@ void Sctp::setState(SctpState& newState)
 	currentState->enter(this); // do stuff after we change state
 }
 
-void Sctp::toggle()
+void Sctp::okay()
 {
 	// Delegate the task of determining the next state to the current state!
-	currentState->toggle(this);
+	currentState->okay(this);
+}
+
+void Sctp::arrowDown()
+{
+	// Delegate the task of determining the next state to the current state!
+	currentState->arrowDown(this);
 }
 
 int Sctp::getCurrentStateId()

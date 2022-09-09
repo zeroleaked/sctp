@@ -6,8 +6,10 @@
 class LightOff : public SctpState
 {
 public:
-	void enter(Sctp* sctp) {}
+	void enter(Sctp* sctp);
 	void toggle(Sctp* sctp);
+	inline void okay(Sctp* sctp) { toggle(sctp); }
+	inline void arrowDown(Sctp* sctp) { toggle(sctp); }
 	void exit(Sctp* sctp) {}
 	int id(Sctp* sctp);
 	static SctpState& getInstance();
@@ -21,8 +23,9 @@ private:
 class LowIntensity : public SctpState
 {
 public:
-	void enter(Sctp* sctp) {}
-	void toggle(Sctp* sctp);
+	void enter(Sctp* sctp);
+	void okay(Sctp* sctp);
+	void arrowDown(Sctp* sctp);
 	void exit(Sctp* sctp) {}
 	int id(Sctp* sctp);
 	static SctpState& getInstance();
@@ -36,8 +39,9 @@ private:
 class MediumIntensity : public SctpState
 {
 public:
-	void enter(Sctp* sctp) {}
-	void toggle(Sctp* sctp);
+	void enter(Sctp* sctp);
+	inline void arrowDown(Sctp* sctp);
+	void okay(Sctp* sctp) {}
 	void exit(Sctp* sctp) {}
 	int id(Sctp* sctp);
 	static SctpState& getInstance();
@@ -51,8 +55,10 @@ private:
 class HighIntensity : public SctpState
 {
 public:
-	void enter(Sctp* sctp) {}
+	void enter(Sctp* sctp) {};
 	void toggle(Sctp* sctp);
+	inline void arrowDown(Sctp* sctp) { toggle(sctp); }
+	void okay(Sctp* sctp) {}
 	void exit(Sctp* sctp) {}
 	int id(Sctp* sctp);
 	static SctpState& getInstance();

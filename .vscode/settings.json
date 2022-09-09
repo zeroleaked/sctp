@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "esp_log.h": "c",
+        "freertos.h": "c",
+        "stdint.h": "c",
+        "*.ipp": "cpp",
+        "*.tcc": "cpp"
+    }
+}
