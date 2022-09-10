@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #include "sctp_state.h"
 
 class SctpState; // forward declaration
@@ -33,6 +35,8 @@ public:
 
 
     int getCurrentStateId();
+
+	uint16_t wavelength;
 
 
 private:
