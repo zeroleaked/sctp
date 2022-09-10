@@ -1,10 +1,10 @@
 #include "sctp.h"
-#include "concrete_sctp_states.h"
+#include "concrete_sctp_states/idle_state.h"
 
 // Constructor
 Sctp::Sctp()
 {
-    currentState = &LightOff::getInstance();
+    currentState = &Idle::getInstance();
 	currentState->enter(this);
 }
 
@@ -21,11 +21,30 @@ void Sctp::okay()
 	currentState->okay(this);
 }
 
+void Sctp::arrowUp()
+{
+	// Delegate the task of determining the next state to the current state!
+	currentState->arrowUp(this);
+}
+
 void Sctp::arrowDown()
 {
 	// Delegate the task of determining the next state to the current state!
 	currentState->arrowDown(this);
 }
+
+void Sctp::arrowLeft()
+{
+	// Delegate the task of determining the next state to the current state!
+	currentState->arrowLeft(this);
+}
+
+void Sctp::arrowRight()
+{
+	// Delegate the task of determining the next state to the current state!
+	currentState->arrowRight(this);
+}
+
 
 int Sctp::getCurrentStateId()
 {

@@ -13,9 +13,20 @@ public:
 	// In here, we'll delegate the state transition to the currentState
 	void toggle();
 
+	// button OK
 	void okay();
 
+	// button arrow up
+	void arrowUp();
+
+	// button arrow down
 	void arrowDown();
+
+	// button arrow left
+	void arrowLeft();
+
+	// button arrow right
+	void arrowRight();
 
 	// This will get called by the current state
 	void setState(SctpState& newState);
@@ -23,7 +34,6 @@ public:
 
     int getCurrentStateId();
 
-	int cursor;
 
 private:
 	// LightState here is now a class, not the enum that we saw earlier
