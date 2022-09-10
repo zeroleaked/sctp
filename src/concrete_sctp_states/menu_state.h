@@ -10,8 +10,8 @@ public:
 	void okay(Sctp* sctp);
 	void arrowUp(Sctp* sctp);
 	void arrowDown(Sctp* sctp);
-	void arrowLeft(Sctp* sctp);
-	void arrowRight(Sctp* sctp);
+	void arrowLeft(Sctp* sctp) { arrowUp(sctp); };
+	void arrowRight(Sctp* sctp) { arrowDown(sctp); };
 	void exit(Sctp* sctp) {}
 	int id(Sctp* sctp) { return 2; }
 	static SctpState& getInstance();

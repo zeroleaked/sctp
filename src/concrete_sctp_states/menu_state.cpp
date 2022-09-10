@@ -23,22 +23,18 @@ void Menu::okay(Sctp* sctp)
 
 void Menu::arrowUp(Sctp* sctp)
 {
+	sctp_lcd_menu_clear(this->cursor);
+	if (this->cursor == 0) this->cursor = 3;
+    else this->cursor--;
+	sctp_lcd_menu(this->cursor);
 }
 
 void Menu::arrowDown(Sctp* sctp)
 {
 	sctp_lcd_menu_clear(this->cursor);
-	this->cursor++;
-	if (this->cursor >= 4) this->cursor = 0;
+	if (this->cursor == 3) this->cursor = 0;
+	else this->cursor++;
 	sctp_lcd_menu(this->cursor);
-}
-
-void Menu::arrowLeft(Sctp* sctp)
-{
-}
-
-void Menu::arrowRight(Sctp* sctp)
-{
 }
 
 SctpState& Menu::getInstance()
