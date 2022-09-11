@@ -1,6 +1,7 @@
 #include "sctp_lcd.h"
-#include "conc_wavelength_state.h"
 #include "menu_state.h"
+#include "conc_standards_state.h"
+#include "conc_wavelength_state.h"
 
 #define SUBSTATE_WL 0
 #define SUBSTATE_CURSOR 1
@@ -37,7 +38,7 @@ void ConcWavelength::okay(Sctp* sctp)
             case CURSOR_NEXT: {
                 sctp->wavelength = wavelength;
                 // next state
-                // sctp->setState(Menu::getInstance()); 
+                sctp->setState(ConcStandards::getInstance()); 
                 break;
             }
             case CURSOR_BACK: {

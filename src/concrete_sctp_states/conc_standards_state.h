@@ -5,7 +5,7 @@
 
 // standards library (storage)
 
-class Standards : public SctpState
+class ConcStandards : public SctpState
 {
 public:
 	void enter(Sctp* sctp);
@@ -19,9 +19,9 @@ public:
 	static SctpState& getInstance();
 
 private:
-	Standards() {}
-	Standards(const Standards& other);
-	Standards& operator=(const Standards& other);
+	ConcStandards() {}
+	ConcStandards(const ConcStandards& other);
+	ConcStandards& operator=(const ConcStandards& other);
 
 	uint8_t button_set;
 	uint8_t cursor;
