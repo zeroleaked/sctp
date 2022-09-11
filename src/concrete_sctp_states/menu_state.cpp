@@ -1,6 +1,6 @@
 #include "sctp_lcd.h"
 #include "menu_state.h"
-#include "wavelength_state.h"
+#include "conc_wavelength_state.h"
 
 #define CURSOR_SPECTRUM 0
 #define CURSOR_QUANTIZATION 1
@@ -24,7 +24,7 @@ void Menu::okay(Sctp* sctp)
             break;
         } 
 		case CURSOR_QUANTIZATION: {
-			sctp->setState(Wavelength::getInstance());
+			sctp->setState(ConcWavelength::getInstance());
 			break;
 		}
 	}

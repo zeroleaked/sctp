@@ -3,7 +3,7 @@
 #include "sctp_state.h"
 #include "sctp.h"
 
-class Wavelength : public SctpState
+class ConcWavelength : public SctpState
 {
 public:
 	void enter(Sctp* sctp);
@@ -17,9 +17,9 @@ public:
 	static SctpState& getInstance();
 
 private:
-	Wavelength() {}
-	Wavelength(const Wavelength& other);
-	Wavelength& operator=(const Wavelength& other);
+	ConcWavelength() {}
+	ConcWavelength(const ConcWavelength& other);
+	ConcWavelength& operator=(const ConcWavelength& other);
 
 	uint8_t button_set;
 	uint8_t cursor;

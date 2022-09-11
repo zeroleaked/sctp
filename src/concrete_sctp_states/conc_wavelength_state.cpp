@@ -1,5 +1,5 @@
 #include "sctp_lcd.h"
-#include "wavelength_state.h"
+#include "conc_wavelength_state.h"
 #include "menu_state.h"
 
 #define BUTTON_SET_WL 0
@@ -13,7 +13,7 @@
 void sctp_lcd_wavelength(uint16_t wavelength) {}
 void sctp_lcd_wavelength_number(uint16_t wavelength) {}
 
-void Wavelength::enter(Sctp* sctp)
+void ConcWavelength::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
 	wavelength = 550;
@@ -22,7 +22,7 @@ void Wavelength::enter(Sctp* sctp)
 	sctp_lcd_wavelength(wavelength);
 }
 
-void Wavelength::okay(Sctp* sctp)
+void ConcWavelength::okay(Sctp* sctp)
 {
     if (button_set == BUTTON_SET_WL) {
         // Finish wavelength change
@@ -48,7 +48,7 @@ void Wavelength::okay(Sctp* sctp)
     }
 }
 
-void Wavelength::arrowUp(Sctp* sctp)
+void ConcWavelength::arrowUp(Sctp* sctp)
 {
     if (button_set == BUTTON_SET_WL) {
         wavelength = wavelength + 2;
@@ -60,7 +60,7 @@ void Wavelength::arrowUp(Sctp* sctp)
     }
 }
 
-void Wavelength::arrowDown(Sctp* sctp)
+void ConcWavelength::arrowDown(Sctp* sctp)
 {
     if (button_set == BUTTON_SET_WL) {
         wavelength = wavelength - 2;
@@ -71,7 +71,7 @@ void Wavelength::arrowDown(Sctp* sctp)
     }
 }
 
-void Wavelength::arrowRight(Sctp* sctp)
+void ConcWavelength::arrowRight(Sctp* sctp)
 {
     if (button_set == BUTTON_SET_WL) {
         arrowUp(sctp);
@@ -81,7 +81,7 @@ void Wavelength::arrowRight(Sctp* sctp)
     }
 }
 
-void Wavelength::arrowLeft(Sctp* sctp)
+void ConcWavelength::arrowLeft(Sctp* sctp)
 {
     if (button_set == BUTTON_SET_WL) {
         arrowDown(sctp);
@@ -90,8 +90,8 @@ void Wavelength::arrowLeft(Sctp* sctp)
     }
 }
 
-SctpState& Wavelength::getInstance()
+SctpState& ConcWavelength::getInstance()
 {
-	static Wavelength singleton;
+	static ConcWavelength singleton;
 	return singleton;
 }
