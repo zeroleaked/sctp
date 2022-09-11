@@ -21,7 +21,7 @@ private:
 	ConcWavelength(const ConcWavelength& other);
 	ConcWavelength& operator=(const ConcWavelength& other);
 
-	uint8_t button_set;
+	uint8_t substate;
 	uint8_t cursor;
 	uint16_t wavelength;
 };

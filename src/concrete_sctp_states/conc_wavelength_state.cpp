@@ -2,8 +2,8 @@
 #include "conc_wavelength_state.h"
 #include "menu_state.h"
 
-#define BUTTON_SET_WL 0
-#define BUTTON_SET_CURSOR 1
+#define SUBSTATE_WL 0
+#define SUBSTATE_CURSOR 1
 
 #define CURSOR_WL 0
 #define CURSOR_NEXT 1
@@ -17,21 +17,21 @@ void ConcWavelength::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
 	wavelength = 550;
-    button_set = BUTTON_SET_WL;
+    substate = SUBSTATE_WL;
     cursor = CURSOR_WL;
 	sctp_lcd_wavelength(wavelength);
 }
 
 void ConcWavelength::okay(Sctp* sctp)
 {
-    if (button_set == BUTTON_SET_WL) {
+    if (substate == SUBSTATE_WL) {
         // Finish wavelength change
-        button_set = BUTTON_SET_CURSOR;
-    } else { // button_set = BUTTON_SET_CURSOR
+        substate = SUBSTATE_CURSOR;
+    } else { // substate = SUBSTATE_CURSOR
         // Next state
         switch (cursor) {
             case CURSOR_WL: {
-                button_set = BUTTON_SET_WL;
+                substate = SUBSTATE_WL;
                 break;
             }
             case CURSOR_NEXT: {
@@ -50,11 +50,11 @@ void ConcWavelength::okay(Sctp* sctp)
 
 void ConcWavelength::arrowUp(Sctp* sctp)
 {
-    if (button_set == BUTTON_SET_WL) {
+    if (substate == SUBSTATE_WL) {
         wavelength = wavelength + 2;
         if (wavelength > 700) wavelength = 400;
         sctp_lcd_wavelength_number(wavelength);
-    } else { // button_set = BUTTON_SET_CURSOR
+    } else { // substate = SUBSTATE_CURSOR
         if (cursor == CURSOR_WL) cursor = CURSOR_NEXT;
         else cursor = CURSOR_WL;
     }
@@ -62,20 +62,20 @@ void ConcWavelength::arrowUp(Sctp* sctp)
 
 void ConcWavelength::arrowDown(Sctp* sctp)
 {
-    if (button_set == BUTTON_SET_WL) {
+    if (substate == SUBSTATE_WL) {
         wavelength = wavelength - 2;
         if (wavelength < 400) wavelength = 700;
         sctp_lcd_wavelength_number(wavelength);
-    } else { // button_set = BUTTON_SET_CURSOR
+    } else { // substate = SUBSTATE_CURSOR
         arrowUp(sctp);
     }
 }
 
 void ConcWavelength::arrowRight(Sctp* sctp)
 {
-    if (button_set == BUTTON_SET_WL) {
+    if (substate == SUBSTATE_WL) {
         arrowUp(sctp);
-    } else { // button_set = BUTTON_SET_CURSOR
+    } else { // substate = SUBSTATE_CURSOR
         if (cursor == CURSOR_NEXT) cursor = CURSOR_BACK;
         else if (cursor == CURSOR_BACK) cursor = CURSOR_NEXT;
     }
@@ -83,9 +83,9 @@ void ConcWavelength::arrowRight(Sctp* sctp)
 
 void ConcWavelength::arrowLeft(Sctp* sctp)
 {
-    if (button_set == BUTTON_SET_WL) {
+    if (substate == SUBSTATE_WL) {
         arrowDown(sctp);
-    } else { // button_set = BUTTON_SET_CURSOR
+    } else { // substate = SUBSTATE_CURSOR
         arrowRight(sctp);
     }
 }
