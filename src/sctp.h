@@ -37,6 +37,8 @@ public:
     int getCurrentStateId();
 
 	uint16_t wavelength;
+	uint8_t * standard;
+	uint8_t standard_length;
 
 
 private:
