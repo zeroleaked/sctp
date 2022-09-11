@@ -2,10 +2,15 @@
 #include "conc_wavelength_state.h"
 #include "conc_standards_state.h"
 
-#define CURSOR_SAVE 0
-#define CURSOR_RESAMPLE 1
-#define CURSOR_REBLANK 2
-#define CURSOR_MENU 3
+#define CURSOR_STANDARD_0 0
+#define CURSOR_STANDARD_1 1
+#define CURSOR_STANDARD_2 2
+#define CURSOR_STANDARD_3 3
+#define CURSOR_STANDARD_4 4
+#define CURSOR_NEXT_PAGE 5
+#define CURSOR_PREV_PAGE 6
+#define CURSOR_NEW 7
+#define CURSOR_BACK 8
 
 // lcd dummies
 void sctp_lcd_conc_standards(uint8_t cursor) {};
@@ -26,23 +31,16 @@ void ConcStandards::enter(Sctp* sctp)
 
 // void ConcStandards::okay(Sctp* sctp)
 // {
+//     if (cursor < 5) {
+//         sctp->standard = standards[page*5 + cursor];
+//     }
 // 	switch (cursor) {
-//         case CURSOR_SAVE: {
-//             sctp_save_spec();
-// 			// lcd??
-// 			sctp_lcd_spec_result_saving();
-//             break;
-//         } 
-// 		case CURSOR_RESAMPLE: {
-// 			sctp->setState(SpecSample::getInstance());
-// 			break;
-// 		}
-// 		case CURSOR_REBLANK: {
+// 		case CURSOR_NEW: {
 // 			sctp->setState(SpecBlank::getInstance());
 // 			break;
 // 		}
-// 		case CURSOR_MENU: {
-// 			sctp->setState(Menu::getInstance());
+// 		case CURSOR_BACK: {
+// 			sctp->setState(ConcWavelength::getInstance());
 // 			break;
 // 		}
 // 	}

@@ -23,6 +23,9 @@ private:
 	ConcStandards(const ConcStandards& other);
 	ConcStandards& operator=(const ConcStandards& other);
 
-	uint8_t button_set;
 	uint8_t cursor;
+	uint8_t page;
+
+	uint8_t * standards;
+	uint8_t standards_length;
 };
