@@ -10,8 +10,9 @@
 #define CURSOR_MENU 3
 
 // lcd dummies
-void sctp_lcd_spec_result();
-void sctp_lcd_spec_result_saving();
+void sctp_lcd_spec_result(uint8_t cursor) {};
+void sctp_lcd_spec_result_clear(uint8_t cursor) {};
+void sctp_lcd_spec_result_saving() {};
 
 // command dummies
 void sctp_save_spec();
@@ -20,7 +21,7 @@ void SpecResult::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
 	cursor = 0;
-	sctp_lcd_spec_result();
+	sctp_lcd_spec_result(cursor);
 	// Off -> Low
 }
 
@@ -51,17 +52,17 @@ void SpecResult::okay(Sctp* sctp)
 void SpecResult::arrowUp(Sctp* sctp)
 {
 	sctp_lcd_menu_clear(this->cursor);
-	if (this->cursor == 0) this->cursor = 3;
-    else this->cursor--;
-	sctp_lcd_menu(this->cursor);
+	if (cursor == CURSOR_SAVE) cursor = CURSOR_MENU;
+    else cursor--;
+	sctp_lcd_menu(cursor);
 }
 
 void SpecResult::arrowDown(Sctp* sctp)
 {
-	sctp_lcd_menu_clear(this->cursor);
-	if (this->cursor == 3) this->cursor = 0;
-	else this->cursor++;
-	sctp_lcd_menu(this->cursor);
+	sctp_lcd_menu_clear(cursor);
+	if (cursor == CURSOR_MENU) cursor = CURSOR_SAVE;
+	else cursor++;
+	sctp_lcd_menu(cursor);
 }
 
 SctpState& SpecResult::getInstance()
