@@ -14,7 +14,7 @@ void sctp_lcd_spec_blank_clear(uint8_t cursor){};
 void sctp_lcd_spec_blank_sampling(){};
 
 // dummy COMMAND
-void sctp_spec_blank();
+void sctp_spec_blank() {};
 
 void SpecBlank::enter(Sctp* sctp)
 {
