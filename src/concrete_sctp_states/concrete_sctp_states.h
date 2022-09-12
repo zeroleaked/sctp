@@ -10,4 +10,4 @@
 
 // conc states
 #include "conc_wavelength.h"
-#include "conc_standards.h"
+#include "conc_curves.h"

@@ -5,11 +5,12 @@
 
 // standards library (storage)
 
-class ConcStandards : public SctpState
+
+class ConcCurves : public SctpState
 {
 public:
 	void enter(Sctp* sctp);
-	void okay(Sctp* sctp) {};
+	void okay(Sctp* sctp);
 	void arrowUp(Sctp* sctp) {};
 	void arrowDown(Sctp* sctp) {};
 	void arrowLeft(Sctp* sctp) {};
@@ -19,13 +20,13 @@ public:
 	static SctpState& getInstance();
 
 private:
-	ConcStandards() {}
-	ConcStandards(const ConcStandards& other);
-	ConcStandards& operator=(const ConcStandards& other);
+	ConcCurves() {}
+	ConcCurves(const ConcCurves& other);
+	ConcCurves& operator=(const ConcCurves& other);
 
 	uint8_t cursor;
 	uint8_t page;
 
-	uint8_t * standards;
-	uint8_t standards_length;
+	curve_t * curves;
+	uint8_t curve_length;
 };
