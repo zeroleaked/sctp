@@ -14,6 +14,8 @@
 void sctp_lcd_wavelength(uint16_t wavelength) {}
 void sctp_lcd_wavelength_number(uint16_t wavelength) {}
 
+// void sctp_lcd_clear() {};
+
 void ConcWavelength::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();

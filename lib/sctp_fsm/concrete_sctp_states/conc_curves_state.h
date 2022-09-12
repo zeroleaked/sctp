@@ -25,7 +25,6 @@ private:
 	ConcCurves& operator=(const ConcCurves& other);
 
 	uint8_t cursor;
-	uint8_t page;
 
 	curve_t * curves;
 	uint8_t curve_length;

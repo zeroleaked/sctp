@@ -9,5 +9,5 @@
 #include "spec_result_state.h"
 
 // conc states
-#include "conc_wavelength.h"
-#include "conc_curves.h"
+#include "conc_wavelength_state.h"
+#include "conc_curves_state.h"

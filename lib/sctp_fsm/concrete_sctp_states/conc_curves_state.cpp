@@ -13,31 +13,27 @@
 #define CURSOR_BACK 8
 
 // lcd dummies
-void sctp_lcd_conc_curves(uint8_t cursor, uint8_t page, uint8_t length) {};
+void sctp_lcd_conc_curves(uint8_t cursor, uint8_t length) {};
 void sctp_lcd_spec_curves_clear(uint8_t cursor) {};
 
 // command dummies
-void sctp_load_conc_curves() {};
+void sctp_load_conc_curves(curve_t * curves, uint8_t * curves_length) {};
 
 
 void ConcCurves::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
 	cursor = 0;
-	page = 0;
-    sctp_load_conc_curves();
-	if ( curve_length >= 5) sctp_lcd_conc_curves(cursor, page, curve_length);
-	else  sctp_lcd_conc_curves(cursor, page, 5);
+    sctp_load_conc_curves(curves, &curve_length);
+
+	sctp_lcd_conc_curves(cursor, curve_length);
 }
 
 void ConcCurves::okay(Sctp* sctp)
 {
-// ( (curve_length - (5*page) ) / 5 != 0)
-
-
     if (cursor < 5) {
 		// load curve, free all the other memories
-        sctp->curve = &(curves[page*5 + cursor]);
+        sctp->curve = &(curves[cursor]);
     }
 	// switch (cursor) {
 	// 	case CURSOR_NEW: {

@@ -9,7 +9,8 @@ class SctpState; // forward declaration
 typedef struct {
 	float * absorbance;
 	float * concentration;
-	uint8_t length; // max 6
+	uint8_t points;
+	uint16_t wavelength;
 } curve_t;
 
 class Sctp
@@ -43,7 +44,7 @@ public:
     int getCurrentStateId();
 
 	uint16_t wavelength;
-	curve_t curve[6];
+	curve_t * curve; // max 6!
 	uint8_t curve_length = 0;
 
 

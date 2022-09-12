@@ -5,7 +5,6 @@
 void Idle::enter(Sctp* sctp)
 {
 	sctp_lcd_start();
-	// Off -> Low
 }
 
 void Idle::toggle(Sctp* sctp)
