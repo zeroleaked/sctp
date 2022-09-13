@@ -13,7 +13,7 @@ public:
 	void arrowLeft(Sctp* sctp);
 	void arrowRight(Sctp* sctp);
 	void exit(Sctp* sctp) {}
-	int id(Sctp* sctp) { return 3; }
+	int id(Sctp* sctp) { return 4; }
 	static SctpState& getInstance();
 
 private:

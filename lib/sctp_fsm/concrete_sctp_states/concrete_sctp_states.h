@@ -11,3 +11,10 @@
 // conc states
 #include "conc_wavelength_state.h"
 #include "conc_curves_state.h"
+
+// history states
+#include "history_list_state.h"
+// #include "history_list.h"
+
+// settings states
+#include "settings_state"

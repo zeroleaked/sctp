@@ -1,7 +1,9 @@
-#include "sctp_lcd.h"
 #include "menu_state.h"
 #include "spec_blank_state.h"
 #include "conc_curves_state.h"
+#include "history_list_state.h"
+#include "settings_state.h"
+#include "sctp_lcd.h"
 
 #define CURSOR_SPECTRUM 0
 #define CURSOR_QUANTIZATION 1
@@ -26,6 +28,14 @@ void Menu::okay(Sctp* sctp)
         } 
 		case CURSOR_QUANTIZATION: {
 			sctp->setState(ConcCurves::getInstance());
+			break;
+		}
+		case CURSOR_HISTORY: {
+			sctp->setState(HistoryList::getInstance());
+			break;
+		}
+		case CURSOR_SETTINGS: {
+			sctp->setState(Settings::getInstance());
 			break;
 		}
 	}
