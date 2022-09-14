@@ -1,9 +1,23 @@
+#include <esp_log.h>
+
 #include "sctp.h"
-#include "concrete_sctp_states/idle_state.h"
+#include "concrete_sctp_states/concrete_sctp_states.h"
+#include "sctp_sensor.h"
+
+static const char TAG[] = "sctp";
 
 // Constructor
 Sctp::Sctp()
 {
+	// todo load calibration
+	calibration.gain = -0.7698064209;
+	calibration.bias = 1025.924915;
+	calibration.start = 423;
+	calibration.length = 392;
+
+	lcd_refresh_queue = xQueueCreate(5, sizeof(command_t));
+	assert(lcd_refresh_queue != NULL);
+
     currentState = &Idle::getInstance();
 	currentState->enter(this);
 }
@@ -49,4 +63,42 @@ void Sctp::arrowRight()
 int Sctp::getCurrentStateId()
 {
     return currentState->id(this);
+}
+
+void Sctp::sampleSpectrumBlank() {
+	// Sctp class is responsible for all memory allocation it uses
+	blank_sample.readout = (float *) malloc(sizeof(float) * calibration.length);
+	assert(blank_sample.readout != NULL);
+	blank_sample.exposure = 10;
+	blank_sample.gain = 1;
+	ESP_ERROR_CHECK(sctp_sensor_spectrum_blank(calibration, blank_sample));
+
+	currentState->exit(this);  // do stuff before we change state
+	currentState = &SpecSample::getInstance();  // change state
+	currentState->enter(this); // do stuff after we change state
+	
+	command_t command = SPECTRUM_BLANK;
+	assert(xQueueSend(lcd_refresh_queue, &command, 0) == pdTRUE);
+	vTaskDelete( NULL );
+}
+
+void Sctp::sampleSpectrumBlankWrapper(void * _this)
+{
+	((Sctp *) _this)->sampleSpectrumBlank();
+}
+
+void Sctp::refreshLcd()
+{
+	ESP_LOGI(TAG, "refresh LCD task started");
+	command_t command;
+	for (;;) {
+		if (xQueueReceive(lcd_refresh_queue, &command, 100 / portTICK_PERIOD_MS) == pdTRUE) {
+			currentState->refreshLcd(this);
+		}
+	}
+}
+
+void Sctp::refreshLcdWrapper(void * _this)
+{
+	((Sctp *) _this)->refreshLcd();
 }

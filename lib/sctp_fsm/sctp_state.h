@@ -15,6 +15,7 @@ public:
 	virtual void arrowDown(Sctp* sctp) = 0;
 	virtual void arrowLeft(Sctp* sctp) = 0;
 	virtual void arrowRight(Sctp* sctp) = 0;
+	virtual void refreshLcd(Sctp* sctp) = 0;
 	virtual void exit(Sctp* sctp) = 0;
 	virtual int id(Sctp* sctp) = 0;
 
