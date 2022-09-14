@@ -1,8 +1,8 @@
 #include <esp_log.h>
 
+#include "spec_blank_state.h"
 #include "sctp_lcd.h"
 #include "menu_state.h"
-#include "spec_blank_state.h"
 
 #define CURSOR_NEXT 0
 #define CURSOR_CANCEL 1
@@ -58,6 +58,7 @@ void SpecBlank::okay(Sctp* sctp)
 
 void SpecBlank::arrowLeft(Sctp* sctp)
 {
+    sctp_lcd_spec_blank_clear(cursor);
     switch (substate) {
         case SUBSTATE_WAITING: {
             switch (cursor) {
