@@ -89,9 +89,26 @@ void Sctp::sampleSpectrumBlankWrapper(void * _this)
 
 void Sctp::sampleSpectrumSample() {
 	// Sctp class is responsible for all memory allocation it uses
-	sample_take = (float *) malloc(sizeof(float) * calibration.length);
+	sample_take = (float *) malloc(sizeof(sample_take_t) * calibration.length);
+	absorbance = (float *) malloc(sizeof(absorbance_t) * calibration.length);
 	assert(sample_take != NULL);
+	assert(absorbance != NULL);
+
 	ESP_ERROR_CHECK(sctp_sensor_spectrum_sample(calibration, blank_take, sample_take));
+	// castings
+	float * blank_buffer = blank_take.readout;
+	float * sample_buffer = sample_take;
+	for (int i=0; i < calibration.length; i++) {
+		float transmission = sample_buffer[i]/blank_buffer[i];
+		absorbance[i] = transmission;
+	}
+	ESP_LOGI(TAG, "%f,%f,%f,%f,%f,%f,%f,%f",
+		absorbance[0], absorbance[1], absorbance[2], absorbance[3], absorbance[4], absorbance[5], absorbance[6], absorbance[7]);
+	ESP_LOGI(TAG, "%f,%f,%f,%f,%f,%f,%f,%f",
+		sample_buffer[0], sample_buffer[1], sample_buffer[2], sample_buffer[3], sample_buffer[4], sample_buffer[5], sample_buffer[6], sample_buffer[7]);
+	ESP_LOGI(TAG, "%f,%f,%f,%f,%f,%f,%f,%f",
+		sample_buffer[calibration.length-8], sample_buffer[calibration.length-7], sample_buffer[calibration.length-6], sample_buffer[calibration.length-5],
+		sample_buffer[calibration.length-4], sample_buffer[calibration.length-3], sample_buffer[calibration.length-2], sample_buffer[calibration.length-1]);
 
 	currentState->exit(this);  // do stuff before we change state
 	currentState = &SpecResult::getInstance();  // change state

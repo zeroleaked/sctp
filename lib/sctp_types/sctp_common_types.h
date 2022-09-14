@@ -46,3 +46,5 @@ typedef struct {
 } blank_take_t;
 
 typedef float * sample_take_t;
+
+typedef float * absorbance_t;

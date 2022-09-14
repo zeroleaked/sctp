@@ -53,6 +53,7 @@ public:
 
 	blank_take_t blank_take;
 	sample_take_t sample_take;
+	absorbance_t absorbance;
 
 	uint16_t wavelength;
 	curve_t * curve; // max 6!
