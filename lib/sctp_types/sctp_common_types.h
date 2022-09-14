@@ -43,6 +43,6 @@ typedef struct {
 	float * readout;
 	uint16_t exposure;
 	uint16_t gain;
-} blank_sample_t;
+} blank_take_t;
 
-typedef float * sample_sample_t;
+typedef float * sample_take_t;

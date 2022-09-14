@@ -44,15 +44,15 @@ public:
 
 	static void refreshLcdWrapper(void * pvParameter);
 
-    TaskHandle_t task_command_handler;
+    TaskHandle_t task_spectrum_blank;
 	TaskHandle_t task_spectrum_sample;
 
 	QueueHandle_t lcd_refresh_queue;
 
 	calibration_t calibration;
 
-	blank_sample_t blank_sample;
-	sample_sample_t sample_sample;
+	blank_take_t blank_take;
+	sample_take_t sample_take;
 
 	uint16_t wavelength;
 	curve_t * curve; // max 6!

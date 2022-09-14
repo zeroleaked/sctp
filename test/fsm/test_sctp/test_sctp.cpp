@@ -112,7 +112,7 @@ void spec_blank_test() {
     vTaskDelay(6000 / portTICK_RATE_MS);
     TEST_ASSERT_EQUAL(STATE_SPEC_SAMPLE, sctp0.getCurrentStateId());
     // cleanup after testing
-    free(sctp0.blank_sample.readout);
+    free(sctp0.blank_take.readout);
 
     // test cancel when sampling
     Sctp sctp1;
@@ -128,7 +128,7 @@ void spec_blank_test() {
     sctp1.okay();
     TEST_ASSERT_EQUAL(1, specBlank->cursor);
     TEST_ASSERT_EQUAL(SPEC_SUBSTATE_WAITING, specBlank->substate);
-    TEST_ASSERT_EQUAL(NULL, sctp1.blank_sample.readout);
+    TEST_ASSERT_EQUAL(NULL, sctp1.blank_take.readout);
 }
 
 void spec_sample_test() {
@@ -157,8 +157,8 @@ void spec_sample_test() {
     vTaskDelay(6000 / portTICK_RATE_MS);
     TEST_ASSERT_EQUAL(STATE_SPEC_RESULT, sctp0.getCurrentStateId());
     // cleanup after testing
-    free(sctp0.blank_sample.readout);
-    free(sctp0.sample_sample);
+    free(sctp0.blank_take.readout);
+    free(sctp0.sample_take);
 
     // test cancel when sampling
     Sctp sctp1;
@@ -175,7 +175,7 @@ void spec_sample_test() {
     sctp1.okay();
     TEST_ASSERT_EQUAL(1, specSample->cursor);
     TEST_ASSERT_EQUAL(SPEC_SUBSTATE_WAITING, specSample->substate);
-    TEST_ASSERT_EQUAL(NULL, sctp1.sample_sample);
+    TEST_ASSERT_EQUAL(NULL, sctp1.sample_take);
 }
 
 extern "C" {
@@ -186,8 +186,6 @@ void app_main();
 
 void app_main() {
     UNITY_BEGIN();
-
-    ESP_LOGI(TAG, "hello world");
 
     RUN_TEST(idle_test);
     RUN_TEST(menu_test);

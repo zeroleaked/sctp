@@ -31,7 +31,7 @@ void SpecBlank::okay(Sctp* sctp)
                     cursor = CURSOR_NULL;
                     sctp_lcd_spec_blank_sampling(cursor);
                     command_t command = SPECTRUM_BLANK;
-                    xTaskCreatePinnedToCore(sctp->sampleSpectrumBlankWrapper, "command handler", 2048, sctp, 3, &sctp->task_command_handler, 1);
+                    xTaskCreatePinnedToCore(sctp->sampleSpectrumBlankWrapper, "command handler", 2048, sctp, 3, &sctp->task_spectrum_blank, 1);
                     break;
                 }
                 case CURSOR_CANCEL: {
@@ -44,9 +44,9 @@ void SpecBlank::okay(Sctp* sctp)
         case SUBSTATE_SAMPLING: {
             switch (cursor) {
                 case CURSOR_CANCEL: {
-                    vTaskDelete(sctp->task_command_handler);
-                    free(sctp->blank_sample.readout);
-                    sctp->blank_sample.readout = NULL;
+                    vTaskDelete(sctp->task_spectrum_blank);
+                    free(sctp->blank_take.readout);
+                    sctp->blank_take.readout = NULL;
                     substate = SUBSTATE_WAITING;
 	                sctp_lcd_spec_blank_waiting(cursor);
                     break;

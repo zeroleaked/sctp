@@ -44,8 +44,8 @@ void SpecSample::okay(Sctp* sctp)
             switch (cursor) {
                 case CURSOR_CANCEL: {
                     vTaskDelete(sctp->task_spectrum_sample);
-                    free(sctp->sample_sample);
-                    sctp->sample_sample = NULL;
+                    free(sctp->sample_take);
+                    sctp->sample_take = NULL;
                     substate = SUBSTATE_WAITING;
 	                sctp_lcd_spec_sample_waiting(cursor);
                     break;

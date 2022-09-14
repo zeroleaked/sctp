@@ -67,11 +67,11 @@ int Sctp::getCurrentStateId()
 
 void Sctp::sampleSpectrumBlank() {
 	// Sctp class is responsible for all memory allocation it uses
-	blank_sample.readout = (float *) malloc(sizeof(float) * calibration.length);
-	assert(blank_sample.readout != NULL);
-	blank_sample.exposure = 10;
-	blank_sample.gain = 1;
-	ESP_ERROR_CHECK(sctp_sensor_spectrum_blank(calibration, blank_sample));
+	blank_take.readout = (float *) malloc(sizeof(float) * calibration.length);
+	assert(blank_take.readout != NULL);
+	blank_take.exposure = 10;
+	blank_take.gain = 1;
+	ESP_ERROR_CHECK(sctp_sensor_spectrum_blank(calibration, blank_take));
 
 	currentState->exit(this);  // do stuff before we change state
 	currentState = &SpecSample::getInstance();  // change state
@@ -89,9 +89,9 @@ void Sctp::sampleSpectrumBlankWrapper(void * _this)
 
 void Sctp::sampleSpectrumSample() {
 	// Sctp class is responsible for all memory allocation it uses
-	sample_sample = (float *) malloc(sizeof(float) * calibration.length);
-	assert(sample_sample != NULL);
-	ESP_ERROR_CHECK(sctp_sensor_spectrum_sample(calibration, blank_sample, sample_sample));
+	sample_take = (float *) malloc(sizeof(float) * calibration.length);
+	assert(sample_take != NULL);
+	ESP_ERROR_CHECK(sctp_sensor_spectrum_sample(calibration, blank_take, sample_take));
 
 	currentState->exit(this);  // do stuff before we change state
 	currentState = &SpecResult::getInstance();  // change state
