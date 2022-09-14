@@ -55,7 +55,7 @@ public:
 	sample_take_t sample_take;
 	absorbance_t absorbance;
 
-	float * spectrum_wavelength;
+	float * spectrum_wavelength = NULL;
 
 	uint16_t wavelength;
 	curve_t * curve; // max 6!

@@ -20,7 +20,8 @@ typedef enum {
     STATE_HISTORY,
     STATE_SETTINGS,
     STATE_SPEC_SAMPLE,
-    STATE_SPEC_RESULT
+    STATE_SPEC_RESULT,
+    STATE_SPEC_SAVE
 
 } state_id_t;
 
@@ -178,6 +179,73 @@ void spec_sample_test() {
     TEST_ASSERT_EQUAL(NULL, sctp1.sample_take);
 }
 
+void spec_result_test() {
+    // test to SpecSave
+    Sctp sctp0;
+    sctp0.okay(); // to menu
+    sctp0.okay(); // to SpecBlank
+    sctp0.okay();
+    vTaskDelay(6000 / portTICK_RATE_MS); // to SpecSample
+    TEST_ASSERT_EQUAL(STATE_SPEC_SAMPLE, sctp0.getCurrentStateId());
+    sctp0.okay();
+    vTaskDelay(6000 / portTICK_RATE_MS); // to SpecResult
+    TEST_ASSERT_EQUAL(STATE_SPEC_RESULT, sctp0.getCurrentStateId());
+    sctp0.okay();
+    TEST_ASSERT_EQUAL(STATE_SPEC_SAVE, sctp0.getCurrentStateId());
+    // clean up test env
+    free(sctp0.sample_take);
+    sctp0.sample_take = NULL;
+    free(sctp0.absorbance);
+    sctp0.absorbance = NULL;
+    free(sctp0.blank_take.readout);
+    sctp0.blank_take.readout = NULL;
+
+    // test to SpecSample
+    Sctp sctp1;
+    sctp1.okay(); // to menu
+    sctp1.okay(); // to SpecBlank
+    sctp1.okay();
+    vTaskDelay(6000 / portTICK_RATE_MS); // to SpecSample
+    TEST_ASSERT_EQUAL(STATE_SPEC_SAMPLE, sctp1.getCurrentStateId());
+    sctp1.okay();
+    vTaskDelay(6000 / portTICK_RATE_MS); // to SpecResult
+    TEST_ASSERT_EQUAL(STATE_SPEC_RESULT, sctp1.getCurrentStateId());
+    sctp1.arrowDown();
+    sctp1.okay();
+    TEST_ASSERT_EQUAL(STATE_SPEC_SAMPLE, sctp1.getCurrentStateId());
+    TEST_ASSERT_EQUAL(NULL, sctp1.sample_take);
+    TEST_ASSERT_EQUAL(NULL, sctp1.absorbance);
+    // back to SpecResult
+    sctp1.okay();
+    vTaskDelay(6000 / portTICK_RATE_MS); // to SpecResult
+
+    // test to SpecBlank
+    sctp1.arrowDown();
+    sctp1.arrowDown();
+    sctp1.okay();
+    TEST_ASSERT_EQUAL(STATE_SPEC_BLANK, sctp1.getCurrentStateId());
+    TEST_ASSERT_EQUAL(NULL, sctp1.sample_take);
+    TEST_ASSERT_EQUAL(NULL, sctp1.absorbance);
+    TEST_ASSERT_EQUAL(NULL, sctp1.blank_take.readout);
+    // back to SpecResult
+    sctp1.okay();
+    vTaskDelay(6000 / portTICK_RATE_MS); // to SpecSample
+    TEST_ASSERT_EQUAL(STATE_SPEC_SAMPLE, sctp1.getCurrentStateId());
+    sctp1.okay();
+    vTaskDelay(6000 / portTICK_RATE_MS); // to SpecResult
+    TEST_ASSERT_EQUAL(STATE_SPEC_RESULT, sctp1.getCurrentStateId());
+
+    // test to Menu
+    sctp1.arrowDown();
+    sctp1.arrowDown();
+    sctp1.arrowDown();
+    sctp1.okay();
+    TEST_ASSERT_EQUAL(STATE_MENU, sctp1.getCurrentStateId());
+    TEST_ASSERT_EQUAL(NULL, sctp1.sample_take);
+    TEST_ASSERT_EQUAL(NULL, sctp1.absorbance);
+    TEST_ASSERT_EQUAL(NULL, sctp1.blank_take.readout);
+}
+
 extern "C" {
 
 void app_main();
@@ -191,6 +259,7 @@ void app_main() {
     RUN_TEST(menu_test);
     RUN_TEST(spec_blank_test);
     RUN_TEST(spec_sample_test);
+    RUN_TEST(spec_result_test);
 
     UNITY_END();
 }
