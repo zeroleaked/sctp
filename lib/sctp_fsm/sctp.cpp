@@ -87,6 +87,27 @@ void Sctp::sampleSpectrumBlankWrapper(void * _this)
 	((Sctp *) _this)->sampleSpectrumBlank();
 }
 
+void Sctp::sampleSpectrumSample() {
+	// Sctp class is responsible for all memory allocation it uses
+	sample_sample = (float *) malloc(sizeof(float) * calibration.length);
+	assert(sample_sample != NULL);
+	ESP_ERROR_CHECK(sctp_sensor_spectrum_sample(calibration, blank_sample, sample_sample));
+
+	currentState->exit(this);  // do stuff before we change state
+	currentState = &SpecResult::getInstance();  // change state
+	currentState->enter(this); // do stuff after we change state
+	
+	command_t command = SPECTRUM_SAMPLE;
+	assert(xQueueSend(lcd_refresh_queue, &command, 0) == pdTRUE);
+	vTaskDelete( NULL );
+}
+
+void Sctp::sampleSpectrumSampleWrapper(void * _this)
+{
+	((Sctp *) _this)->sampleSpectrumSample();
+}
+
+
 void Sctp::refreshLcd()
 {
 	ESP_LOGI(TAG, "refresh LCD task started");

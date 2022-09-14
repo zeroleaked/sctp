@@ -40,16 +40,19 @@ public:
     int getCurrentStateId();
 
 	static void sampleSpectrumBlankWrapper(void * pvParameter);
+	static void sampleSpectrumSampleWrapper(void * pvParameter);
 
 	static void refreshLcdWrapper(void * pvParameter);
 
     TaskHandle_t task_command_handler;
+	TaskHandle_t task_spectrum_sample;
 
 	QueueHandle_t lcd_refresh_queue;
 
 	calibration_t calibration;
 
 	blank_sample_t blank_sample;
+	sample_sample_t sample_sample;
 
 	uint16_t wavelength;
 	curve_t * curve; // max 6!
@@ -66,5 +69,6 @@ private:
 	SctpState* currentState;
 
 	void sampleSpectrumBlank();
+	void sampleSpectrumSample();
 	void refreshLcd();
 };

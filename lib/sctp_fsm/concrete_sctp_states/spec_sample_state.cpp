@@ -1,70 +1,89 @@
+#include <esp_log.h>
+
 #include "spec_sample_state.h"
-// #include "sctp_lcd.h"
-// #include "spec_blank_state.h"
+#include "spec_blank_state.h"
+#include "sctp_lcd.h"
 
-// #define CURSOR_NEXT 0
-// #define CURSOR_CANCEL 1
+#define CURSOR_NEXT 0
+#define CURSOR_CANCEL 1
+#define CURSOR_NULL 2
 
-// #define SUBSTATE_WAITING 0
-// #define SUBSTATE_SAMPLING 1
+#define SUBSTATE_WAITING 0
+#define SUBSTATE_SAMPLING 1
 
-// // dummy LCD
-// void sctp_lcd_spec_sample(uint8_t cursor){};
-// void sctp_lcd_spec_sample_clear(uint8_t cursor){};
-// void sctp_lcd_spec_sample_sampling(){};
+static const char TAG[] = "spec_blank_state";
 
-// // dummy COMMAND
-// void sctp_spec_sample();
+void SpecSample::enter(Sctp* sctp)
+{
+	sctp_lcd_clear();
+    substate = SUBSTATE_WAITING;
+	cursor = CURSOR_NEXT;
+	sctp_lcd_spec_sample_waiting(cursor);
+}
 
-// void SpecSample::enter(Sctp* sctp)
-// {
-// 	sctp_lcd_clear();
-//     substate = SUBSTATE_WAITING;
-// 	cursor = 0;
-// 	sctp_lcd_spec_sample(cursor);
-// }
+void SpecSample::okay(Sctp* sctp)
+{
+    switch (substate) {
+        case SUBSTATE_WAITING: {
+            switch (cursor) {
+                case CURSOR_NEXT: {
+                    substate = SUBSTATE_SAMPLING;
+                    cursor = CURSOR_NULL;
+                    sctp_lcd_spec_blank_sampling(cursor);
+                    xTaskCreatePinnedToCore(sctp->sampleSpectrumSampleWrapper, "spectrum sample", 2048, sctp, 3, &sctp->task_spectrum_sample, 1);
+                    break;
+                }
+                case CURSOR_CANCEL: {
+                    sctp->setState(SpecBlank::getInstance());
+                    break;
+                }
+            }
+            break;
+        }
+        case SUBSTATE_SAMPLING: {
+            switch (cursor) {
+                case CURSOR_CANCEL: {
+                    vTaskDelete(sctp->task_spectrum_sample);
+                    free(sctp->sample_sample);
+                    sctp->sample_sample = NULL;
+                    substate = SUBSTATE_WAITING;
+	                sctp_lcd_spec_sample_waiting(cursor);
+                    break;
+                }
+            }
+        }
+    }
+}
 
-// void SpecSample::okay(Sctp* sctp)
-// {
-// 	// Low -> Medium
-//     if (substate == SUBSTATE_WAITING) {
-//         switch (cursor) {
-//             case CURSOR_NEXT: {
-//                 substate = SUBSTATE_SAMPLING;
-//                 sctp_lcd_spec_sample_sampling();
-//                 sctp_spec_sample();
-//                 break;
-//             }
-//             case CURSOR_CANCEL: {
-//                 sctp->setState(SpecBlank::getInstance());
-//                 break;
-//             }
-//         }
-//     }
-//     else { // substate == SUBSTATE_SAMPLING
-//         switch (cursor) {
-//             case CURSOR_CANCEL: {
-//                 // todo check memory leak
-
-//                 substate = SUBSTATE_WAITING;
-//                 sctp_lcd_spec_sample(cursor);
-//                 break;
-//             }
-//         }
-//     }
-// }
-
-// void SpecSample::arrowLeft(Sctp* sctp)
-// {
-//     if (substate == SUBSTATE_WAITING) {
-//         sctp_lcd_spec_sample_clear(cursor);
-//         if (cursor == CURSOR_NEXT) cursor = CURSOR_CANCEL;
-//         else if (cursor == CURSOR_CANCEL) cursor = CURSOR_NEXT;
-//         sctp_lcd_spec_sample(cursor);
-//     } else { // substate == SUBSTATE_SAMPLING
-//         cursor = CURSOR_CANCEL;
-//     }
-// }
+void SpecSample::arrowLeft(Sctp* sctp)
+{
+	sctp_lcd_spec_sample_clear(cursor);
+    switch (substate) {
+        case SUBSTATE_WAITING: {
+            switch (cursor) {
+                case CURSOR_NEXT: {
+                    cursor = CURSOR_CANCEL;
+                    break;
+                }
+                case CURSOR_CANCEL: {
+                    cursor = CURSOR_NEXT;
+                    break;
+                }
+            }
+	        sctp_lcd_spec_sample_waiting(cursor);
+            break;
+        }
+        case SUBSTATE_SAMPLING: {
+            switch (cursor) {
+                case CURSOR_NULL: {
+                    cursor = CURSOR_CANCEL;
+	                sctp_lcd_spec_sample_sampling(cursor);
+                    break;
+                }
+            }
+        }
+    }
+}
 
 SctpState& SpecSample::getInstance()
 {
