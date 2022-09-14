@@ -10,7 +10,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t calibration, blank_take_t bla
     vTaskDelay(5000 / portTICK_RATE_MS);
 
     for (int i = 0; i < calibration.length; i++) {
-        blank_take.readout[calibration.length-i-1] = ( (float)(i+calibration.start) * calibration.gain + calibration.bias );
+        blank_take.readout[calibration.length-i-1] = (float)(i+calibration.start) * calibration.gain + calibration.bias;
     }
     blank_take.exposure = 400;
     blank_take.gain = 1;

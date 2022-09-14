@@ -1,4 +1,5 @@
 #include <esp_log.h>
+#include <math.h>
 
 #include "sctp.h"
 #include "concrete_sctp_states/concrete_sctp_states.h"
@@ -100,15 +101,8 @@ void Sctp::sampleSpectrumSample() {
 	float * sample_buffer = sample_take;
 	for (int i=0; i < calibration.length; i++) {
 		float transmission = sample_buffer[i]/blank_buffer[i];
-		absorbance[i] = transmission;
+		absorbance[i] = -log10(transmission);
 	}
-	ESP_LOGI(TAG, "%f,%f,%f,%f,%f,%f,%f,%f",
-		absorbance[0], absorbance[1], absorbance[2], absorbance[3], absorbance[4], absorbance[5], absorbance[6], absorbance[7]);
-	ESP_LOGI(TAG, "%f,%f,%f,%f,%f,%f,%f,%f",
-		sample_buffer[0], sample_buffer[1], sample_buffer[2], sample_buffer[3], sample_buffer[4], sample_buffer[5], sample_buffer[6], sample_buffer[7]);
-	ESP_LOGI(TAG, "%f,%f,%f,%f,%f,%f,%f,%f",
-		sample_buffer[calibration.length-8], sample_buffer[calibration.length-7], sample_buffer[calibration.length-6], sample_buffer[calibration.length-5],
-		sample_buffer[calibration.length-4], sample_buffer[calibration.length-3], sample_buffer[calibration.length-2], sample_buffer[calibration.length-1]);
 
 	currentState->exit(this);  // do stuff before we change state
 	currentState = &SpecResult::getInstance();  // change state
