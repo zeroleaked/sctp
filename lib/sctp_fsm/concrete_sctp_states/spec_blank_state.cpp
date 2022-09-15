@@ -86,9 +86,7 @@ void SpecBlank::arrowLeft(Sctp* sctp)
     }
 }
 
-void SpecBlank::refreshLcd(Sctp* sctp) {
-    command_t command;
-    assert(xQueueReceive(sctp->lcd_refresh_queue, &command, 0) == pdTRUE); // already peeked
+void SpecBlank::refreshLcd(Sctp* sctp, command_t command) {
     if (command == SPECTRUM_BLANK) {
 		sctp->setState(SpecSample::getInstance());
     }

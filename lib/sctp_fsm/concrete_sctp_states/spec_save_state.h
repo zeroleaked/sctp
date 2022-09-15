@@ -1,7 +1,8 @@
 #pragma once
 
-#include "sctp_state.h"
 #include "sctp.h"
+#include "sctp_state.h"
+#include "sctp_common_types.h"
 
 class SpecSave : public SctpState
 {
@@ -12,7 +13,7 @@ public:
 	void arrowDown(Sctp* sctp);
 	void arrowLeft(Sctp* sctp) { arrowDown(sctp); };
 	void arrowRight(Sctp* sctp) { arrowDown(sctp); };
-	void refreshLcd(Sctp* sctp);
+	void refreshLcd(Sctp* sctp, command_t command);
 	void exit(Sctp* sctp) {}
 	int id(Sctp* sctp) { return 9; }
 	static SctpState& getInstance();

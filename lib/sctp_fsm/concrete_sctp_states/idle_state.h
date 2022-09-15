@@ -12,7 +12,7 @@ public:
 	void arrowLeft(Sctp* sctp) { toggle(sctp); }
 	void arrowRight(Sctp* sctp) { toggle(sctp); }
 	void okay(Sctp* sctp) { toggle(sctp); }
-	void refreshLcd(Sctp* sctp) {};
+	void refreshLcd(Sctp* sctp, command_t command) {};
 	void exit(Sctp* sctp) {}
 	int id(Sctp* sctp) { return 1; };
 	static SctpState& getInstance();

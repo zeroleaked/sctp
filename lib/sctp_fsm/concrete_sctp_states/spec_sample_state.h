@@ -1,7 +1,7 @@
 #pragma once
 
-#include "sctp_state.h"
 #include "sctp.h"
+#include "sctp_state.h"
 
 // standards library (storage)
 
@@ -14,7 +14,7 @@ public:
 	void arrowDown(Sctp* sctp) { arrowLeft(sctp); };
 	void arrowLeft(Sctp* sctp);
 	void arrowRight(Sctp* sctp) { arrowLeft(sctp); };
-	void refreshLcd(Sctp* sctp);
+	void refreshLcd(Sctp* sctp, command_t command);
 	void exit(Sctp* sctp) {}
 	int id(Sctp* sctp) { return 7; }
 	static SctpState& getInstance();

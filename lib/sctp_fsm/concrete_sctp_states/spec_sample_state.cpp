@@ -86,9 +86,7 @@ void SpecSample::arrowLeft(Sctp* sctp)
     }
 }
 
-void SpecSample::refreshLcd(Sctp* sctp) {
-    command_t command;
-    assert(xQueueReceive(sctp->lcd_refresh_queue, &command, 0) == pdTRUE); // already peeked
+void SpecSample::refreshLcd(Sctp* sctp, command_t command) {
     if (command == SPECTRUM_SAMPLE) { // sample taken
 		sctp->setState(SpecResult::getInstance());
     }

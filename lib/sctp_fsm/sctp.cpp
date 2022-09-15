@@ -139,9 +139,9 @@ void Sctp::refreshLcd()
 	QueueHandle_t queue = lcd_refresh_queue; // copy handle as local variable, somehow task loop don't like member variables
 	for (;;) {
 		vTaskDelayUntil( &xLastWakeTime, 300 / portTICK_RATE_MS );
-		if (xQueuePeek(queue, &command, 0) == pdTRUE) {
+		if (xQueueReceive(queue, &command, 0) == pdTRUE) {
 			ESP_LOGI(TAG, "refreshLcd(), delegating");
-			currentState->refreshLcd(this);
+			currentState->refreshLcd(this, command);
 		}
 	}
 }

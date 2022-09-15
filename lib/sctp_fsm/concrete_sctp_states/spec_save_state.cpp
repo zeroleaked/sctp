@@ -2,6 +2,7 @@
 
 #include "spec_save_state.h"
 #include "spec_result_state.h"
+#include "sctp_common_types.h"
 #include "sctp_lcd.h"
 
 #define CURSOR_NULL 0
@@ -38,13 +39,10 @@ void SpecSave::okay(Sctp* sctp)
 	}
 }
 
-void SpecSave::refreshLcd(Sctp* sctp)
+void SpecSave::refreshLcd(Sctp* sctp, command_t command)
 {
-	substate = SUBSTATE_WAITING;
-
-    command_t command;
-    assert(xQueueReceive(sctp->lcd_refresh_queue, &command, 0) == pdTRUE); // already peeked
     if (command == SPECTRUM_SAVE) {
+		substate = SUBSTATE_WAITING;
 		sctp_lcd_spec_save_finish(sctp->saved_name);
     }
 }

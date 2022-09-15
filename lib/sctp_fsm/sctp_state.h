@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sctp.h>
+#include "sctp_common_types.h"
 
 // #include <stdint.h>
 
@@ -15,7 +16,7 @@ public:
 	virtual void arrowDown(Sctp* sctp) = 0;
 	virtual void arrowLeft(Sctp* sctp) = 0;
 	virtual void arrowRight(Sctp* sctp) = 0;
-	virtual void refreshLcd(Sctp* sctp) = 0;
+	virtual void refreshLcd(Sctp* sctp, command_t command) = 0;
 	virtual void exit(Sctp* sctp) = 0;
 	virtual int id(Sctp* sctp) = 0;
 

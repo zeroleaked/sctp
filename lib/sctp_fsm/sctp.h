@@ -59,9 +59,10 @@ public:
 
 	float * spectrum_wavelength = NULL;
 
+	curve_t * curves;
+	uint8_t curves_length = 0; // max 6!
+
 	uint16_t wavelength;
-	curve_t * curve; // max 6!
-	uint8_t curve_length = 0;
 
 	char saved_name[255];
 	
