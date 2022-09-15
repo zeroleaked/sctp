@@ -118,8 +118,6 @@ void Sctp::saveSpectrum() {
 	assert(absorbance != NULL);
 
 	ESP_ERROR_CHECK(sctp_flash_save_spectrum(absorbance, calibration.length));
-    SpecSave * specSave = (SpecSave *) currentState;
-	specSave->substate = 1;
 
 	command_t command = SPECTRUM_SAVE;
 	assert(xQueueSend(lcd_refresh_queue, &command, 0) == pdTRUE);

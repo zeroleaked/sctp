@@ -40,6 +40,8 @@ void SpecSave::okay(Sctp* sctp)
 
 void SpecSave::refreshLcd(Sctp* sctp)
 {
+	substate = SUBSTATE_WAITING;
+
     command_t command;
     assert(xQueueReceive(sctp->lcd_refresh_queue, &command, 0) == pdTRUE); // already peeked
     if (command == SPECTRUM_SAVE) {
