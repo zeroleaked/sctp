@@ -1,8 +1,9 @@
 #include <esp_log.h>
 
 #include "spec_blank_state.h"
-#include "sctp_lcd.h"
 #include "menu_state.h"
+#include "spec_sample_state.h"
+#include "sctp_lcd.h"
 
 #define CURSOR_NEXT 0
 #define CURSOR_CANCEL 1
@@ -82,6 +83,14 @@ void SpecBlank::arrowLeft(Sctp* sctp)
                 }
             }
         }
+    }
+}
+
+void SpecBlank::refreshLcd(Sctp* sctp) {
+    command_t command;
+    assert(xQueueReceive(sctp->lcd_refresh_queue, &command, 0) == pdTRUE); // already peeked
+    if (command == SPECTRUM_BLANK) {
+		sctp->setState(SpecSample::getInstance());
     }
 }
 

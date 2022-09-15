@@ -2,6 +2,7 @@
 
 #include "spec_sample_state.h"
 #include "spec_blank_state.h"
+#include "spec_result_state.h"
 #include "sctp_lcd.h"
 
 #define CURSOR_NEXT 0
@@ -82,6 +83,14 @@ void SpecSample::arrowLeft(Sctp* sctp)
                 }
             }
         }
+    }
+}
+
+void SpecSample::refreshLcd(Sctp* sctp) {
+    command_t command;
+    assert(xQueueReceive(sctp->lcd_refresh_queue, &command, 0) == pdTRUE); // already peeked
+    if (command == SPECTRUM_SAMPLE) { // sample taken
+		sctp->setState(SpecResult::getInstance());
     }
 }
 

@@ -40,12 +40,11 @@ void SpecSave::okay(Sctp* sctp)
 
 void SpecSave::refreshLcd(Sctp* sctp)
 {
-	// command_t command;
-	// if ( xQueueReceive(sctp->lcd_refresh_queue, &command, 0) == pdTRUE) {
-	// 	if (command == SPECTRUM_SAVE)
-	// 	ESP_LOGI(TAG, "refreshLcd, save done");
-	// 	sctp_lcd_spec_save_finish(sctp->saved_name);
-	// }
+    command_t command;
+    assert(xQueueReceive(sctp->lcd_refresh_queue, &command, 0) == pdTRUE); // already peeked
+    if (command == SPECTRUM_SAVE) {
+		sctp_lcd_spec_save_finish(sctp->saved_name);
+    }
 }
 
 SctpState& SpecSave::getInstance()

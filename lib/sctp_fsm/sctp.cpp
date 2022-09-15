@@ -75,10 +75,6 @@ void Sctp::takeSpectrumBlank() {
 	blank_take.exposure = 10;
 	blank_take.gain = 1;
 	ESP_ERROR_CHECK(sctp_sensor_spectrum_blank(calibration, blank_take));
-
-	currentState->exit(this);  // do stuff before we change state
-	currentState = &SpecSample::getInstance();  // change state
-	currentState->enter(this); // do stuff after we change state
 	
 	command_t command = SPECTRUM_BLANK;
 	assert(xQueueSend(lcd_refresh_queue, &command, 0) == pdTRUE);
@@ -106,10 +102,6 @@ void Sctp::takeSpectrumSample() {
 		float transmission = sample_buffer[i]/blank_buffer[i];
 		absorbance[i] = -log10(transmission);
 	}
-
-	currentState->exit(this);  // do stuff before we change state
-	currentState = &SpecResult::getInstance();  // change state
-	currentState->enter(this); // do stuff after we change state
 	
 	command_t command = SPECTRUM_SAMPLE;
 	assert(xQueueSend(lcd_refresh_queue, &command, 0) == pdTRUE);
@@ -149,7 +141,7 @@ void Sctp::refreshLcd()
 	QueueHandle_t queue = lcd_refresh_queue; // copy handle as local variable, somehow task loop don't like member variables
 	for (;;) {
 		vTaskDelayUntil( &xLastWakeTime, 300 / portTICK_RATE_MS );
-		if (xQueueReceive(queue, &command, 0) == pdTRUE) {
+		if (xQueuePeek(queue, &command, 0) == pdTRUE) {
 			ESP_LOGI(TAG, "refreshLcd(), delegating");
 			currentState->refreshLcd(this);
 		}
