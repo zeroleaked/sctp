@@ -68,7 +68,7 @@ int Sctp::getCurrentStateId()
     return currentState->id(this);
 }
 
-void Sctp::sampleSpectrumBlank() {
+void Sctp::takeSpectrumBlank() {
 	// Sctp class is responsible for all memory allocation it uses
 	blank_take.readout = (float *) malloc(sizeof(float) * calibration.length);
 	assert(blank_take.readout != NULL);
@@ -82,16 +82,16 @@ void Sctp::sampleSpectrumBlank() {
 	
 	command_t command = SPECTRUM_BLANK;
 	assert(xQueueSend(lcd_refresh_queue, &command, 0) == pdTRUE);
-	ESP_LOGI(TAG, "sampleSpectrumBlank() sended to queue");
+	ESP_LOGI(TAG, "takeSpectrumBlank() sended to queue");
 	vTaskDelete( NULL );
 }
 
 void Sctp::sampleSpectrumBlankWrapper(void * _this)
 {
-	((Sctp *) _this)->sampleSpectrumBlank();
+	((Sctp *) _this)->takeSpectrumBlank();
 }
 
-void Sctp::sampleSpectrumSample() {
+void Sctp::takeSpectrumSample() {
 	// Sctp class is responsible for all memory allocation it uses
 	sample_take = (float *) malloc(sizeof(sample_take_t) * calibration.length);
 	absorbance = (float *) malloc(sizeof(absorbance_t) * calibration.length);
@@ -113,13 +113,13 @@ void Sctp::sampleSpectrumSample() {
 	
 	command_t command = SPECTRUM_SAMPLE;
 	assert(xQueueSend(lcd_refresh_queue, &command, 0) == pdTRUE);
-	ESP_LOGI(TAG, "sampleSpectrumSample() sended to queue");
+	ESP_LOGI(TAG, "takeSpectrumSample() sended to queue");
 	vTaskDelete( NULL );
 }
 
 void Sctp::sampleSpectrumSampleWrapper(void * _this)
 {
-	((Sctp *) _this)->sampleSpectrumSample();
+	((Sctp *) _this)->takeSpectrumSample();
 }
 
 void Sctp::saveSpectrum() {

@@ -75,8 +75,8 @@ public:
 private:
 	SctpState* currentState;
 
-	void sampleSpectrumBlank();
-	void sampleSpectrumSample();
+	void takeSpectrumBlank();
+	void takeSpectrumSample();
 	void saveSpectrum();
 	void refreshLcd();
 };
