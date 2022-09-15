@@ -4,7 +4,8 @@
 
 typedef enum {
 	SPECTRUM_BLANK,
-	SPECTRUM_SAMPLE
+	SPECTRUM_SAMPLE,
+	SPECTRUM_SAVE
 } command_t;
 
 typedef struct {

@@ -4,6 +4,7 @@
 #include "sctp.h"
 #include "concrete_sctp_states/concrete_sctp_states.h"
 #include "sctp_sensor.h"
+#include "sctp_flash.h"
 
 static const char TAG[] = "sctp";
 
@@ -16,8 +17,9 @@ Sctp::Sctp()
 	calibration.start = 423;
 	calibration.length = 392;
 
-	lcd_refresh_queue = xQueueCreate(5, sizeof(command_t));
+	lcd_refresh_queue = xQueueCreate(1, sizeof(command_t));
 	assert(lcd_refresh_queue != NULL);
+	ESP_LOGI(TAG, "created queue");
 
     currentState = &Idle::getInstance();
 	currentState->enter(this);
@@ -80,6 +82,7 @@ void Sctp::sampleSpectrumBlank() {
 	
 	command_t command = SPECTRUM_BLANK;
 	assert(xQueueSend(lcd_refresh_queue, &command, 0) == pdTRUE);
+	ESP_LOGI(TAG, "sampleSpectrumBlank() sended to queue");
 	vTaskDelete( NULL );
 }
 
@@ -110,6 +113,7 @@ void Sctp::sampleSpectrumSample() {
 	
 	command_t command = SPECTRUM_SAMPLE;
 	assert(xQueueSend(lcd_refresh_queue, &command, 0) == pdTRUE);
+	ESP_LOGI(TAG, "sampleSpectrumSample() sended to queue");
 	vTaskDelete( NULL );
 }
 
@@ -118,13 +122,35 @@ void Sctp::sampleSpectrumSampleWrapper(void * _this)
 	((Sctp *) _this)->sampleSpectrumSample();
 }
 
+void Sctp::saveSpectrum() {
+	assert(absorbance != NULL);
+
+	ESP_ERROR_CHECK(sctp_flash_save_spectrum(absorbance, calibration.length));
+    SpecSave * specSave = (SpecSave *) currentState;
+	specSave->substate = 1;
+
+	command_t command = SPECTRUM_SAVE;
+	assert(xQueueSend(lcd_refresh_queue, &command, 0) == pdTRUE);
+	ESP_LOGI(TAG, "saveSpectrum() sended to queue");
+	vTaskDelete( NULL );
+}
+
+void Sctp::saveSpectrumWrapper(void * _this)
+{
+	((Sctp *) _this)->saveSpectrum();
+}
+
 
 void Sctp::refreshLcd()
 {
 	ESP_LOGI(TAG, "refresh LCD task started");
 	command_t command;
+	TickType_t xLastWakeTime = xTaskGetTickCount();
+	QueueHandle_t queue = lcd_refresh_queue; // copy handle as local variable, somehow task loop don't like member variables
 	for (;;) {
-		if (xQueueReceive(lcd_refresh_queue, &command, 100 / portTICK_PERIOD_MS) == pdTRUE) {
+		vTaskDelayUntil( &xLastWakeTime, 300 / portTICK_RATE_MS );
+		if (xQueueReceive(queue, &command, 0) == pdTRUE) {
+			ESP_LOGI(TAG, "refreshLcd(), delegating");
 			currentState->refreshLcd(this);
 		}
 	}

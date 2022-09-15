@@ -30,7 +30,7 @@ void SpecSample::okay(Sctp* sctp)
                     substate = SUBSTATE_SAMPLING;
                     cursor = CURSOR_NULL;
                     sctp_lcd_spec_blank_sampling(cursor);
-                    xTaskCreatePinnedToCore(sctp->sampleSpectrumSampleWrapper, "spectrum sample", 2048, sctp, 3, &sctp->task_spectrum_sample, 1);
+                    xTaskCreatePinnedToCore(sctp->sampleSpectrumSampleWrapper, "spectrum sample", 2048, sctp, 4, &sctp->task_spectrum_sample, 1);
                     break;
                 }
                 case CURSOR_CANCEL: {

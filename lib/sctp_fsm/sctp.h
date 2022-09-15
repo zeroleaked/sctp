@@ -41,11 +41,13 @@ public:
 
 	static void sampleSpectrumBlankWrapper(void * pvParameter);
 	static void sampleSpectrumSampleWrapper(void * pvParameter);
+	static void saveSpectrumWrapper(void * pvParameter);
 
 	static void refreshLcdWrapper(void * pvParameter);
 
     TaskHandle_t task_spectrum_blank;
 	TaskHandle_t task_spectrum_sample;
+	TaskHandle_t task_refresh_lcd;
 
 	QueueHandle_t lcd_refresh_queue;
 
@@ -60,6 +62,8 @@ public:
 	uint16_t wavelength;
 	curve_t * curve; // max 6!
 	uint8_t curve_length = 0;
+
+	char saved_name[255];
 	
 	history_t * history_list;
 	uint8_t history_list_length;
@@ -73,5 +77,6 @@ private:
 
 	void sampleSpectrumBlank();
 	void sampleSpectrumSample();
+	void saveSpectrum();
 	void refreshLcd();
 };

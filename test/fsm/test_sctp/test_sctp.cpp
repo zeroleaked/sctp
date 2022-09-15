@@ -6,8 +6,10 @@
 
 #include "sctp.h"
 
+// for checking substates
 #include "concrete_sctp_states/spec_blank_state.h"
 #include "concrete_sctp_states/spec_sample_state.h"
+#include "concrete_sctp_states/spec_save_state.h"
 
 //platformio test --environment esp32doit-devkit-v1 -vvv
 
@@ -90,6 +92,7 @@ void menu_test() {
 #define SPEC_SUBSTATE_WAITING 0
 #define SPEC_SUBSTATE_SAMPLING 1
 void spec_blank_test() {
+    ESP_LOGI(TAG, "test to Menu");
     // test to Menu
     Sctp sctp0;
     // xTaskCreatePinnedToCore(sctp0.commandHandlerWrapper, "command handler", 2048, &sctp0, 3, &sctp0.task_command_handler, 1);
@@ -102,6 +105,7 @@ void spec_blank_test() {
     sctp0.okay();
     TEST_ASSERT_EQUAL(STATE_SPEC_BLANK, sctp0.getCurrentStateId());
 
+    ESP_LOGI(TAG, "test to SpecSample");
     // test to SpecSample
     SpecBlank * specBlank = (SpecBlank *) sctp0.getCurrentState();
     TEST_ASSERT_EQUAL(SPEC_SUBSTATE_WAITING, specBlank->substate);
@@ -109,12 +113,15 @@ void spec_blank_test() {
     sctp0.arrowUp();
     sctp0.okay();
     TEST_ASSERT_EQUAL(SPEC_SUBSTATE_SAMPLING, specBlank->substate);
+    ESP_LOGI(TAG, "substate sampling");
     // TaskHandle_t task;
     vTaskDelay(6000 / portTICK_RATE_MS);
+    ESP_LOGI(TAG, "idle fin");
     TEST_ASSERT_EQUAL(STATE_SPEC_SAMPLE, sctp0.getCurrentStateId());
     // cleanup after testing
     free(sctp0.blank_take.readout);
 
+    ESP_LOGI(TAG, "test cancel");
     // test cancel when sampling
     Sctp sctp1;
     // xTaskCreatePinnedToCore(sctp1.commandHandlerWrapper, "command handler", 2048, &sctp1, 3, &sctp1.task_command_handler, 1);
@@ -244,6 +251,32 @@ void spec_result_test() {
     TEST_ASSERT_EQUAL(NULL, sctp1.sample_take);
     TEST_ASSERT_EQUAL(NULL, sctp1.absorbance);
     TEST_ASSERT_EQUAL(NULL, sctp1.blank_take.readout);
+    // clean up test env
+    free(sctp1.spectrum_wavelength);
+}
+
+void spec_save_test() {
+    // test to SpecResult
+    Sctp sctp0;
+    sctp0.okay(); // to menu
+    sctp0.okay(); // to SpecBlank
+    sctp0.okay();
+    vTaskDelay(6000 / portTICK_RATE_MS); // to SpecSample
+    TEST_ASSERT_EQUAL(STATE_SPEC_SAMPLE, sctp0.getCurrentStateId());
+    sctp0.okay();
+    vTaskDelay(6000 / portTICK_RATE_MS); // to SpecResult
+    TEST_ASSERT_EQUAL(STATE_SPEC_RESULT, sctp0.getCurrentStateId());
+    sctp0.okay();
+    TEST_ASSERT_EQUAL(STATE_SPEC_SAVE, sctp0.getCurrentStateId()); // to SpecSave
+    SpecSave * specSave = (SpecSave *) sctp0.getCurrentState();
+    TEST_ASSERT_EQUAL(0, specSave->substate);
+    vTaskDelay(3000 / portTICK_RATE_MS);
+    TEST_ASSERT_EQUAL(1, specSave->substate);
+    sctp0.arrowDown();
+    sctp0.okay();
+    TEST_ASSERT_EQUAL(STATE_SPEC_RESULT, sctp0.getCurrentStateId());
+    sctp0.okay();
+    TEST_ASSERT_EQUAL(STATE_SPEC_SAVE, sctp0.getCurrentStateId());
 }
 
 extern "C" {
@@ -260,6 +293,7 @@ void app_main() {
     RUN_TEST(spec_blank_test);
     RUN_TEST(spec_sample_test);
     RUN_TEST(spec_result_test);
+    RUN_TEST(spec_save_test);
 
     UNITY_END();
 }

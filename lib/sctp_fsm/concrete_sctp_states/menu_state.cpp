@@ -15,7 +15,6 @@ void Menu::enter(Sctp* sctp)
 	sctp_lcd_clear();
 	this->cursor = 0;
 	sctp_lcd_menu(this->cursor);
-	// Off -> Low
 }
 
 void Menu::okay(Sctp* sctp)

@@ -5,6 +5,7 @@
 void Idle::enter(Sctp* sctp)
 {
 	sctp_lcd_start();
+    xTaskCreatePinnedToCore(sctp->refreshLcdWrapper, "LCD refresh", 2048, sctp, 3, &sctp->task_refresh_lcd, 0);
 }
 
 void Idle::toggle(Sctp* sctp)
