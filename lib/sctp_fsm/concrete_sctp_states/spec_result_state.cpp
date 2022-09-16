@@ -27,7 +27,7 @@ void SpecResult::enter(Sctp* sctp)
 			sctp->spectrum_wavelength[i] = (float)(i + sctp->calibration.start) * sctp->calibration.gain + sctp->calibration.bias;
 		}
 	}
-	sctp_lcd_spec_result(cursor, sctp->spectrum_wavelength, sctp->absorbance);
+	sctp_lcd_spec_result(cursor, sctp->spectrum_wavelength, sctp->absorbance, sctp->calibration.length);
 }
 
 void SpecResult::okay(Sctp* sctp)
