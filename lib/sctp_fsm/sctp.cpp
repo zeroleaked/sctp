@@ -19,10 +19,11 @@ Sctp::Sctp()
 
 	lcd_refresh_queue = xQueueCreate(1, sizeof(command_t));
 	assert(lcd_refresh_queue != NULL);
-	ESP_LOGI(TAG, "created queue");
 
     currentState = &Idle::getInstance();
 	currentState->enter(this);
+
+	ESP_LOGI(TAG, "constructor done");
 }
 
 void Sctp::setState(SctpState& newState)
@@ -78,7 +79,6 @@ void Sctp::takeSpectrumBlank() {
 	
 	command_t command = SPECTRUM_BLANK;
 	assert(xQueueSend(lcd_refresh_queue, &command, 0) == pdTRUE);
-	ESP_LOGI(TAG, "takeSpectrumBlank() sended to queue");
 	vTaskDelete( NULL );
 }
 
@@ -128,6 +128,33 @@ void Sctp::saveSpectrum() {
 void Sctp::saveSpectrumWrapper(void * _this)
 {
 	((Sctp *) _this)->saveSpectrum();
+}
+
+void Sctp::loadConcCurve() {
+	ESP_LOGI(TAG, "loadConcCurve() start");
+	for (int i=0; i<6; i++) {
+		curves[i].filename = (char *) malloc(20 * sizeof(char));
+		assert(curves[i].filename != NULL);
+	}
+
+	ESP_LOGI(TAG, "calling flash load curves");
+	ESP_ERROR_CHECK(sctp_flash_load_curves(curves));
+	ESP_LOGI(TAG, "calling flash load curves fin");
+
+
+	// for (int i=0; i<6; i++) {
+	// 	free(curves[i].filename);
+	// }
+
+	command_t command = CURVES_LOAD;
+	assert(xQueueSend(lcd_refresh_queue, &command, 0) == pdTRUE);
+	ESP_LOGI(TAG, "loadConcCurve() sended to queue");
+	vTaskDelete( NULL );
+}
+
+void Sctp::loadConcCurveWrapper(void * _this)
+{
+	((Sctp *) _this)->loadConcCurve();
 }
 
 

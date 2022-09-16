@@ -5,14 +5,18 @@
 typedef enum {
 	SPECTRUM_BLANK,
 	SPECTRUM_SAMPLE,
-	SPECTRUM_SAVE
+	SPECTRUM_SAVE,
+	CURVES_LOAD
 } command_t;
 
 typedef struct {
+	char * filename; // curve1_400nm.csv\0 (17 char) 
+	// char filename[20]; // curve1_400nm.csv\0 (17 char) 
+	uint16_t wavelength;
+	uint8_t id;
+	uint8_t points;
 	float * absorbance;
 	float * concentration;
-	uint16_t wavelength;
-	uint8_t points;
 } curve_t;
 
 #define MEASUREMENT_MODE_SPECTRUM 0

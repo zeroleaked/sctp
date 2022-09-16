@@ -10,6 +10,7 @@
 #include "concrete_sctp_states/spec_blank_state.h"
 #include "concrete_sctp_states/spec_sample_state.h"
 #include "concrete_sctp_states/spec_save_state.h"
+#include "concrete_sctp_states/conc_curves_state.h"
 
 //platformio test --environment esp32doit-devkit-v1 -vvv
 
@@ -23,9 +24,11 @@ typedef enum {
     STATE_SETTINGS,
     STATE_SPEC_SAMPLE,
     STATE_SPEC_RESULT,
-    STATE_SPEC_SAVE
+    STATE_SPEC_SAVE,
+    STATE_CONC_TABLE
 
 } state_id_t;
+
 
 static const char TAG[] = "sctp_states_test";
 
@@ -87,6 +90,8 @@ void menu_test() {
     sctp3.arrowDown();
     sctp3.okay();
     TEST_ASSERT_EQUAL(STATE_SETTINGS, sctp3.getCurrentStateId());
+
+    vTaskDelay(3000 / portTICK_RATE_MS); // let tasks finish
 }
 
 #define SPEC_SUBSTATE_WAITING 0
@@ -279,6 +284,22 @@ void spec_save_test() {
     TEST_ASSERT_EQUAL(STATE_SPEC_SAVE, sctp0.getCurrentStateId());
 }
 
+#define CONC_CURVES_SUBSTATE_LOADING 0
+#define CONC_CURVES_SUBSTATE_WAITING 1
+void conc_curves_test() {
+    Sctp sctp0;
+    sctp0.okay();
+    sctp0.arrowDown();
+    sctp0.okay();
+    TEST_ASSERT_EQUAL(STATE_CONC_CURVES, sctp0.getCurrentStateId());
+    ConcCurves * concCurves = (ConcCurves *) sctp0.getCurrentState();
+    TEST_ASSERT_EQUAL(CONC_CURVES_SUBSTATE_LOADING, concCurves->substate);
+    vTaskDelay(3000 / portTICK_RATE_MS);
+    TEST_ASSERT_EQUAL(CONC_CURVES_SUBSTATE_WAITING, concCurves->substate);
+    sctp0.arrowDown();
+    sctp0.okay();
+}
+
 extern "C" {
 
 void app_main();
@@ -288,12 +309,13 @@ void app_main();
 void app_main() {
     UNITY_BEGIN();
 
-    RUN_TEST(idle_test);
-    RUN_TEST(menu_test);
-    RUN_TEST(spec_blank_test);
-    RUN_TEST(spec_sample_test);
-    RUN_TEST(spec_result_test);
-    RUN_TEST(spec_save_test);
+    // RUN_TEST(idle_test);
+    // RUN_TEST(menu_test);
+    // RUN_TEST(spec_blank_test);
+    // RUN_TEST(spec_sample_test);
+    // RUN_TEST(spec_result_test);
+    // RUN_TEST(spec_save_test);
+    RUN_TEST(conc_curves_test);
 
     UNITY_END();
 }

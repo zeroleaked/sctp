@@ -42,6 +42,7 @@ public:
 	static void sampleSpectrumBlankWrapper(void * pvParameter);
 	static void sampleSpectrumSampleWrapper(void * pvParameter);
 	static void saveSpectrumWrapper(void * pvParameter);
+	static void loadConcCurveWrapper(void * pvParameter);
 
 	static void refreshLcdWrapper(void * pvParameter);
 
@@ -59,8 +60,8 @@ public:
 
 	float * spectrum_wavelength = NULL;
 
-	curve_t * curves;
-	uint8_t curves_length = 0; // max 6!
+	curve_t curves[6];
+	curve_t curve;
 
 	uint16_t wavelength;
 
@@ -79,5 +80,6 @@ private:
 	void takeSpectrumBlank();
 	void takeSpectrumSample();
 	void saveSpectrum();
+	void loadConcCurve();
 	void refreshLcd();
 };
