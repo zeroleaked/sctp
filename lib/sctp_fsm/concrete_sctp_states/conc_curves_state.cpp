@@ -160,6 +160,9 @@ void ConcCurves::arrowDown(Sctp* sctp)
 			else if (cursor == CURSOR_BACK) {
 				cursor = CURSOR_CURVE_0;
 			}
+			else if (cursor == CURSOR_NULL) {
+				cursor = CURSOR_CURVE_0;
+			}
 			sctp_lcd_conc_curves_list_cursor(cursor);
 			break;
 		}
@@ -191,6 +194,9 @@ void ConcCurves::arrowUp(Sctp* sctp)
 			else if (cursor == CURSOR_BACK) {
 				cursor = CURSOR_CURVE_5;
 			}
+			else if (cursor == CURSOR_NULL) {
+				cursor = CURSOR_CURVE_0;
+			}
 			sctp_lcd_conc_curves_list_cursor(cursor);
 			break;
 		}
@@ -213,6 +219,9 @@ void ConcCurves::arrowRight(Sctp* sctp)
 			else if (cursor <= CURSOR_DEL_CURVE_5) {
 				cursor = cursor - 6;
 			}
+			else if (cursor == CURSOR_NULL) {
+				cursor = CURSOR_CURVE_0;
+			}
 			sctp_lcd_conc_curves_list_cursor(cursor);
 			break;
 		}
@@ -231,7 +240,6 @@ void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
 		free(taskParam);
 
 		substate = SUBSTATE_WAITING;
-		cursor = CURSOR_CURVE_0;
 		sctp_lcd_conc_curves_list(cursor, curve_list);
 	}
 };
