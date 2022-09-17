@@ -39,24 +39,17 @@ public:
 
     int getCurrentStateId();
 
-	static void sampleSpectrumBlankWrapper(void * pvParameter);
-	static void sampleSpectrumSampleWrapper(void * pvParameter);
-	static void saveSpectrumWrapper(void * pvParameter);
-	static void loadConcCurveWrapper(void * pvParameter);
-
 	static void refreshLcdWrapper(void * pvParameter);
 
-    TaskHandle_t task_spectrum_blank;
-	TaskHandle_t task_spectrum_sample;
 	TaskHandle_t task_refresh_lcd;
 
 	QueueHandle_t lcd_refresh_queue;
 
 	calibration_t calibration;
 
-	blank_take_t blank_take;
-	sample_take_t sample_take;
-	absorbance_t absorbance;
+	blank_take_t * blank_take = NULL;
+	float * sample_take = NULL;
+	float * absorbance = NULL;
 
 	float * spectrum_wavelength = NULL;
 
@@ -65,7 +58,7 @@ public:
 
 	uint16_t wavelength;
 
-	char saved_name[255];
+	char saved_name[20];
 	
 	history_t * history_list;
 	uint8_t history_list_length;
@@ -77,9 +70,5 @@ public:
 private:
 	SctpState* currentState;
 
-	void takeSpectrumBlank();
-	void takeSpectrumSample();
-	void saveSpectrum();
-	void loadConcCurve();
 	void refreshLcd();
 };

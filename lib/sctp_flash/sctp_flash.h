@@ -5,6 +5,6 @@
 
 #include "sctp_common_types.h"
 
-esp_err_t sctp_flash_save_spectrum(float * absorbance, uint16_t spectrum_length);
+esp_err_t sctp_flash_save_spectrum(float * absorbance, float * wavelength, uint16_t length);
 
-esp_err_t sctp_flash_load_curves(curve_t curves[6]);
+esp_err_t sctp_flash_load_curve_list(curve_t curves[6]);

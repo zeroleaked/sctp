@@ -50,8 +50,10 @@ void SpecResult::okay(Sctp* sctp)
 			sctp->sample_take = NULL;
 			free(sctp->absorbance);
 			sctp->absorbance = NULL;
-			free(sctp->blank_take.readout);
-			sctp->blank_take.readout = NULL;
+			free(sctp->blank_take->readout);
+			sctp->blank_take->readout = NULL;
+			free(sctp->blank_take);
+			sctp->blank_take = NULL;
 			sctp->setState(SpecBlank::getInstance());
 			break;
 		}
@@ -60,8 +62,10 @@ void SpecResult::okay(Sctp* sctp)
 			sctp->sample_take = NULL;
 			free(sctp->absorbance);
 			sctp->absorbance = NULL;
-			free(sctp->blank_take.readout);
-			sctp->blank_take.readout = NULL;
+			free(sctp->blank_take->readout);
+			sctp->blank_take->readout = NULL;
+			free(sctp->blank_take);
+			sctp->blank_take = NULL;
 			sctp->setState(Menu::getInstance());
 			break;
 		}

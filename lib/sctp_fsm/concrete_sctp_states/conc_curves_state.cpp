@@ -1,4 +1,6 @@
 #include <string.h>
+#include <esp_log.h>
+// #include <freertos/FreeRTOS.h>
 
 #include "conc_curves_state.h"
 #include "conc_table_state.h"
@@ -25,6 +27,29 @@
 #define SUBSTATE_LOADING 0
 #define SUBSTATE_WAITING 1
 
+#define CURVE_LIST_LENGTH 6
+#define FILENAME_LENGTH 20
+
+static const char TAG[] = "conc_curves_state";
+
+typedef struct {
+	QueueHandle_t report_queue;
+	curve_t * curve_list;
+} taskParam_t;
+
+static void loadConcCurveList(void * pvParameters) {
+	// unpack param
+	taskParam_t * task_param = (taskParam_t *) pvParameters;
+
+	sctp_flash_load_curve_list(task_param->curve_list);
+
+	command_t command = CURVES_LOAD;
+	assert(xQueueSend(task_param->report_queue, &command, 0) == pdTRUE);
+	ESP_LOGI(TAG, "loadConcCurves() sended to queue");
+
+	vTaskDelete( NULL );
+}
+
 void ConcCurves::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
@@ -33,44 +58,80 @@ void ConcCurves::enter(Sctp* sctp)
 
 	sctp_lcd_conc_curves_opening(cursor);
 
-    xTaskCreatePinnedToCore(sctp->loadConcCurveWrapper, "curve load", 2048, sctp, 4, NULL, 1);   
+	curve_list = (curve_t *) malloc (CURVE_LIST_LENGTH * sizeof(curve_t));
+	for (int i=0; i<CURVE_LIST_LENGTH; i++) {
+		curve_list[i].filename = (char *) malloc ( FILENAME_LENGTH * sizeof(char));
+	}
+
+	report_queue = xQueueCreate(1, sizeof(uint8_t));
+
+	ESP_LOGI(TAG, "packing param");
+	// packing param
+	taskParam = (taskParam_t *) malloc (sizeof(taskParam_t));
+	((taskParam_t *) taskParam)->curve_list = curve_list;
+	((taskParam_t *) taskParam)->report_queue = report_queue;
+
+    xTaskCreatePinnedToCore(loadConcCurveList, "loadConcCurveList", 2048, taskParam, 4, &taskHandle, 1);
+
+	ESP_LOGI(TAG, "enter() fin");   
 }
 
 void ConcCurves::okay(Sctp* sctp)
 {
 	switch (substate) {
-		case SUBSTATE_LOADING: {}
+		case SUBSTATE_LOADING: {
+			// if (cursor == CURSOR_BACK) {
+			// 	vTaskDelete(taskHandle);
+
+			// 	// free state buffers
+			// 	free(taskParam);
+			// 	for (int i=0; i< CURVE_LIST_LENGTH; i++) {
+			// 		free(curve_list[i].filename);
+			// 	}
+			// 	free(curve_list);
+			// 	curve_list = NULL;
+			// 	sctp->setState(Menu::getInstance());
+			// }
+		}
 		case SUBSTATE_WAITING: {
 			if (cursor <= CURSOR_CURVE_5) {
-        		sctp->curve = curves[cursor];
+				ESP_LOGI(TAG, "curve %d selected", cursor);
+				// save selected curve in another variable, free unselected curves' buffer
+				sctp->curve = curve_list[cursor];
 				sctp->curve.filename = (char *) malloc( 20 * sizeof(char) );
-				strcpy( sctp->curve.filename, curves[cursor].filename );
-				for (int i=0; i<6; i++) {
-					free(sctp->curves[i].filename);
+				strcpy( sctp->curve.filename, curve_list[cursor].filename );
+
+				// free state buffers
+				for (int i=0; i<CURVE_LIST_LENGTH; i++) {
+					free(curve_list[i].filename);
 				}
+				free(curve_list);
+				curve_list = NULL;
 				sctp->setState(ConcTable::getInstance());
 			}
 			else if (cursor <= CURSOR_DEL_CURVE_5) {
-				sctp->curves[cursor - 6].wavelength = 0;
-				sctp->curves[cursor - 6].points = 0;
+				curve_list[cursor - CURVE_LIST_LENGTH].wavelength = 0;
+				curve_list[cursor - CURVE_LIST_LENGTH].points = 0;
 
-				if ( sctp->curves[cursor - 6].absorbance != NULL) {
-					free(sctp->curves[cursor - 6].absorbance);
-					sctp->curves[cursor - 6].absorbance = NULL;
+				if ( curve_list[cursor - 6].absorbance != NULL) {
+					free(curve_list[cursor - 6].absorbance);
+					curve_list[cursor - 6].absorbance = NULL;
 				}
 				
-				if ( sctp->curves[cursor - 6].concentration != NULL) {
-					free(sctp->curves[cursor - 6].concentration);
-					sctp->curves[cursor - 6].concentration = NULL;
+				if ( curve_list[cursor - 6].concentration != NULL) {
+					free(curve_list[cursor - 6].concentration);
+					curve_list[cursor - 6].concentration = NULL;
 				}
 				
     			// xTaskCreatePinnedToCore(sctp->delConcCurveWrapper, "curve delete", 2048, sctp, 4, NULL, 1);   
-				sctp_lcd_conc_curves_list(cursor, curves);
+				sctp_lcd_conc_curves_list(cursor, curve_list);
 			}
 			else if (cursor == CURSOR_BACK) {
-				for (int i=0; i<6; i++) {
-					free(sctp->curves[i].filename);
+				for (int i=0; i< CURVE_LIST_LENGTH; i++) {
+					free(curve_list[i].filename);
 				}
+				free(curve_list);
+				curve_list = NULL;
 				sctp->setState(Menu::getInstance());
 			}
 		}
@@ -80,11 +141,11 @@ void ConcCurves::okay(Sctp* sctp)
 void ConcCurves::arrowDown(Sctp* sctp)
 {
 	switch (substate) {
-		case SUBSTATE_LOADING: {
-			cursor = CURSOR_BACK;
-			sctp_lcd_conc_curves_opening(cursor);
-			break;
-		}
+		// case SUBSTATE_LOADING: {
+		// 	cursor = CURSOR_BACK;
+		// 	sctp_lcd_conc_curves_opening(cursor);
+		// 	break;
+		// }
 		case SUBSTATE_WAITING: {
 			sctp_lcd_conc_curves_list_clear(cursor);
 			if (cursor < CURSOR_CURVE_5) {
@@ -108,11 +169,11 @@ void ConcCurves::arrowDown(Sctp* sctp)
 void ConcCurves::arrowUp(Sctp* sctp)
 {
 	switch (substate) {
-		case SUBSTATE_LOADING: {
-			cursor = CURSOR_BACK;
-			sctp_lcd_conc_curves_opening(cursor);
-			break;
-		}
+		// case SUBSTATE_LOADING: {
+		// 	cursor = CURSOR_BACK;
+		// 	sctp_lcd_conc_curves_opening(cursor);
+		// 	break;
+		// }
 		case SUBSTATE_WAITING: {
 			sctp_lcd_conc_curves_list_clear(cursor);
 			if (cursor == CURSOR_CURVE_0) {
@@ -139,11 +200,11 @@ void ConcCurves::arrowUp(Sctp* sctp)
 void ConcCurves::arrowRight(Sctp* sctp)
 {
 	switch (substate) {
-		case SUBSTATE_LOADING: {
-			cursor = CURSOR_BACK;
-			sctp_lcd_conc_curves_opening(cursor);
-			break;
-		}
+		// case SUBSTATE_LOADING: {
+		// 	cursor = CURSOR_BACK;
+		// 	sctp_lcd_conc_curves_opening(cursor);
+		// 	break;
+		// }
 		case SUBSTATE_WAITING: {
 			sctp_lcd_conc_curves_list_clear(cursor);
 			if (cursor <= CURSOR_CURVE_5) {
@@ -159,14 +220,21 @@ void ConcCurves::arrowRight(Sctp* sctp)
 }
 
 void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
-	if (command == CURVES_LOAD) {
+	// if (command == CURVES_LOAD) {
+	// 	substate = SUBSTATE_WAITING;
+	// 	sctp_lcd_conc_curves_list(cursor, curves);
+	// }
+	// else
+	command_t intern_command;
+	if (xQueueReceive(report_queue, &intern_command, 0) == pdTRUE) {
+		ESP_LOGI(TAG, "intern_command received");
+		free(taskParam);
+
 		substate = SUBSTATE_WAITING;
-		sctp_lcd_spec_save_finish(sctp->saved_name);
+		cursor = CURSOR_CURVE_0;
+		sctp_lcd_conc_curves_list(cursor, curve_list);
 	}
-
-	
 };
-
 
 SctpState& ConcCurves::getInstance()
 {

@@ -1,3 +1,5 @@
+#include <esp_log.h>
+
 #include "menu_state.h"
 #include "spec_blank_state.h"
 #include "conc_curves_state.h"
@@ -10,8 +12,11 @@
 #define CURSOR_HISTORY 2
 #define CURSOR_SETTINGS 3
 
+static const char TAG[] = "menu_state";
+
 void Menu::enter(Sctp* sctp)
 {
+	ESP_LOGI(TAG, "entered menu");
 	sctp_lcd_clear();
 	this->cursor = 0;
 	sctp_lcd_menu(this->cursor);

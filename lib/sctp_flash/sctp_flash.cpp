@@ -1,12 +1,15 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <string.h>
+#include <esp_log.h>
 
 #include "sctp_flash.h"
 
+static const char TAG[] = "sctp_flash";
+
 static uint8_t next_id = 0;
 
-esp_err_t sctp_flash_save_spectrum(float * absorbance, uint16_t spectrum_length) {
+esp_err_t sctp_flash_save_spectrum(float * absorbance, float * wavelength, uint16_t length) {
     if (next_id == 60) {
         return ESP_ERR_NO_MEM;
     }
@@ -23,22 +26,28 @@ const char mockup_curves_filename[][20] = {
     "curve3_500nm.csv",
     "curve3_500nm.csv",
     "curve4_700nm.csv",
-    "null"
+    "NaN"
 };
 
-esp_err_t sctp_flash_load_curves(curve_t curves[6]) {
+esp_err_t sctp_flash_load_curve_list(curve_t curves[6]) {
     vTaskDelay(2000 / portTICK_RATE_MS);
     // wavelength = 0 then empty
 
     for (int i=0; i<6; i++) {
         curves[i].id = i;
 
-        if (i < 4)
+        if (i < 3) {
             curves[i].wavelength = 400 + i*50;
-        else if (i == 4)
+            curves[i].points = 5;
+        }
+        else if (i == 3) {
             curves[i].wavelength = 700;
-        else
+            curves[i].points = 5;
+        }
+        else {
             curves[i].wavelength = 0;
+            curves[i].points = 0;
+        }
 
         strcpy(curves[i].filename, mockup_curves_filename[i]);
     }

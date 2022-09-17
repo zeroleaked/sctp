@@ -9,7 +9,7 @@
 class ConcTable : public SctpState
 {
 public:
-	void enter(Sctp* sctp) {};
+	void enter(Sctp* sctp);
 	void okay(Sctp* sctp) {};
 	void arrowUp(Sctp* sctp) {};
 	void arrowDown(Sctp* sctp) {};

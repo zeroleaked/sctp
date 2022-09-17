@@ -35,29 +35,31 @@ static const char TAG[] = "sctp_states_test";
 
 void idle_test() {
     Sctp sctp0;
+    ESP_LOGI(TAG, "arrowDown");
     TEST_ASSERT_EQUAL(STATE_IDLE, sctp0.getCurrentStateId());
     sctp0.arrowDown();
     TEST_ASSERT_EQUAL(STATE_MENU, sctp0.getCurrentStateId());
 
-    Sctp sctp1;
-    TEST_ASSERT_EQUAL(STATE_IDLE, sctp1.getCurrentStateId());
-    sctp1.arrowLeft();
-    TEST_ASSERT_EQUAL(STATE_MENU, sctp1.getCurrentStateId());
+    // Sctp sctp1;
+    // ESP_LOGI(TAG, "arrowLeft");
+    // TEST_ASSERT_EQUAL(STATE_IDLE, sctp1.getCurrentStateId());
+    // sctp1.arrowLeft();
+    // TEST_ASSERT_EQUAL(STATE_MENU, sctp1.getCurrentStateId());
 
-    Sctp sctp2;
-    TEST_ASSERT_EQUAL(STATE_IDLE, sctp2.getCurrentStateId());
-    sctp2.arrowUp();
-    TEST_ASSERT_EQUAL(STATE_MENU, sctp2.getCurrentStateId());
+    // Sctp sctp2;
+    // TEST_ASSERT_EQUAL(STATE_IDLE, sctp2.getCurrentStateId());
+    // sctp2.arrowUp();
+    // TEST_ASSERT_EQUAL(STATE_MENU, sctp2.getCurrentStateId());
 
-    Sctp sctp3;
-    TEST_ASSERT_EQUAL(STATE_IDLE, sctp3.getCurrentStateId());
-    sctp3.arrowRight();
-    TEST_ASSERT_EQUAL(STATE_MENU, sctp3.getCurrentStateId());
+    // Sctp sctp3;
+    // TEST_ASSERT_EQUAL(STATE_IDLE, sctp3.getCurrentStateId());
+    // sctp3.arrowRight();
+    // TEST_ASSERT_EQUAL(STATE_MENU, sctp3.getCurrentStateId());
     
-    Sctp sctp4;
-    TEST_ASSERT_EQUAL(STATE_IDLE, sctp4.getCurrentStateId());
-    sctp4.okay();
-    TEST_ASSERT_EQUAL(STATE_MENU, sctp4.getCurrentStateId());
+    // Sctp sctp4;
+    // TEST_ASSERT_EQUAL(STATE_IDLE, sctp4.getCurrentStateId());
+    // sctp4.okay();
+    // TEST_ASSERT_EQUAL(STATE_MENU, sctp4.getCurrentStateId());
 }
 
 void menu_test() {
@@ -289,15 +291,20 @@ void spec_save_test() {
 void conc_curves_test() {
     Sctp sctp0;
     sctp0.okay();
+    ESP_LOGI(TAG, "entered Menu");
     sctp0.arrowDown();
     sctp0.okay();
     TEST_ASSERT_EQUAL(STATE_CONC_CURVES, sctp0.getCurrentStateId());
+    ESP_LOGI(TAG, "entered ConcCurves");
     ConcCurves * concCurves = (ConcCurves *) sctp0.getCurrentState();
     TEST_ASSERT_EQUAL(CONC_CURVES_SUBSTATE_LOADING, concCurves->substate);
+    ESP_LOGI(TAG, "substate LOADING");
     vTaskDelay(3000 / portTICK_RATE_MS);
     TEST_ASSERT_EQUAL(CONC_CURVES_SUBSTATE_WAITING, concCurves->substate);
+    ESP_LOGI(TAG, "substate WAITING");
     sctp0.arrowDown();
     sctp0.okay();
+    TEST_ASSERT_EQUAL(STATE_CONC_TABLE, sctp0.getCurrentStateId());
 }
 
 extern "C" {
@@ -309,13 +316,13 @@ void app_main();
 void app_main() {
     UNITY_BEGIN();
 
-    // RUN_TEST(idle_test);
+    RUN_TEST(idle_test);
     // RUN_TEST(menu_test);
     // RUN_TEST(spec_blank_test);
     // RUN_TEST(spec_sample_test);
     // RUN_TEST(spec_result_test);
     // RUN_TEST(spec_save_test);
-    RUN_TEST(conc_curves_test);
+    // RUN_TEST(conc_curves_test);
 
     UNITY_END();
 }

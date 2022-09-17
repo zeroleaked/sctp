@@ -29,6 +29,9 @@ private:
 
 	uint8_t cursor;
 
-	char filenames[6][20];
-	curve_t curves[6];
+	curve_t * curve_list;
+	QueueHandle_t report_queue;
+
+	TaskHandle_t taskHandle;
+	void * taskParam; // necessary for freeing...
 };

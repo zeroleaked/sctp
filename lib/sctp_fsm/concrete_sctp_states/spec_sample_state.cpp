@@ -1,9 +1,11 @@
 #include <esp_log.h>
+#include <math.h>
 
 #include "spec_sample_state.h"
 #include "spec_blank_state.h"
 #include "spec_result_state.h"
 #include "sctp_lcd.h"
+#include "sctp_sensor.h"
 
 #define CURSOR_NEXT 0
 #define CURSOR_CANCEL 1
@@ -12,7 +14,15 @@
 #define SUBSTATE_WAITING 0
 #define SUBSTATE_SAMPLING 1
 
-static const char TAG[] = "spec_blank_state";
+static const char TAG[] = "spec_sample_state";
+
+typedef struct {
+    QueueHandle_t report_queue;
+    calibration_t * calibration;
+    blank_take_t * blank_take;
+    float * sample_take;
+    float * absorbance;
+} taskParam_t;
 
 void SpecSample::enter(Sctp* sctp)
 {
@@ -20,6 +30,29 @@ void SpecSample::enter(Sctp* sctp)
     substate = SUBSTATE_WAITING;
 	cursor = CURSOR_NEXT;
 	sctp_lcd_spec_sample_waiting(cursor);
+}
+
+static void takeSpectrumSample(void * pvParameters) {
+    blank_take_t * blank_take = ((taskParam_t *) pvParameters)->blank_take;
+    float * sample_take = ((taskParam_t *) pvParameters)->sample_take;
+    calibration_t * calibration = ((taskParam_t *) pvParameters)->calibration;
+
+	esp_err_t report = sctp_sensor_spectrum_sample(calibration, blank_take, sample_take);
+
+    float * absorbance = ((taskParam_t *) pvParameters)->sample_take;
+
+	// castings
+	float * blank_buffer = blank_take->readout;
+	float * sample_buffer = sample_take;
+	for (int i=0; i < calibration->length; i++) {
+		float transmission = sample_buffer[i]/blank_buffer[i];
+		absorbance[i] = -log10(transmission);
+	}
+	
+    QueueHandle_t report_queue = ((taskParam_t *) pvParameters)->report_queue;
+    assert(xQueueSend(report_queue, &report, 0) == pdTRUE);
+	vTaskDelete( NULL );
+
 }
 
 void SpecSample::okay(Sctp* sctp)
@@ -31,7 +64,20 @@ void SpecSample::okay(Sctp* sctp)
                     substate = SUBSTATE_SAMPLING;
                     cursor = CURSOR_NULL;
                     sctp_lcd_spec_blank_sampling(cursor);
-                    xTaskCreatePinnedToCore(sctp->sampleSpectrumSampleWrapper, "spectrum sample", 2048, sctp, 4, &sctp->task_spectrum_sample, 1);
+
+	                report_queue = xQueueCreate(1, sizeof(esp_err_t));
+                    assert(sctp->sample_take == NULL);
+                    sctp->sample_take = (float *) malloc (sizeof(float) * sctp->calibration.length);
+                    assert(sctp->absorbance == NULL);
+                    sctp->absorbance = (float *) malloc (sizeof(float) * sctp->calibration.length);
+                    taskParam = malloc (sizeof(taskParam_t));
+                	((taskParam_t *) taskParam)->report_queue = report_queue;
+                	((taskParam_t *) taskParam)->calibration = &sctp->calibration;
+                	((taskParam_t *) taskParam)->blank_take = sctp->blank_take;
+                	((taskParam_t *) taskParam)->sample_take = sctp->sample_take;
+                	((taskParam_t *) taskParam)->absorbance = sctp->absorbance;
+
+                    xTaskCreatePinnedToCore(takeSpectrumSample, "takeSpectrumBlank", 2048, taskParam, 4, &taskHandle, 1);
                     break;
                 }
                 case CURSOR_CANCEL: {
@@ -44,9 +90,18 @@ void SpecSample::okay(Sctp* sctp)
         case SUBSTATE_SAMPLING: {
             switch (cursor) {
                 case CURSOR_CANCEL: {
-                    vTaskDelete(sctp->task_spectrum_sample);
+                    vTaskDelete(taskHandle);
+                    taskHandle = NULL;
+                    vQueueDelete(report_queue);
+                    report_queue = NULL;
+
                     free(sctp->sample_take);
                     sctp->sample_take = NULL;
+                    free(sctp->absorbance);
+                    sctp->absorbance = NULL;
+                    free(taskParam);
+                    taskParam = NULL;
+
                     substate = SUBSTATE_WAITING;
 	                sctp_lcd_spec_sample_waiting(cursor);
                     break;
@@ -87,8 +142,21 @@ void SpecSample::arrowLeft(Sctp* sctp)
 }
 
 void SpecSample::refreshLcd(Sctp* sctp, command_t command) {
-    if (command == SPECTRUM_SAMPLE) { // sample taken
-		sctp->setState(SpecResult::getInstance());
+    // if (command == SPECTRUM_SAMPLE) { // sample taken
+	// 	sctp->setState(SpecResult::getInstance());
+    // }
+
+    if (substate == SUBSTATE_SAMPLING) {
+        esp_err_t report;
+        if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
+            if (report == ESP_OK) {
+                free(taskParam);
+                taskParam = NULL;
+                vQueueDelete(report_queue);
+                report_queue = NULL;
+                sctp->setState(SpecResult::getInstance());
+            }
+        }
     }
 }
 

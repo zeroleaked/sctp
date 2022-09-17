@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 typedef enum {
+	COMMAND_NONE,
 	SPECTRUM_BLANK,
 	SPECTRUM_SAMPLE,
 	SPECTRUM_SAVE,
@@ -49,7 +50,3 @@ typedef struct {
 	uint16_t exposure;
 	uint16_t gain;
 } blank_take_t;
-
-typedef float * sample_take_t;
-
-typedef float * absorbance_t;

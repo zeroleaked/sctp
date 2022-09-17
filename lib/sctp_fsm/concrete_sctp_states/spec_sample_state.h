@@ -25,4 +25,8 @@ private:
 	SpecSample() {}
 	SpecSample(const SpecSample& other);
 	SpecSample& operator=(const SpecSample& other);
+
+	TaskHandle_t taskHandle;
+	void * taskParam;
+	QueueHandle_t report_queue;
 };

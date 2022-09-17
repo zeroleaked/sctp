@@ -26,4 +26,8 @@ private:
 	SpecSave& operator=(const SpecSave& other);
 
     uint8_t cursor;
+
+	TaskHandle_t taskHandle;
+	void * taskParam;
+	QueueHandle_t report_queue;
 };

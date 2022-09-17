@@ -25,4 +25,8 @@ private:
 	SpecBlank() {}
 	SpecBlank(const SpecBlank& other);
 	SpecBlank& operator=(const SpecBlank& other);
+
+	TaskHandle_t taskHandle;
+	void * taskParam;
+	QueueHandle_t report_queue;
 };
