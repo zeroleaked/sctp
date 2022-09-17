@@ -5,11 +5,20 @@
 #include "sctp_flash.h"
 
 #define SUBSTATE_LOADING 0
-#define SUBSTATE_CURSORING 1
+#define SUBSTATE_CURSOR 1
 #define SUBSTATE_CONCENTRATION 2
 
-#define CURSOR_NULL 0
-#define CURSOR
+#define CURSOR_CONC_0 0
+#define CURSOR_CONC_1 1
+#define CURSOR_CONC_2 2
+#define CURSOR_CONC_3 3
+#define CURSOR_ABSORBANCE_0 4
+#define CURSOR_ABSORBANCE_1 5
+#define CURSOR_ABSORBANCE_2 6
+#define CURSOR_ABSORBANCE_3 7
+#define CURSOR_NEXT 8
+#define CURSOR_BACK 9
+#define CURSOR_NULL 10
 
 #define MAX_POINTS 15
 
@@ -51,6 +60,176 @@ void ConcTable::enter(Sctp * sctp) {
     xTaskCreatePinnedToCore(loadConcFloats, "loadConcFloats", 2048, taskParam, 4, &taskHandle, 1);   
 }
 
+void ConcTable::okay(Sctp* sctp) {
+	switch (substate) {
+		case SUBSTATE_LOADING: {
+			break;
+		}
+		case SUBSTATE_CURSOR: {
+			if (cursor == CURSOR_NULL) {}
+			else if (cursor <= CURSOR_CONC_3) {
+				substate = SUBSTATE_CONCENTRATION;
+			}
+			else if (cursor <= CURSOR_ABSORBANCE_3) {
+				// todo check blank, then sample
+			}
+			else if (cursor == CURSOR_NEXT) {
+				// todo check sufficient length
+			}
+			else if (cursor == CURSOR_BACK) {
+				// todo free all buffers as if going to menu
+			}
+		}
+		case SUBSTATE_CONCENTRATION: {
+			substate = SUBSTATE_CURSOR;
+			if ( (sctp->curve.concentration != 0) && (sctp->curve.absorbance != 0) ) {
+				sctp->curve.points++;
+			}
+		}
+	}
+}
+
+void ConcTable::arrowDown(Sctp* sctp) {
+	switch (substate) {
+		case SUBSTATE_LOADING: {
+			break;
+		}
+		case SUBSTATE_CURSOR: {
+			sctp_lcd_conc_table_clear(cursor, row_offset, sctp->curve);
+
+			if (cursor == CURSOR_NULL) {
+				cursor = CURSOR_CONC_0;
+			}
+			else if (cursor < CURSOR_CONC_3) {
+				if ( cursor == sctp->curve.points ) { // cursor at add new
+					cursor = CURSOR_BACK;
+				}
+				else {
+					cursor++;
+				}
+			}
+			else if (cursor == CURSOR_CONC_3) {
+				if (cursor + row_offset == sctp->curve.points) { // cursor at add new
+					cursor = CURSOR_BACK;
+				}
+				else if (row_offset == MAX_POINTS - 4) { // table full
+					cursor = CURSOR_BACK;
+				}
+				else {
+					row_offset++;
+				}
+			}
+			else if (cursor < CURSOR_ABSORBANCE_3) {
+				if ( cursor - 4 == sctp->curve.points ) { // cursor at add new
+					cursor = CURSOR_NEXT;
+				}
+				else {
+					cursor++;
+				}
+			}
+			else if (cursor == CURSOR_ABSORBANCE_3) {
+				if (cursor + row_offset == sctp->curve.points) { // cursor at add new
+					cursor = CURSOR_NEXT;
+				}
+				else if (row_offset == MAX_POINTS - 4) { // table full
+					cursor = CURSOR_NEXT;
+				}
+				else {
+					row_offset++;
+				}
+			}
+			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
+		}
+		case SUBSTATE_CONCENTRATION: {
+			sctp->curve.concentration[row_offset + cursor] = sctp->curve.concentration[row_offset + cursor] - 0.001;
+			sctp_lcd_conc_table_concentration(cursor, sctp->curve.concentration[row_offset + cursor]);
+		}
+	}
+}
+
+void ConcTable::arrowUp(Sctp* sctp) {
+	switch (substate) {
+		case SUBSTATE_LOADING: {
+			break;
+		}
+		case SUBSTATE_CURSOR: {
+			sctp_lcd_conc_table_clear(cursor, row_offset, sctp->curve);
+
+			if (cursor == CURSOR_NULL) {
+				cursor = CURSOR_CONC_0;
+			}
+			else if (cursor == CURSOR_CONC_0) {
+				if ( row_offset == 0 ) {} // cursor at top
+				else {
+					row_offset--;
+				}
+			}
+			else if (cursor <= CURSOR_CONC_3) {
+				cursor--;
+			}
+			else if (cursor == CURSOR_ABSORBANCE_0) {
+				if ( row_offset == 0 ) {} // cursor at top
+				else {
+					row_offset--;
+				}
+			}
+			else if (cursor <= CURSOR_ABSORBANCE_3) {
+				cursor--;
+			}
+			else if (cursor == CURSOR_NEXT) {
+				if (sctp->curve.points >= 4) {
+					cursor = CURSOR_ABSORBANCE_3;
+				}
+				else {
+					cursor = sctp->curve.points + 4;
+				}
+			}
+			else if (cursor == CURSOR_BACK) {
+				if (sctp->curve.points >= 4) {
+					cursor = CURSOR_CONC_0;
+				}
+				else {
+					cursor = sctp->curve.points;
+				}
+			}
+			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
+		}
+		case SUBSTATE_CONCENTRATION: {
+			sctp->curve.concentration[row_offset + cursor] += 0.001;
+			sctp_lcd_conc_table_concentration(cursor, sctp->curve.concentration[row_offset + cursor]);
+		}
+	}
+}
+
+void ConcTable::arrowRight(Sctp* sctp) {
+	switch (substate) {
+		case SUBSTATE_LOADING: {
+			break;
+		}
+		case SUBSTATE_CURSOR: {
+			sctp_lcd_conc_table_clear(cursor, row_offset, sctp->curve);
+
+			if (cursor == CURSOR_NULL) {
+				cursor = CURSOR_CONC_0;
+			}
+			else if (cursor <= CURSOR_CONC_3) {
+				cursor += 4;
+			}
+			else if (cursor <= CURSOR_ABSORBANCE_3) {
+				cursor = cursor - 4;
+			}
+			else if (cursor == CURSOR_NEXT) {
+				cursor = CURSOR_BACK;
+			}
+			else if (cursor == CURSOR_BACK) {
+				cursor = CURSOR_NEXT;
+			}
+			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
+		}
+	}
+}
+
+
 void ConcTable::refreshLcd(Sctp* sctp, command_t command) {
 	if (substate == SUBSTATE_LOADING) {
 		esp_err_t report;
@@ -61,8 +240,9 @@ void ConcTable::refreshLcd(Sctp* sctp, command_t command) {
 				vQueueDelete(report_queue);
 				report_queue = NULL;
 
-				substate = SUBSTATE_CURSORING;
-				// sctp_lcd_conc_curves_list(cursor, sctp->curve);
+				substate = SUBSTATE_CURSOR;
+				cursor = CURSOR_CONC_0;
+				sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
 			}
 		}
 	}

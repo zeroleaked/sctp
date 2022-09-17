@@ -33,6 +33,7 @@ void concentration_mvp() {
     sctp0.arrowDown();
     sctp0.okay();
     TEST_ASSERT_EQUAL(STATE_CONC_TABLE, sctp0.getCurrentStateId());
+    vTaskDelay(2000 / portTICK_RATE_MS); // wait for task to finish before sctp0 gets out of scope
 }
 
 
