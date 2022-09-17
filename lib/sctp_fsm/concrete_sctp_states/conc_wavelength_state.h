@@ -14,7 +14,7 @@ public:
 	void arrowRight(Sctp* sctp);
 	void refreshLcd(Sctp* sctp, command_t command) {};
 	void exit(Sctp* sctp) {}
-	int id(Sctp* sctp) { return 4; }
+	int id(Sctp* sctp) { return 10; }
 	static SctpState& getInstance();
 
 private:

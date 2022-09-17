@@ -54,3 +54,7 @@ esp_err_t sctp_flash_load_curve_list(curve_t curves[6]) {
 
     return ESP_OK;
 }
+
+esp_err_t sctp_flash_load_curve_floats(curve_t * curve) {
+    return ESP_OK;
+}

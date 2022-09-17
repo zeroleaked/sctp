@@ -84,7 +84,6 @@ void SpecSave::refreshLcd(Sctp* sctp, command_t command)
 			vQueueDelete(report_queue);
 			report_queue = NULL;
 			substate = SUBSTATE_WAITING;
-			cursor = NULL;
 			sctp_lcd_spec_save_finish(sctp->saved_name);
 	}	
 	}

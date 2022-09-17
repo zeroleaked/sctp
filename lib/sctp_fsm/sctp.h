@@ -42,7 +42,6 @@ public:
 	static void refreshLcdWrapper(void * pvParameter);
 
 	TaskHandle_t task_refresh_lcd;
-
 	QueueHandle_t lcd_refresh_queue;
 
 	calibration_t calibration;
@@ -53,7 +52,6 @@ public:
 
 	float * spectrum_wavelength = NULL;
 
-	curve_t curves[6];
 	curve_t curve;
 
 	uint16_t wavelength;
