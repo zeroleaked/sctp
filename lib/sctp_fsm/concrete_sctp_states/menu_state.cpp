@@ -1,8 +1,8 @@
 #include <esp_log.h>
 
 #include "menu_state.h"
-#include "spec_blank_state.h"
-#include "conc_curves_state.h"
+#include "spec_states/spec_blank_state.h"
+#include "conc_states/conc_curves_state.h"
 #include "history_list_state.h"
 #include "settings_state.h"
 #include "sctp_lcd.h"

@@ -4,7 +4,7 @@
 
 #include "conc_curves_state.h"
 #include "conc_table_state.h"
-#include "menu_state.h"
+#include "../menu_state.h"
 #include "conc_wavelength_state.h"
 #include "sctp_lcd.h"
 #include "sctp_flash.h"

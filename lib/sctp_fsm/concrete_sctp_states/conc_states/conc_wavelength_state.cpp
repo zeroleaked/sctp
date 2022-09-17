@@ -1,5 +1,4 @@
 #include "sctp_lcd.h"
-#include "menu_state.h"
 #include "conc_curves_state.h"
 #include "conc_wavelength_state.h"
 #include "conc_table_state.h"
