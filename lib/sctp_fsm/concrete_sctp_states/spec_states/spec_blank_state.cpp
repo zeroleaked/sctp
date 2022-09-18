@@ -50,11 +50,12 @@ void SpecBlank::okay(Sctp* sctp)
         case SUBSTATE_WAITING: {
             switch (cursor) {
                 case CURSOR_NEXT: {
-                    substate = SUBSTATE_SAMPLING;
                     cursor = CURSOR_NULL;
                     sctp_lcd_spec_blank_sampling(cursor);
 
 	                report_queue = xQueueCreate(1, sizeof(esp_err_t));
+                    substate = SUBSTATE_SAMPLING;
+                    
                     assert(sctp->blank_take == NULL);
                     sctp->blank_take = (blank_take_t *) malloc (sizeof(blank_take_t));
 	                sctp->blank_take->readout = (float *) malloc(sizeof(float) * sctp->calibration.length);

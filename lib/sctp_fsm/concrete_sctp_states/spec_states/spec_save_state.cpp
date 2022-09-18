@@ -40,11 +40,12 @@ static void saveSpectrum(void * pvParameters) {
 void SpecSave::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
-    substate = SUBSTATE_SAVING;
 	cursor = CURSOR_NULL;
 	ESP_LOGI(TAG, "enter, saving...");
 
 	report_queue = xQueueCreate(1, sizeof(esp_err_t));
+    substate = SUBSTATE_SAVING;
+	
 	taskParam = malloc (sizeof(taskParam_t));
 	((taskParam_t *) taskParam)->report_queue = report_queue;
 	((taskParam_t *) taskParam)->calibration = &sctp->calibration;
