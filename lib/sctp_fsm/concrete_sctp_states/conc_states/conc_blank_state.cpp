@@ -124,10 +124,10 @@ void ConcBlank::arrowLeft(Sctp* sctp)
             switch (cursor) {
                 case CURSOR_NULL: {
                     cursor = CURSOR_CANCEL;
-	                sctp_lcd_spec_blank_sampling(cursor);
                     break;
                 }
             }
+	        sctp_lcd_spec_blank_sampling(cursor);
 			break;
         }
     }
