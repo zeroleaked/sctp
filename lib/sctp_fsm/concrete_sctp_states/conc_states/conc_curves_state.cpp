@@ -1,6 +1,5 @@
 #include <string.h>
 #include <esp_log.h>
-// #include <freertos/FreeRTOS.h>
 
 #include "conc_curves_state.h"
 #include "conc_table_state.h"
@@ -48,7 +47,6 @@ static void loadConcCurveList(void * pvParameters) {
 
 	assert(xQueueSend(task_param->report_queue, &report, 0) == pdTRUE);
 	ESP_LOGI(TAG, "loadConcCurves() sended to queue");
-
 	vTaskDelete( NULL );
 }
 
@@ -67,16 +65,19 @@ void ConcCurves::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
 	cursor = CURSOR_NULL;
-	substate = SUBSTATE_LOADING_CURVE_LIST;
 
 	sctp_lcd_conc_curves_opening(cursor);
 
 	curve_list = (curve_t *) malloc (CURVE_LIST_LENGTH * sizeof(curve_t));
+	assert(curve_list != NULL);
 	for (int i=0; i<CURVE_LIST_LENGTH; i++) {
 		curve_list[i].filename = (char *) malloc ( FILENAME_LENGTH * sizeof(char));
+		assert(curve_list[i].filename != NULL);
 	}
 
 	report_queue = xQueueCreate(1, sizeof(esp_err_t));
+	// queue check for loadConcCurveList starts
+	substate = SUBSTATE_LOADING_CURVE_LIST;
 
 	// packing param
 	taskParam = (taskParam_t *) malloc (sizeof(taskParam_t));
@@ -89,46 +90,24 @@ void ConcCurves::enter(Sctp* sctp)
 void ConcCurves::okay(Sctp* sctp)
 {
 	switch (substate) {
-		case SUBSTATE_LOADING_CURVE_LIST: {
-			// if (cursor == CURSOR_BACK) {
-			// 	vTaskDelete(taskHandle);
-
-			// 	// free state buffers
-			// 	free(taskParam);
-			// 	for (int i=0; i< CURVE_LIST_LENGTH; i++) {
-			// 		free(curve_list[i].filename);
-			// 	}
-			// 	free(curve_list);
-			// 	curve_list = NULL;
-			// 	sctp->setState(Menu::getInstance());
-			// }
-		}
 		case SUBSTATE_WAITING: {
 			if (cursor <= CURSOR_CURVE_5) {
 				ESP_LOGI(TAG, "curve %d selected", cursor);
-				// save selected curve in another variable, free unselected curves' buffer
+				// save selected curve in another variable
 				sctp->curve = curve_list[cursor];
 				sctp->curve.filename = (char *) malloc( 20 * sizeof(char) );
 				strcpy( sctp->curve.filename, curve_list[cursor].filename );
 
-				// free state buffers
-				for (int i=0; i<CURVE_LIST_LENGTH; i++) {
-					free(curve_list[i].filename);
-				}
-				free(curve_list);
-				curve_list = NULL;
-
-
+				// load concentration and absorbance from selected curve
 				sctp_lcd_conc_curves_loading_floats(cursor);
 
 				sctp->curve.absorbance = (float *) malloc( MAX_POINTS * sizeof(float) );
 				sctp->curve.concentration = (float *) malloc( MAX_POINTS * sizeof(float) );
 
-				report_queue = xQueueCreate(1, sizeof(esp_err_t));
+				// queue check for loadConcFloats starts
 				substate = SUBSTATE_LOADING_CURVE;
 
 				// packing param
-				taskParam = (taskParam_t *) malloc (sizeof(taskParam_t));
 				((taskParam_t *) taskParam)->curve_ptr = &sctp->curve;
 				((taskParam_t *) taskParam)->report_queue = report_queue;
 				xTaskCreatePinnedToCore(loadConcFloats, "loadConcFloats", 2048, taskParam, 4, &taskHandle, 1);   
@@ -137,32 +116,24 @@ void ConcCurves::okay(Sctp* sctp)
 				curve_list[cursor - CURVE_LIST_LENGTH].wavelength = 0;
 				curve_list[cursor - CURVE_LIST_LENGTH].points = 0;
 
+				// are these necessary?
 				if ( curve_list[cursor - CURVE_LIST_LENGTH].absorbance != NULL) {
 					free(curve_list[cursor - CURVE_LIST_LENGTH].absorbance);
 					curve_list[cursor - CURVE_LIST_LENGTH].absorbance = NULL;
 				}
-				
 				if ( curve_list[cursor - CURVE_LIST_LENGTH].concentration != NULL) {
 					free(curve_list[cursor - CURVE_LIST_LENGTH].concentration);
 					curve_list[cursor - CURVE_LIST_LENGTH].concentration = NULL;
 				}
 				
+				// todo delete the memory from sd card
     			// xTaskCreatePinnedToCore(delConcCurveWrapper, "curve delete", 2048, sctp, 4, NULL, 1);   
 				sctp_lcd_conc_curves_list(cursor, curve_list);
 			}
 			else if (cursor == CURSOR_BACK) {
-				for (int i=0; i< CURVE_LIST_LENGTH; i++) {
-					free(curve_list[i].filename);
-				}
-				free(curve_list);
-				curve_list = NULL;
-				free(taskParam);
-				taskParam = NULL;
-				if (report_queue != NULL) vQueueDelete(report_queue);
-				report_queue = NULL;
-
 				sctp->setState(Menu::getInstance());
 			}
+			break;
 		}
 	}
 }
@@ -182,6 +153,9 @@ void ConcCurves::arrowDown(Sctp* sctp)
 			}
 			else if (cursor == CURSOR_CURVE_5) {
 				cursor = CURSOR_CURVE_0;
+			}
+			else if (cursor <= CURSOR_DEL_CURVE_5) {
+				// do nothing	
 			}
 			else if (cursor == CURSOR_BACK) {
 				cursor = CURSOR_CURVE_0;
@@ -211,8 +185,11 @@ void ConcCurves::arrowUp(Sctp* sctp)
 			else if (cursor <= CURSOR_CURVE_5) {
 				cursor--;
 			}
+			else if (cursor <= CURSOR_DEL_CURVE_5) {
+				// do nothing	
+			}
 			else if (cursor == CURSOR_BACK) {
-				cursor = CURSOR_CURVE_5;
+				cursor = CURSOR_CURVE_0;
 			}
 			else if (cursor == CURSOR_NULL) {
 				cursor = CURSOR_CURVE_0;
@@ -234,7 +211,7 @@ void ConcCurves::arrowRight(Sctp* sctp)
 		case SUBSTATE_WAITING: {
 			sctp_lcd_conc_curves_list_clear(cursor);
 			if (cursor <= CURSOR_CURVE_5) {
-				if (curve_list[cursor].wavelength != 0) cursor += CURVE_LIST_LENGTH;
+				if (curve_list[cursor].wavelength != 0) cursor += CURVE_LIST_LENGTH; // to del
 			}
 			else if (cursor < CURSOR_DEL_CURVE_5) {
 				cursor = cursor - CURVE_LIST_LENGTH;
@@ -296,15 +273,11 @@ void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
 		esp_err_t report;
 		if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
 			if (report == ESP_OK) {
-				free(taskParam);
-				taskParam = NULL;
-				vQueueDelete(report_queue);
-				report_queue = NULL;
+				ESP_LOGI(TAG, "SUBSTATE_LCL fin");
 
 				substate = SUBSTATE_WAITING;
 				sctp_lcd_conc_curves_list(cursor, curve_list);
 
-				ESP_LOGI(TAG, "SUBSTATE_LCL");
 			}
 		}
 	}
@@ -313,10 +286,6 @@ void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
 		if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
 			if (report == ESP_OK) {
 				ESP_LOGI(TAG, "SUBSTATE_LC");
-				free(taskParam);
-				taskParam = NULL;
-				vQueueDelete(report_queue);
-				report_queue = NULL;
 
 				if (sctp->curve.wavelength == 0) {
 					sctp->setState(ConcWavelength::getInstance());
@@ -328,7 +297,19 @@ void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
 			}
 		}
 	}
-};
+}
+
+void ConcCurves::exit(Sctp * sctp) {
+	for (int i=0; i<CURVE_LIST_LENGTH; i++) {
+		free(curve_list[i].filename);
+	}
+	free(curve_list);
+	curve_list = NULL;
+	free(taskParam);
+	taskParam = NULL;
+	vQueueDelete(report_queue);
+	report_queue = NULL;
+}
 
 SctpState& ConcCurves::getInstance()
 {
