@@ -2,8 +2,11 @@
 
 #include "conc_table_state.h"
 #include "conc_blank_state.h"
+#include "conc_sample_state.h"
+#include "conc_regress_state.h"
+#include "conc_save_state.h"
+#include "conc_curves_state.h"
 #include "sctp_lcd.h"
-#include "sctp_flash.h"
 
 #define SUBSTATE_CURSOR 0
 #define SUBSTATE_CONCENTRATION 1
@@ -43,16 +46,32 @@ void ConcTable::okay(Sctp* sctp) {
 				if (sctp->blank_take == NULL) {
                     sctp->setState(ConcBlank::getInstance());
 				}
-				// todo check blank, then sample
+				else {
+                    sctp->setState(ConcSample::getInstance());
+				}
 			}
 			else if (cursor == CURSOR_REGRESS) {
-				// todo check sufficient length
+                sctp->setState(ConcRegress::getInstance());
 			}
 			else if (cursor == CURSOR_SAVE) {
-				// todo ConcState
+                sctp->setState(ConcSave::getInstance());
 			}
 			else if (cursor == CURSOR_BACK) {
-				// todo free all buffers as if going to menu
+				// free blank buffers
+				if (sctp->blank_take != NULL) {
+					free(sctp->blank_take);
+					sctp->blank_take = NULL;
+				}
+
+                // free sctp->curve buffers
+                free(sctp->curve.filename);
+                sctp->curve.filename = NULL;
+                free(sctp->curve.absorbance);
+                sctp->curve.absorbance = NULL;
+                free(sctp->curve.concentration);
+                sctp->curve.concentration = NULL;
+
+                sctp->setState(ConcCurves::getInstance());
 			}
 			break;
 		}

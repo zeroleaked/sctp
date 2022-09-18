@@ -3,7 +3,7 @@
 #include "sctp_state.h"
 #include "sctp.h"
 
-class ConcBlank : public SctpState
+class ConcRegress : public SctpState
 {
 public:
 	void enter(Sctp* sctp) {};
@@ -14,15 +14,15 @@ public:
 	void arrowRight(Sctp* sctp) { arrowLeft(sctp); };
 	void refreshLcd(Sctp* sctp, command_t command) {};
 	void exit(Sctp* sctp) {};
-	int id(Sctp* sctp) { return 12; };
+	int id(Sctp* sctp) { return 14; };
 	static SctpState& getInstance();
 
 	uint8_t substate;
 	uint8_t cursor;
 private:
-	ConcBlank() {}
-	ConcBlank(const ConcBlank& other);
-	ConcBlank& operator=(const ConcBlank& other);
+	ConcRegress() {}
+	ConcRegress(const ConcRegress& other);
+	ConcRegress& operator=(const ConcRegress& other);
 
 	TaskHandle_t taskHandle;
 	void * taskParam;
