@@ -300,6 +300,7 @@ void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
 }
 
 void ConcCurves::exit(Sctp * sctp) {
+	// free state buffers
 	for (int i=0; i<CURVE_LIST_LENGTH; i++) {
 		free(curve_list[i].filename);
 	}

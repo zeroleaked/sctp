@@ -10,8 +10,6 @@
 #define CURSOR_NEXT 1
 #define CURSOR_BACK 2
 
-// void sctp_lcd_clear() {};
-
 void ConcWavelength::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
@@ -40,8 +38,14 @@ void ConcWavelength::okay(Sctp* sctp)
                 break;
             }
             case CURSOR_BACK: {
+                // add curve cancels
+                // free sctp->curve buffers
                 free(sctp->curve.filename);
                 sctp->curve.filename = NULL;
+                free(sctp->curve.absorbance);
+                sctp->curve.absorbance = NULL;
+                free(sctp->curve.concentration);
+                sctp->curve.concentration = NULL;
                 sctp->setState(ConcCurves::getInstance());
                 break;
             }
