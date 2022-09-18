@@ -67,8 +67,8 @@ void ConcTable::okay(Sctp* sctp) {
 			break;
 		}
 		case SUBSTATE_CURSOR: {
-			// if (cursor == CURSOR_NULL) {} else 
-			if (cursor <= CURSOR_CONC_3) {
+			if (cursor == CURSOR_NULL) {}
+			else if (cursor <= CURSOR_CONC_3) {
 				substate = SUBSTATE_CONCENTRATION;
 			}
 			else if (cursor <= CURSOR_ABSORBANCE_3) {
@@ -83,12 +83,14 @@ void ConcTable::okay(Sctp* sctp) {
 			else if (cursor == CURSOR_BACK) {
 				// todo free all buffers as if going to menu
 			}
+			break;
 		}
 		case SUBSTATE_CONCENTRATION: {
 			substate = SUBSTATE_CURSOR;
 			if ( (sctp->curve.concentration != 0) && (sctp->curve.absorbance != 0) ) {
 				sctp->curve.points++;
 			}
+			break;
 		}
 	}
 }
@@ -151,10 +153,12 @@ void ConcTable::arrowDown(Sctp* sctp) {
 				row_offset = 0;
 			}
 			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
+			break;
 		}
 		case SUBSTATE_CONCENTRATION: {
 			sctp->curve.concentration[row_offset + cursor] = sctp->curve.concentration[row_offset + cursor] - 0.001;
 			sctp_lcd_conc_table_concentration(cursor, sctp->curve.concentration[row_offset + cursor]);
+			break;
 		}
 	}
 }
@@ -209,10 +213,12 @@ void ConcTable::arrowUp(Sctp* sctp) {
 				}
 			}
 			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
+			break;
 		}
 		case SUBSTATE_CONCENTRATION: {
 			sctp->curve.concentration[row_offset + cursor] += 0.001;
 			sctp_lcd_conc_table_concentration(cursor, sctp->curve.concentration[row_offset + cursor]);
+			break;
 		}
 	}
 }
@@ -241,6 +247,7 @@ void ConcTable::arrowRight(Sctp* sctp) {
 				cursor = CURSOR_NEXT;
 			}
 			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
+			break;
 		}
 	}
 }
