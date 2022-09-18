@@ -28,12 +28,12 @@ void concentration_mvp() {
     sctp0.arrowDown();
     sctp0.arrowDown();
     sctp0.okay();
+    vTaskDelay(3000 / portTICK_RATE_MS); // wait for task to finish before sctp0 gets out of scope
     TEST_ASSERT_EQUAL(STATE_CONC_WAVELENGTH, sctp0.getCurrentStateId());
     sctp0.okay();
     sctp0.arrowDown();
     sctp0.okay();
     TEST_ASSERT_EQUAL(STATE_CONC_TABLE, sctp0.getCurrentStateId());
-    vTaskDelay(2000 / portTICK_RATE_MS); // wait for task to finish before sctp0 gets out of scope
 }
 
 

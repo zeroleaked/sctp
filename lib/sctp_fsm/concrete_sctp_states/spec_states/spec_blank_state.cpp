@@ -19,7 +19,6 @@ typedef struct {
     QueueHandle_t report_queue;
     calibration_t * calibration;
     blank_take_t * blank_take;
-    float * sample_take;
 } taskParam_t;
 
 void SpecBlank::enter(Sctp* sctp)

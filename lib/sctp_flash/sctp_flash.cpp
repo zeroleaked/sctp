@@ -56,7 +56,6 @@ esp_err_t sctp_flash_load_curve_list(curve_t curves[6]) {
 }
 
 esp_err_t sctp_flash_load_curve_floats(curve_t * curve) {
-    ESP_LOGI(TAG, "Writing to float buffers");
     for (int i=0; i < 15; i++) {
         curve->absorbance[i] = 0;
         curve->concentration[i] = 0;
@@ -65,7 +64,6 @@ esp_err_t sctp_flash_load_curve_floats(curve_t * curve) {
             curve->concentration[i] = (i+1) * 0.001;
         }
     }
-    ESP_LOGI(TAG, "Writing to float buffers fin");
 
     return ESP_OK;
 }

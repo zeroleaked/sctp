@@ -24,24 +24,27 @@
 #define CURSOR_BACK 12
 #define CURSOR_NULL 13
 
-#define SUBSTATE_LOADING 0
+#define SUBSTATE_LOADING_CURVE_LIST 0
 #define SUBSTATE_WAITING 1
+#define SUBSTATE_LOADING_CURVE 2
 
 #define CURVE_LIST_LENGTH 6
 #define FILENAME_LENGTH 20
+
+#define MAX_POINTS 15
 
 static const char TAG[] = "conc_curves_state";
 
 typedef struct {
 	QueueHandle_t report_queue;
-	curve_t * curve_list;
+	curve_t * curve_ptr;
 } taskParam_t;
 
 static void loadConcCurveList(void * pvParameters) {
 	// unpack param
 	taskParam_t * task_param = (taskParam_t *) pvParameters;
 
-	esp_err_t report = sctp_flash_load_curve_list(task_param->curve_list);
+	esp_err_t report = sctp_flash_load_curve_list(task_param->curve_ptr);
 
 	assert(xQueueSend(task_param->report_queue, &report, 0) == pdTRUE);
 	ESP_LOGI(TAG, "loadConcCurves() sended to queue");
@@ -49,11 +52,22 @@ static void loadConcCurveList(void * pvParameters) {
 	vTaskDelete( NULL );
 }
 
+static void loadConcFloats(void * pvParameters) {
+	curve_t * curve = ((taskParam_t *) pvParameters)->curve_ptr;
+	QueueHandle_t report_queue = ((taskParam_t *) pvParameters)->report_queue;
+
+	esp_err_t report = sctp_flash_load_curve_floats(curve);
+	
+	assert(xQueueSend(report_queue, &report, 0) == pdTRUE);
+	ESP_LOGI(TAG, "loadConcFloats() sended to queue");
+	vTaskDelete( NULL );
+}
+
 void ConcCurves::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
 	cursor = CURSOR_NULL;
-	substate = SUBSTATE_LOADING;
+	substate = SUBSTATE_LOADING_CURVE_LIST;
 
 	sctp_lcd_conc_curves_opening(cursor);
 
@@ -66,7 +80,7 @@ void ConcCurves::enter(Sctp* sctp)
 
 	// packing param
 	taskParam = (taskParam_t *) malloc (sizeof(taskParam_t));
-	((taskParam_t *) taskParam)->curve_list = curve_list;
+	((taskParam_t *) taskParam)->curve_ptr = curve_list;
 	((taskParam_t *) taskParam)->report_queue = report_queue;
 
     xTaskCreatePinnedToCore(loadConcCurveList, "loadConcCurveList", 2048, taskParam, 4, &taskHandle, 1);
@@ -75,7 +89,7 @@ void ConcCurves::enter(Sctp* sctp)
 void ConcCurves::okay(Sctp* sctp)
 {
 	switch (substate) {
-		case SUBSTATE_LOADING: {
+		case SUBSTATE_LOADING_CURVE_LIST: {
 			// if (cursor == CURSOR_BACK) {
 			// 	vTaskDelete(taskHandle);
 
@@ -104,12 +118,20 @@ void ConcCurves::okay(Sctp* sctp)
 				free(curve_list);
 				curve_list = NULL;
 
-				if (sctp->curve.wavelength == 0) {
-					sctp->setState(ConcWavelength::getInstance());
-				} 
-				else {
-					sctp->setState(ConcTable::getInstance());
-				}
+				substate = SUBSTATE_LOADING_CURVE;
+
+				sctp_lcd_conc_curves_loading_floats(cursor);
+
+				sctp->curve.absorbance = (float *) malloc( MAX_POINTS * sizeof(float) );
+				sctp->curve.concentration = (float *) malloc( MAX_POINTS * sizeof(float) );
+
+				report_queue = xQueueCreate(1, sizeof(esp_err_t));
+
+				// packing param
+				taskParam = (taskParam_t *) malloc (sizeof(taskParam_t));
+				((taskParam_t *) taskParam)->curve_ptr = &sctp->curve;
+				((taskParam_t *) taskParam)->report_queue = report_queue;
+				xTaskCreatePinnedToCore(loadConcFloats, "loadConcFloats", 2048, taskParam, 4, &taskHandle, 1);   
 			}
 			else if (cursor <= CURSOR_DEL_CURVE_5) {
 				curve_list[cursor - CURVE_LIST_LENGTH].wavelength = 0;
@@ -148,7 +170,7 @@ void ConcCurves::okay(Sctp* sctp)
 void ConcCurves::arrowDown(Sctp* sctp)
 {
 	switch (substate) {
-		// case SUBSTATE_LOADING: {
+		// case SUBSTATE_LOADING_CURVE_LIST: {
 		// 	cursor = CURSOR_BACK;
 		// 	sctp_lcd_conc_curves_opening(cursor);
 		// 	break;
@@ -170,7 +192,7 @@ void ConcCurves::arrowDown(Sctp* sctp)
 			else if (cursor == CURSOR_NULL) {
 				cursor = CURSOR_CURVE_0;
 			}
-			sctp_lcd_conc_curves_list_cursor(cursor);
+			sctp_lcd_conc_curves_list(cursor, curve_list);
 			break;
 		}
 	}
@@ -179,7 +201,7 @@ void ConcCurves::arrowDown(Sctp* sctp)
 void ConcCurves::arrowUp(Sctp* sctp)
 {
 	switch (substate) {
-		// case SUBSTATE_LOADING: {
+		// case SUBSTATE_LOADING_CURVE_LIST: {
 		// 	cursor = CURSOR_BACK;
 		// 	sctp_lcd_conc_curves_opening(cursor);
 		// 	break;
@@ -204,7 +226,7 @@ void ConcCurves::arrowUp(Sctp* sctp)
 			else if (cursor == CURSOR_NULL) {
 				cursor = CURSOR_CURVE_0;
 			}
-			sctp_lcd_conc_curves_list_cursor(cursor);
+			sctp_lcd_conc_curves_list(cursor, curve_list);
 			break;
 		}
 	}
@@ -213,7 +235,7 @@ void ConcCurves::arrowUp(Sctp* sctp)
 void ConcCurves::arrowRight(Sctp* sctp)
 {
 	switch (substate) {
-		// case SUBSTATE_LOADING: {
+		// case SUBSTATE_LOADING_CURVE_LIST: {
 		// 	cursor = CURSOR_BACK;
 		// 	sctp_lcd_conc_curves_opening(cursor);
 		// 	break;
@@ -229,7 +251,7 @@ void ConcCurves::arrowRight(Sctp* sctp)
 			else if (cursor == CURSOR_NULL) {
 				cursor = CURSOR_CURVE_0;
 			}
-			sctp_lcd_conc_curves_list_cursor(cursor);
+			sctp_lcd_conc_curves_list(cursor, curve_list);
 			break;
 		}
 	}
@@ -241,7 +263,7 @@ void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
 	// 	sctp_lcd_conc_curves_list(cursor, curves);
 	// }
 	// else
-	if (substate == SUBSTATE_LOADING) {
+	if (substate == SUBSTATE_LOADING_CURVE_LIST) {
 		esp_err_t report;
 		if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
 			if (report == ESP_OK) {
@@ -252,6 +274,25 @@ void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
 
 				substate = SUBSTATE_WAITING;
 				sctp_lcd_conc_curves_list(cursor, curve_list);
+
+			}
+		}
+	}
+	else if (substate == SUBSTATE_LOADING_CURVE) {
+		esp_err_t report;
+		if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
+			if (report == ESP_OK) {
+				free(taskParam);
+				taskParam = NULL;
+				vQueueDelete(report_queue);
+				report_queue = NULL;
+
+				if (sctp->curve.wavelength == 0) {
+					sctp->setState(ConcWavelength::getInstance());
+				} 
+				else {
+					sctp->setState(ConcTable::getInstance());
+				}
 
 			}
 		}

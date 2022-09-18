@@ -29,3 +29,8 @@ esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t 
 
     return ESP_OK;
 };
+
+esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, float wavelength, blank_take_t * blank_take) {
+    vTaskDelay(5000 / portTICK_RATE_MS);
+    return ESP_OK;
+};
