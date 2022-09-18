@@ -59,6 +59,7 @@ void ConcTable::okay(Sctp* sctp) {
 			else if (cursor == CURSOR_BACK) {
 				// free blank buffers
 				if (sctp->blank_take != NULL) {
+					if (sctp->blank_take->readout != NULL) free(sctp->blank_take->readout);
 					free(sctp->blank_take);
 					sctp->blank_take = NULL;
 				}
