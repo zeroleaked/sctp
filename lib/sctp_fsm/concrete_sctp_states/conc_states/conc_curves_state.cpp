@@ -118,7 +118,6 @@ void ConcCurves::okay(Sctp* sctp)
 				free(curve_list);
 				curve_list = NULL;
 
-				substate = SUBSTATE_LOADING_CURVE;
 
 				sctp_lcd_conc_curves_loading_floats(cursor);
 
@@ -126,6 +125,7 @@ void ConcCurves::okay(Sctp* sctp)
 				sctp->curve.concentration = (float *) malloc( MAX_POINTS * sizeof(float) );
 
 				report_queue = xQueueCreate(1, sizeof(esp_err_t));
+				substate = SUBSTATE_LOADING_CURVE;
 
 				// packing param
 				taskParam = (taskParam_t *) malloc (sizeof(taskParam_t));
@@ -181,10 +181,7 @@ void ConcCurves::arrowDown(Sctp* sctp)
 				cursor++;
 			}
 			else if (cursor == CURSOR_CURVE_5) {
-				cursor = CURSOR_BACK;
-			}
-			else if (cursor < CURSOR_BACK) {
-				cursor ++;
+				cursor = CURSOR_CURVE_0;
 			}
 			else if (cursor == CURSOR_BACK) {
 				cursor = CURSOR_CURVE_0;
@@ -209,15 +206,9 @@ void ConcCurves::arrowUp(Sctp* sctp)
 		case SUBSTATE_WAITING: {
 			sctp_lcd_conc_curves_list_clear(cursor);
 			if (cursor == CURSOR_CURVE_0) {
-				cursor = CURSOR_BACK;
+				cursor = CURSOR_CURVE_5;
 			}
 			else if (cursor <= CURSOR_CURVE_5) {
-				cursor--;
-			}
-			else if (cursor == CURSOR_DEL_CURVE_0) {
-				cursor = CURSOR_BACK;
-			}
-			else if (cursor <= CURSOR_DEL_CURVE_5) {
 				cursor--;
 			}
 			else if (cursor == CURSOR_BACK) {
@@ -243,10 +234,48 @@ void ConcCurves::arrowRight(Sctp* sctp)
 		case SUBSTATE_WAITING: {
 			sctp_lcd_conc_curves_list_clear(cursor);
 			if (cursor <= CURSOR_CURVE_5) {
-				if (curve_list[cursor - CURVE_LIST_LENGTH].wavelength != 0) cursor += CURVE_LIST_LENGTH;
+				if (curve_list[cursor].wavelength != 0) cursor += CURVE_LIST_LENGTH;
+			}
+			else if (cursor < CURSOR_DEL_CURVE_5) {
+				cursor = cursor - CURVE_LIST_LENGTH;
+			}
+			else if (cursor == CURSOR_DEL_CURVE_5) {
+				cursor = CURSOR_BACK;
+			}
+			else if (cursor == CURSOR_BACK) {
+				cursor = CURSOR_CURVE_5;
+			}
+			else if (cursor == CURSOR_NULL) {
+				cursor = CURSOR_CURVE_0;
+			}
+			sctp_lcd_conc_curves_list(cursor, curve_list);
+			break;
+		}
+	}
+}
+
+void ConcCurves::arrowLeft(Sctp* sctp)
+{
+	switch (substate) {
+		// case SUBSTATE_LOADING_CURVE_LIST: {
+		// 	cursor = CURSOR_BACK;
+		// 	sctp_lcd_conc_curves_opening(cursor);
+		// 	break;
+		// }
+		case SUBSTATE_WAITING: {
+			sctp_lcd_conc_curves_list_clear(cursor);
+			if (cursor < CURSOR_CURVE_5) {
+				if (curve_list[cursor].wavelength != 0) cursor += CURVE_LIST_LENGTH;
+			}
+			else if (cursor == CURSOR_CURVE_5) {
+				cursor = CURSOR_BACK;
 			}
 			else if (cursor <= CURSOR_DEL_CURVE_5) {
 				cursor = cursor - CURVE_LIST_LENGTH;
+			}
+			else if (cursor == CURSOR_BACK) {
+				if (curve_list[CURSOR_CURVE_5].wavelength != 0) cursor = CURSOR_DEL_CURVE_5;
+				else cursor = CURSOR_CURVE_5;
 			}
 			else if (cursor == CURSOR_NULL) {
 				cursor = CURSOR_CURVE_0;
