@@ -17,9 +17,10 @@
 #define CURSOR_ABSORBANCE_1 5
 #define CURSOR_ABSORBANCE_2 6
 #define CURSOR_ABSORBANCE_3 7
-#define CURSOR_NEXT 8
-#define CURSOR_BACK 9
-#define CURSOR_NULL 10
+#define CURSOR_REGRESS 8
+#define CURSOR_SAVE 9
+#define CURSOR_BACK 10
+#define CURSOR_NULL 11
 
 #define MAX_POINTS 15
 
@@ -77,8 +78,11 @@ void ConcTable::okay(Sctp* sctp) {
 				}
 				// todo check blank, then sample
 			}
-			else if (cursor == CURSOR_NEXT) {
+			else if (cursor == CURSOR_REGRESS) {
 				// todo check sufficient length
+			}
+			else if (cursor == CURSOR_SAVE) {
+				// todo ConcState
 			}
 			else if (cursor == CURSOR_BACK) {
 				// todo free all buffers as if going to menu
@@ -89,6 +93,9 @@ void ConcTable::okay(Sctp* sctp) {
 			substate = SUBSTATE_CURSOR;
 			if ( (sctp->curve.concentration != 0) && (sctp->curve.absorbance != 0) ) {
 				sctp->curve.points++;
+			}
+			else if ((sctp->curve.concentration == 0) && (sctp->curve.absorbance == 0)) {
+				sctp->curve.points--;
 			}
 			break;
 		}
@@ -108,7 +115,7 @@ void ConcTable::arrowDown(Sctp* sctp) {
 			}
 			else if (cursor < CURSOR_CONC_3) {
 				if ( cursor == sctp->curve.points ) { // cursor at add new
-					cursor = CURSOR_BACK;
+					cursor = CURSOR_SAVE;
 				}
 				else {
 					cursor++;
@@ -116,10 +123,10 @@ void ConcTable::arrowDown(Sctp* sctp) {
 			}
 			else if (cursor == CURSOR_CONC_3) {
 				if (cursor + row_offset == sctp->curve.points) { // cursor at add new
-					cursor = CURSOR_BACK;
+					cursor = CURSOR_SAVE;
 				}
 				else if (row_offset == MAX_POINTS - 4) { // table full
-					cursor = CURSOR_BACK;
+					cursor = CURSOR_SAVE;
 				}
 				else {
 					row_offset++;
@@ -127,7 +134,7 @@ void ConcTable::arrowDown(Sctp* sctp) {
 			}
 			else if (cursor < CURSOR_ABSORBANCE_3) {
 				if ( cursor - 4 == sctp->curve.points ) { // cursor at add new
-					cursor = CURSOR_NEXT;
+					cursor = CURSOR_REGRESS;
 				}
 				else {
 					cursor++;
@@ -135,17 +142,21 @@ void ConcTable::arrowDown(Sctp* sctp) {
 			}
 			else if (cursor == CURSOR_ABSORBANCE_3) {
 				if (cursor + row_offset == sctp->curve.points) { // cursor at add new
-					cursor = CURSOR_NEXT;
+					cursor = CURSOR_REGRESS;
 				}
 				else if (row_offset == MAX_POINTS - 4) { // table full
-					cursor = CURSOR_NEXT;
+					cursor = CURSOR_REGRESS;
 				}
 				else {
 					row_offset++;
 				}
 			}
-			else if (cursor == CURSOR_NEXT) {
+			else if (cursor == CURSOR_REGRESS) {
 				cursor = CURSOR_ABSORBANCE_0;
+				row_offset = 0;
+			}
+			else if (cursor == CURSOR_SAVE) {
+				cursor = CURSOR_CONC_0;
 				row_offset = 0;
 			}
 			else if (cursor == CURSOR_BACK) {
@@ -176,7 +187,7 @@ void ConcTable::arrowUp(Sctp* sctp) {
 			}
 			else if (cursor == CURSOR_CONC_0) {
 				if ( row_offset == 0 ) {
-					cursor = CURSOR_BACK;
+					cursor = CURSOR_SAVE;
 				}
 				else {
 					row_offset--;
@@ -187,7 +198,7 @@ void ConcTable::arrowUp(Sctp* sctp) {
 			}
 			else if (cursor == CURSOR_ABSORBANCE_0) {
 				if ( row_offset == 0 ) {
-					cursor = CURSOR_NEXT;
+					cursor = CURSOR_REGRESS;
 				}
 				else {
 					row_offset--;
@@ -196,7 +207,7 @@ void ConcTable::arrowUp(Sctp* sctp) {
 			else if (cursor <= CURSOR_ABSORBANCE_3) {
 				cursor--;
 			}
-			else if (cursor == CURSOR_NEXT) {
+			else if (cursor == CURSOR_REGRESS) {
 				if (sctp->curve.points >= 4) {
 					cursor = CURSOR_ABSORBANCE_3;
 				}
@@ -204,9 +215,17 @@ void ConcTable::arrowUp(Sctp* sctp) {
 					cursor = sctp->curve.points + 4;
 				}
 			}
+			else if (cursor == CURSOR_SAVE) {
+				if (sctp->curve.points >= 4) {
+					cursor = CURSOR_CONC_3;
+				}
+				else {
+					cursor = sctp->curve.points;
+				}
+			}
 			else if (cursor == CURSOR_BACK) {
 				if (sctp->curve.points >= 4) {
-					cursor = CURSOR_CONC_0;
+					cursor = CURSOR_CONC_3;
 				}
 				else {
 					cursor = sctp->curve.points;
@@ -240,11 +259,46 @@ void ConcTable::arrowRight(Sctp* sctp) {
 			else if (cursor <= CURSOR_ABSORBANCE_3) {
 				cursor = cursor - 4;
 			}
-			else if (cursor == CURSOR_NEXT) {
+			else if (cursor == CURSOR_REGRESS) {
+				cursor = CURSOR_BACK;
+			}
+			else if (cursor == CURSOR_SAVE) {
+				cursor = CURSOR_REGRESS;
+			}
+			else if (cursor == CURSOR_BACK) {
+				cursor = CURSOR_SAVE;
+			}
+			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
+			break;
+		}
+	}
+}
+
+void ConcTable::arrowLeft(Sctp* sctp) {
+	switch (substate) {
+		case SUBSTATE_LOADING: {
+			break;
+		}
+		case SUBSTATE_CURSOR: {
+			sctp_lcd_conc_table_clear(cursor, row_offset, sctp->curve);
+
+			if (cursor == CURSOR_NULL) {
+				cursor = CURSOR_CONC_0;
+			}
+			else if (cursor <= CURSOR_CONC_3) {
+				cursor += 4;
+			}
+			else if (cursor <= CURSOR_ABSORBANCE_3) {
+				cursor = cursor - 4;
+			}
+			else if (cursor == CURSOR_REGRESS) {
+				cursor = CURSOR_SAVE;
+			}
+			else if (cursor == CURSOR_SAVE) {
 				cursor = CURSOR_BACK;
 			}
 			else if (cursor == CURSOR_BACK) {
-				cursor = CURSOR_NEXT;
+				cursor = CURSOR_REGRESS;
 			}
 			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
 			break;

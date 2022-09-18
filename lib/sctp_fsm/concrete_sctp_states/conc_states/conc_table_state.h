@@ -13,7 +13,7 @@ public:
 	void okay(Sctp* sctp);
 	void arrowUp(Sctp* sctp);
 	void arrowDown(Sctp* sctp);
-	void arrowLeft(Sctp* sctp) { arrowRight(sctp); };
+	void arrowLeft(Sctp* sctp);
 	void arrowRight(Sctp* sctp);
 	void refreshLcd(Sctp* sctp, command_t command);
 	void exit(Sctp* sctp) {}
