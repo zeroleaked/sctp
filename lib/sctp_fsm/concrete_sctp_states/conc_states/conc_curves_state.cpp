@@ -158,7 +158,7 @@ void ConcCurves::okay(Sctp* sctp)
 				curve_list = NULL;
 				free(taskParam);
 				taskParam = NULL;
-				vQueueDelete(report_queue);
+				if (report_queue != NULL) vQueueDelete(report_queue);
 				report_queue = NULL;
 
 				sctp->setState(Menu::getInstance());
@@ -304,6 +304,7 @@ void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
 				substate = SUBSTATE_WAITING;
 				sctp_lcd_conc_curves_list(cursor, curve_list);
 
+				ESP_LOGI(TAG, "SUBSTATE_LCL");
 			}
 		}
 	}
@@ -311,6 +312,7 @@ void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
 		esp_err_t report;
 		if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
 			if (report == ESP_OK) {
+				ESP_LOGI(TAG, "SUBSTATE_LC");
 				free(taskParam);
 				taskParam = NULL;
 				vQueueDelete(report_queue);
