@@ -138,6 +138,14 @@ void ConcTable::arrowDown(Sctp* sctp) {
 					row_offset++;
 				}
 			}
+			else if (cursor == CURSOR_NEXT) {
+				cursor = CURSOR_ABSORBANCE_0;
+				row_offset = 0;
+			}
+			else if (cursor == CURSOR_BACK) {
+				cursor = CURSOR_CONC_0;
+				row_offset = 0;
+			}
 			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
 		}
 		case SUBSTATE_CONCENTRATION: {
@@ -159,7 +167,9 @@ void ConcTable::arrowUp(Sctp* sctp) {
 				cursor = CURSOR_CONC_0;
 			}
 			else if (cursor == CURSOR_CONC_0) {
-				if ( row_offset == 0 ) {} // cursor at top
+				if ( row_offset == 0 ) {
+					cursor = CURSOR_BACK;
+				}
 				else {
 					row_offset--;
 				}
@@ -168,7 +178,9 @@ void ConcTable::arrowUp(Sctp* sctp) {
 				cursor--;
 			}
 			else if (cursor == CURSOR_ABSORBANCE_0) {
-				if ( row_offset == 0 ) {} // cursor at top
+				if ( row_offset == 0 ) {
+					cursor = CURSOR_NEXT;
+				}
 				else {
 					row_offset--;
 				}
