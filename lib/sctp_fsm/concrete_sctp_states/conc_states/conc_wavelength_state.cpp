@@ -18,7 +18,7 @@ void ConcWavelength::enter(Sctp* sctp)
 	wavelength = 550;
     substate = SUBSTATE_WL;
     cursor = CURSOR_WL;
-	sctp_lcd_wavelength(wavelength);
+	sctp_lcd_conc_wavelength(wavelength);
 }
 
 void ConcWavelength::okay(Sctp* sctp)
@@ -54,7 +54,7 @@ void ConcWavelength::arrowUp(Sctp* sctp)
     if (substate == SUBSTATE_WL) {
         wavelength = wavelength + 2;
         if (wavelength > 700) wavelength = 400;
-        sctp_lcd_wavelength_number(wavelength);
+        sctp_lcd_conc_wavelength_number(wavelength);
     }
     else if (substate == SUBSTATE_CURSOR) {
         if (cursor == CURSOR_WL) cursor = CURSOR_NEXT;
@@ -67,7 +67,7 @@ void ConcWavelength::arrowDown(Sctp* sctp)
     if (substate == SUBSTATE_WL) {
         wavelength = wavelength - 2;
         if (wavelength < 400) wavelength = 700;
-        sctp_lcd_wavelength_number(wavelength);
+        sctp_lcd_conc_wavelength_number(wavelength);
     }
     else if (substate == SUBSTATE_CURSOR) {
         arrowUp(sctp);
