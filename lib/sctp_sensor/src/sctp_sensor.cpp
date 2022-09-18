@@ -36,3 +36,10 @@ esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t 
     ESP_LOGI(TAG, "wl=%d", wavelength);
     return ESP_OK;
 };
+
+
+esp_err_t sctp_sensor_concentration_sample(calibration_t * calibration, uint16_t wavelength, blank_take_t * blank_take, float * sample_take) {
+    vTaskDelay(5000 / portTICK_RATE_MS);
+    *sample_take = 677.79;
+    return ESP_OK;
+}

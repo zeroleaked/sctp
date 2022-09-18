@@ -42,6 +42,9 @@ void concentration_mvp() {
     sctp0.okay();
     vTaskDelay(6000 / portTICK_RATE_MS);
     TEST_ASSERT_EQUAL(STATE_CONC_SAMPLE, sctp0.getCurrentStateId());
+    sctp0.okay();
+    vTaskDelay(7000 / portTICK_RATE_MS);
+    TEST_ASSERT_EQUAL(STATE_CONC_TABLE, sctp0.getCurrentStateId());
 }
 
 

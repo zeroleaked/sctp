@@ -53,6 +53,7 @@ public:
 	float * spectrum_wavelength = NULL;
 
 	curve_t curve;
+	uint8_t point_sel;
 
 	uint16_t wavelength;
 

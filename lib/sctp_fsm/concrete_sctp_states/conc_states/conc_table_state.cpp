@@ -43,6 +43,7 @@ void ConcTable::okay(Sctp* sctp) {
 				substate = SUBSTATE_CONCENTRATION;
 			}
 			else if (cursor <= CURSOR_ABSORBANCE_3) {
+				sctp->point_sel = cursor - 4 + row_offset;
 				if (sctp->blank_take == NULL) {
                     sctp->setState(ConcBlank::getInstance());
 				}
@@ -78,10 +79,10 @@ void ConcTable::okay(Sctp* sctp) {
 		}
 		case SUBSTATE_CONCENTRATION: {
 			substate = SUBSTATE_CURSOR;
-			if ( (sctp->curve.concentration != 0) && (sctp->curve.absorbance != 0) ) {
+			if ( (sctp->curve.concentration[row_offset + cursor] != 0) && (sctp->curve.absorbance[row_offset + cursor] != 0) ) {
 				sctp->curve.points++;
 			}
-			else if ((sctp->curve.concentration == 0) && (sctp->curve.absorbance == 0)) {
+			else if ((sctp->curve.concentration[row_offset + cursor] == 0) && (sctp->curve.absorbance[row_offset + cursor] == 0)) {
 				sctp->curve.points--;
 			}
 			break;
@@ -94,7 +95,7 @@ void ConcTable::arrowDown(Sctp* sctp) {
 		case SUBSTATE_CURSOR: {
 			sctp_lcd_conc_table_clear(cursor, row_offset, sctp->curve);
 			if (cursor < CURSOR_CONC_3) {
-				if ( cursor == sctp->curve.points ) { // cursor at add new
+				if ( cursor + row_offset == sctp->curve.points ) { // cursor at add new
 					cursor = CURSOR_SAVE;
 				}
 				else {
@@ -113,7 +114,7 @@ void ConcTable::arrowDown(Sctp* sctp) {
 				}
 			}
 			else if (cursor < CURSOR_ABSORBANCE_3) {
-				if ( cursor - 4 == sctp->curve.points ) { // cursor at add new
+				if ( cursor - 4 + row_offset == sctp->curve.points ) { // cursor at add new
 					cursor = CURSOR_REGRESS;
 				}
 				else {
@@ -121,7 +122,7 @@ void ConcTable::arrowDown(Sctp* sctp) {
 				}
 			}
 			else if (cursor == CURSOR_ABSORBANCE_3) {
-				if (cursor + row_offset == sctp->curve.points) { // cursor at add new
+				if (cursor - 4 + row_offset == sctp->curve.points) { // cursor at add new
 					cursor = CURSOR_REGRESS;
 				}
 				else if (row_offset == MAX_POINTS - 4) { // table full

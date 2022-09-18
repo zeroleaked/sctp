@@ -273,7 +273,6 @@ void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
 		esp_err_t report;
 		if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
 			if (report == ESP_OK) {
-				ESP_LOGI(TAG, "SUBSTATE_LCL fin");
 
 				substate = SUBSTATE_WAITING;
 				sctp_lcd_conc_curves_list(cursor, curve_list);
@@ -285,7 +284,6 @@ void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
 		esp_err_t report;
 		if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
 			if (report == ESP_OK) {
-				ESP_LOGI(TAG, "SUBSTATE_LC");
 
 				if (sctp->curve.wavelength == 0) {
 					sctp->setState(ConcWavelength::getInstance());

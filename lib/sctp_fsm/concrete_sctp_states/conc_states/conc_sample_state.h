@@ -6,14 +6,14 @@
 class ConcSample : public SctpState
 {
 public:
-	void enter(Sctp* sctp) {};
-	void okay(Sctp* sctp) {};
+	void enter(Sctp* sctp);
+	void okay(Sctp* sctp);
 	void arrowUp(Sctp* sctp) { arrowLeft(sctp); };
 	void arrowDown(Sctp* sctp) { arrowLeft(sctp); };
-	void arrowLeft(Sctp* sctp) {};
+	void arrowLeft(Sctp* sctp);
 	void arrowRight(Sctp* sctp) { arrowLeft(sctp); };
-	void refreshLcd(Sctp* sctp, command_t command) {};
-	void exit(Sctp* sctp) {};
+	void refreshLcd(Sctp* sctp, command_t command);
+	void exit(Sctp* sctp);
 	int id(Sctp* sctp) { return 13; };
 	static SctpState& getInstance();
 
@@ -23,6 +23,8 @@ private:
 	ConcSample() {}
 	ConcSample(const ConcSample& other);
 	ConcSample& operator=(const ConcSample& other);
+
+	float absorbance;
 
 	TaskHandle_t taskHandle;
 	void * taskParam;

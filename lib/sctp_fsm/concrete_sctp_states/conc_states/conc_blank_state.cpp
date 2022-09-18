@@ -1,4 +1,4 @@
-// #include <esp_log.h>
+#include <esp_log.h>
 
 #include "conc_blank_state.h"
 #include "conc_table_state.h"
@@ -47,6 +47,7 @@ static void takeConcentrationBlank(void * pvParameters) {
 	
     QueueHandle_t report_queue = ((taskParam_t *) pvParameters)->report_queue;
 	assert(xQueueSend(report_queue, &report, 0) == pdTRUE);
+	ESP_LOGI(TAG, "takeConcentrationBlank() sended to queue");
 	vTaskDelete( NULL );
 
 }
@@ -93,7 +94,7 @@ void ConcBlank::okay(Sctp* sctp)
                     sctp->blank_take = NULL;
 
                     substate = SUBSTATE_WAITING;
-	                sctp_lcd_spec_blank_waiting(cursor);
+	                sctp_lcd_conc_blank_waiting(cursor);
                     break;
                 }
             }
@@ -104,7 +105,7 @@ void ConcBlank::okay(Sctp* sctp)
 
 void ConcBlank::arrowLeft(Sctp* sctp)
 {
-    sctp_lcd_spec_blank_clear(cursor);
+    sctp_lcd_conc_blank_clear(cursor);
     switch (substate) {
         case SUBSTATE_WAITING: {
             switch (cursor) {
@@ -117,7 +118,7 @@ void ConcBlank::arrowLeft(Sctp* sctp)
                     break;
                 }
             }
-	        sctp_lcd_spec_blank_waiting(cursor);
+	        sctp_lcd_conc_blank_waiting(cursor);
             break;
         }
         case SUBSTATE_SAMPLING: {
@@ -127,7 +128,7 @@ void ConcBlank::arrowLeft(Sctp* sctp)
                     break;
                 }
             }
-	        sctp_lcd_spec_blank_sampling(cursor);
+	        sctp_lcd_conc_blank_sampling(cursor);
 			break;
         }
     }
