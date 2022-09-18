@@ -1,6 +1,7 @@
 #include <esp_log.h>
 
 #include "conc_table_state.h"
+#include "conc_blank_state.h"
 #include "sctp_lcd.h"
 #include "sctp_flash.h"
 
@@ -66,11 +67,14 @@ void ConcTable::okay(Sctp* sctp) {
 			break;
 		}
 		case SUBSTATE_CURSOR: {
-			if (cursor == CURSOR_NULL) {}
-			else if (cursor <= CURSOR_CONC_3) {
+			// if (cursor == CURSOR_NULL) {} else 
+			if (cursor <= CURSOR_CONC_3) {
 				substate = SUBSTATE_CONCENTRATION;
 			}
 			else if (cursor <= CURSOR_ABSORBANCE_3) {
+				if (sctp->blank_take == NULL) {
+                    sctp->setState(ConcBlank::getInstance());
+				}
 				// todo check blank, then sample
 			}
 			else if (cursor == CURSOR_NEXT) {

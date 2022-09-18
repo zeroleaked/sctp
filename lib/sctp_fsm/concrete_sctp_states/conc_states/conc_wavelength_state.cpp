@@ -10,10 +10,6 @@
 #define CURSOR_NEXT 1
 #define CURSOR_BACK 2
 
-// lcd dummies. declare this later in sctp_lcd.h
-void sctp_lcd_wavelength(uint16_t wavelength) {}
-void sctp_lcd_wavelength_number(uint16_t wavelength) {}
-
 // void sctp_lcd_clear() {};
 
 void ConcWavelength::enter(Sctp* sctp)
@@ -44,6 +40,8 @@ void ConcWavelength::okay(Sctp* sctp)
                 break;
             }
             case CURSOR_BACK: {
+                free(sctp->curve.filename);
+                sctp->curve.filename = NULL;
                 sctp->setState(ConcCurves::getInstance());
                 break;
             }

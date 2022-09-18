@@ -12,6 +12,7 @@ typedef enum {
     STATE_SPEC_RESULT,
     STATE_SPEC_SAVE,
     STATE_CONC_WAVELENGTH,
-    STATE_CONC_TABLE
+    STATE_CONC_TABLE,
+    STATE_CONC_BLANK
 
 } state_id_t;
