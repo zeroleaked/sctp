@@ -5,9 +5,8 @@
 #include "sctp_lcd.h"
 #include "sctp_flash.h"
 
-#define SUBSTATE_LOADING 0
-#define SUBSTATE_CURSOR 1
-#define SUBSTATE_CONCENTRATION 2
+#define SUBSTATE_CURSOR 0
+#define SUBSTATE_CONCENTRATION 1
 
 #define CURSOR_CONC_0 0
 #define CURSOR_CONC_1 1
@@ -20,7 +19,6 @@
 #define CURSOR_REGRESS 8
 #define CURSOR_SAVE 9
 #define CURSOR_BACK 10
-#define CURSOR_NULL 11
 
 #define MAX_POINTS 15
 
@@ -29,20 +27,16 @@ static const char TAG[] = "conc_table_state";
 void ConcTable::enter(Sctp * sctp) {
 	sctp_lcd_clear();
 
-	cursor = CURSOR_NULL;
-	substate = SUBSTATE_LOADING;
+	cursor = CURSOR_CONC_0;
+	substate = SUBSTATE_CURSOR;
 
 	sctp_lcd_conc_table_opening(cursor);
 }
 
 void ConcTable::okay(Sctp* sctp) {
 	switch (substate) {
-		case SUBSTATE_LOADING: {
-			break;
-		}
 		case SUBSTATE_CURSOR: {
-			if (cursor == CURSOR_NULL) {}
-			else if (cursor <= CURSOR_CONC_3) {
+			if (cursor <= CURSOR_CONC_3) {
 				substate = SUBSTATE_CONCENTRATION;
 			}
 			else if (cursor <= CURSOR_ABSORBANCE_3) {
@@ -77,16 +71,9 @@ void ConcTable::okay(Sctp* sctp) {
 
 void ConcTable::arrowDown(Sctp* sctp) {
 	switch (substate) {
-		case SUBSTATE_LOADING: {
-			break;
-		}
 		case SUBSTATE_CURSOR: {
 			sctp_lcd_conc_table_clear(cursor, row_offset, sctp->curve);
-
-			if (cursor == CURSOR_NULL) {
-				cursor = CURSOR_CONC_0;
-			}
-			else if (cursor < CURSOR_CONC_3) {
+			if (cursor < CURSOR_CONC_3) {
 				if ( cursor == sctp->curve.points ) { // cursor at add new
 					cursor = CURSOR_SAVE;
 				}
@@ -149,16 +136,9 @@ void ConcTable::arrowDown(Sctp* sctp) {
 
 void ConcTable::arrowUp(Sctp* sctp) {
 	switch (substate) {
-		case SUBSTATE_LOADING: {
-			break;
-		}
 		case SUBSTATE_CURSOR: {
 			sctp_lcd_conc_table_clear(cursor, row_offset, sctp->curve);
-
-			if (cursor == CURSOR_NULL) {
-				cursor = CURSOR_CONC_0;
-			}
-			else if (cursor == CURSOR_CONC_0) {
+			if (cursor == CURSOR_CONC_0) {
 				if ( row_offset == 0 ) {
 					cursor = CURSOR_SAVE;
 				}
@@ -217,16 +197,9 @@ void ConcTable::arrowUp(Sctp* sctp) {
 
 void ConcTable::arrowRight(Sctp* sctp) {
 	switch (substate) {
-		case SUBSTATE_LOADING: {
-			break;
-		}
 		case SUBSTATE_CURSOR: {
 			sctp_lcd_conc_table_clear(cursor, row_offset, sctp->curve);
-
-			if (cursor == CURSOR_NULL) {
-				cursor = CURSOR_CONC_0;
-			}
-			else if (cursor <= CURSOR_CONC_3) {
+			if (cursor <= CURSOR_CONC_3) {
 				cursor += 4;
 			}
 			else if (cursor <= CURSOR_ABSORBANCE_3) {
@@ -249,16 +222,9 @@ void ConcTable::arrowRight(Sctp* sctp) {
 
 void ConcTable::arrowLeft(Sctp* sctp) {
 	switch (substate) {
-		case SUBSTATE_LOADING: {
-			break;
-		}
 		case SUBSTATE_CURSOR: {
 			sctp_lcd_conc_table_clear(cursor, row_offset, sctp->curve);
-
-			if (cursor == CURSOR_NULL) {
-				cursor = CURSOR_CONC_0;
-			}
-			else if (cursor <= CURSOR_CONC_3) {
+			if (cursor <= CURSOR_CONC_3) {
 				cursor += 4;
 			}
 			else if (cursor <= CURSOR_ABSORBANCE_3) {
