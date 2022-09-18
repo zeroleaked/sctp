@@ -221,10 +221,10 @@ void ConcCurves::arrowRight(Sctp* sctp)
 		case SUBSTATE_WAITING: {
 			sctp_lcd_conc_curves_list_clear(cursor);
 			if (cursor <= CURSOR_CURVE_5) {
-				cursor += 6;
+				if (curve_list[cursor - CURVE_LIST_LENGTH].wavelength != 0) cursor += CURVE_LIST_LENGTH;
 			}
 			else if (cursor <= CURSOR_DEL_CURVE_5) {
-				cursor = cursor - 6;
+				cursor = cursor - CURVE_LIST_LENGTH;
 			}
 			else if (cursor == CURSOR_NULL) {
 				cursor = CURSOR_CURVE_0;
