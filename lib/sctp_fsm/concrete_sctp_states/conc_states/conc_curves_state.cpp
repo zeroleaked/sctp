@@ -23,9 +23,10 @@
 #define CURSOR_BACK 12
 #define CURSOR_NULL 13
 
-#define SUBSTATE_LOADING_CURVE_LIST 0
-#define SUBSTATE_WAITING 1
-#define SUBSTATE_LOADING_CURVE 2
+#define SUBSTATE_NULL 0
+#define SUBSTATE_LOADING_CURVE_LIST 1
+#define SUBSTATE_WAITING 2
+#define SUBSTATE_LOADING_CURVE 3
 
 #define CURVE_LIST_LENGTH 6
 #define FILENAME_LENGTH 20
@@ -63,6 +64,7 @@ static void loadConcFloats(void * pvParameters) {
 
 void ConcCurves::enter(Sctp* sctp)
 {
+	substate = SUBSTATE_NULL;
 	sctp_lcd_clear();
 	cursor = CURSOR_NULL;
 
@@ -283,6 +285,7 @@ void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
 	else if (substate == SUBSTATE_LOADING_CURVE) {
 		esp_err_t report;
 		if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
+			substate = SUBSTATE_NULL;
 			if (report == ESP_OK) {
 
 				if (sctp->curve.wavelength == 0) {
