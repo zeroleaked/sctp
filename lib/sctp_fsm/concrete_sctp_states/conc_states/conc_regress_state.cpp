@@ -31,11 +31,11 @@ void ConcRegress::enter(Sctp* sctp)
 		ESP_LOGI(TAG, "detected 2 points, but 1 is not a standard. Not enough standards");
 	}
 	else {
-		ESP_LOGI(TAG, "curve check");
-		standards_length = sctp->curve.points;
+		uint8_tstandards_length = sctp->curve.points;
 		ESP_LOGI(TAG, "detected %d standard sample points", standards_length);
 		assert(standards_length <= 15); // MAX_POINTS is 15
 		assert(sctp->curve.points <= 15); // MAX_POINTS is 15
+		bool interpolate;
 		if (standards_length < 15) { // last row is not a standard point
 			// check if we can interpolate		
 			interpolate = (sctp->curve.absorbance[standards_length] != 0);
