@@ -86,7 +86,7 @@ void SpecSave::refreshLcd(Sctp* sctp, command_t command)
 			report_queue = NULL;
 			substate = SUBSTATE_WAITING;
 			sctp_lcd_spec_save_finish(sctp->saved_name);
-	}	
+		}	
 	}
 }
 

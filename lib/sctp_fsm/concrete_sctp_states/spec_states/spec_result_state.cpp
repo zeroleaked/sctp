@@ -85,7 +85,8 @@ void SpecResult::arrowDown(Sctp* sctp)
 	sctp_lcd_spec_result_clear(cursor);
 	if (cursor == CURSOR_MENU) cursor = CURSOR_SAVE;
 	else cursor++;
-	sctp_lcd_spec_result_cursor(cursor);
+	sctp_lcd_spec_result(cursor, sctp->spectrum_wavelength, sctp->absorbance, sctp->calibration.length);
+	// sctp_lcd_spec_result_cursor(cursor);
 }
 
 SctpState& SpecResult::getInstance()

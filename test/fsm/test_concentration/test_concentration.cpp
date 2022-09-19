@@ -15,6 +15,7 @@ void concentration_mvp() {
     sctp0.okay();
     ESP_LOGI(TAG, "entered Menu");
     sctp0.arrowDown();
+    vTaskDelay(2000 / portTICK_RATE_MS);
     sctp0.okay();
     TEST_ASSERT_EQUAL(STATE_CONC_CURVES, sctp0.getCurrentStateId());
     ESP_LOGI(TAG, "entered ConcCurves");
