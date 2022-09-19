@@ -31,7 +31,7 @@ void ConcRegress::enter(Sctp* sctp)
 		ESP_LOGI(TAG, "detected 2 points, but 1 is not a standard. Not enough standards");
 	}
 	else {
-		uint8_tstandards_length = sctp->curve.points;
+		uint8_t standards_length = sctp->curve.points;
 		ESP_LOGI(TAG, "detected %d standard sample points", standards_length);
 		assert(standards_length <= 15); // MAX_POINTS is 15
 		assert(sctp->curve.points <= 15); // MAX_POINTS is 15
