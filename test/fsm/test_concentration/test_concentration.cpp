@@ -10,9 +10,6 @@
 
 static const char TAG[] = "sctp_states_test";
 
-
-#define CONC_CURVES_SUBSTATE_LOADING 0
-#define CONC_CURVES_SUBSTATE_WAITING 1
 void concentration_mvp() {
     Sctp sctp0;
     sctp0.okay();
@@ -47,6 +44,33 @@ void concentration_mvp() {
     TEST_ASSERT_EQUAL(STATE_CONC_TABLE, sctp0.getCurrentStateId());
 }
 
+void regress_test() {
+    Sctp sctp0;
+    sctp0.okay();
+    ESP_LOGI(TAG, "entered Menu");
+    sctp0.arrowDown();
+    sctp0.okay();
+    TEST_ASSERT_EQUAL(STATE_CONC_CURVES, sctp0.getCurrentStateId());
+    ESP_LOGI(TAG, "entered ConcCurves");
+    vTaskDelay(3000 / portTICK_RATE_MS);
+    sctp0.arrowDown();
+    sctp0.okay();
+    vTaskDelay(3000 / portTICK_RATE_MS);
+    TEST_ASSERT_EQUAL(STATE_CONC_TABLE, sctp0.getCurrentStateId());
+    sctp0.arrowDown(); // to second point
+    sctp0.arrowDown(); // to third point
+    sctp0.arrowDown(); // to fourth point
+    sctp0.arrowDown(); // to fifth point
+    sctp0.arrowDown(); // to new point
+    sctp0.arrowDown(); // to save
+    sctp0.arrowRight(); // to regress
+    sctp0.okay();
+    TEST_ASSERT_EQUAL(STATE_CONC_REGRESS, sctp0.getCurrentStateId());
+    sctp0.arrowDown(); // to save
+    sctp0.okay();
+    TEST_ASSERT_EQUAL(STATE_CONC_TABLE, sctp0.getCurrentStateId());
+}
+
 
 
 extern "C" {
@@ -58,7 +82,8 @@ void app_main();
 void app_main() {
     UNITY_BEGIN();
 
-    RUN_TEST(concentration_mvp);
+    // RUN_TEST(concentration_mvp);
+    RUN_TEST(regress_test);
 
     UNITY_END();
 }
