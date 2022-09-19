@@ -35,7 +35,6 @@ void ConcRegress::enter(Sctp* sctp)
 		ESP_LOGI(TAG, "detected %d standard sample points", standards_length);
 		assert(standards_length <= 15); // MAX_POINTS is 15
 		assert(sctp->curve.points <= 15); // MAX_POINTS is 15
-		bool interpolate;
 		if (standards_length < 15) { // last row is not a standard point
 			// check if we can interpolate		
 			interpolate = (sctp->curve.absorbance[standards_length] != 0);

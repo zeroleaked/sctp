@@ -24,4 +24,6 @@ private:
 	
 	uint8_t cursor;
 	uint8_t substate;
+
+	bool interpolate;
 };
