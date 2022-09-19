@@ -50,3 +50,14 @@ typedef struct {
 	uint16_t exposure;
 	uint16_t gain;
 } blank_take_t;
+
+typedef struct {
+	float absorbance;
+	float concentration;
+} conc_regression_point_t;
+
+typedef struct {
+	float gradient;
+	float offset;
+	conc_regression_point_t points[2];
+} conc_regression_t;
