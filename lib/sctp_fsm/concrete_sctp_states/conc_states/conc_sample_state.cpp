@@ -61,7 +61,7 @@ void ConcSample::okay(Sctp* sctp)
             switch (cursor) {
                 case CURSOR_NEXT: {
                     cursor = CURSOR_NULL;
-                    sctp_lcd_conc_blank_sampling(cursor);
+                    sctp_lcd_conc_sample_sampling(cursor);
 
                     substate = SUBSTATE_SAMPLING;
 
@@ -88,7 +88,7 @@ void ConcSample::okay(Sctp* sctp)
                     taskHandle = NULL;
 
                     substate = SUBSTATE_WAITING;
-	                sctp_lcd_conc_blank_waiting(cursor);
+	                sctp_lcd_conc_sample_waiting(cursor);
                     break;
                 }
             }
@@ -99,7 +99,7 @@ void ConcSample::okay(Sctp* sctp)
 
 void ConcSample::arrowLeft(Sctp* sctp)
 {
-    sctp_lcd_spec_blank_clear(cursor);
+    sctp_lcd_conc_sample_clear(cursor);
     switch (substate) {
         case SUBSTATE_WAITING: {
             switch (cursor) {
@@ -112,7 +112,7 @@ void ConcSample::arrowLeft(Sctp* sctp)
                     break;
                 }
             }
-	        sctp_lcd_spec_blank_waiting(cursor);
+	        sctp_lcd_conc_sample_waiting(cursor);
             break;
         }
         case SUBSTATE_SAMPLING: {
@@ -122,7 +122,7 @@ void ConcSample::arrowLeft(Sctp* sctp)
                     break;
                 }
             }
-	        sctp_lcd_spec_blank_sampling(cursor);
+	        sctp_lcd_conc_sample_sampling(cursor);
 			break;
         }
     }

@@ -62,7 +62,7 @@ void SpecSample::okay(Sctp* sctp)
             switch (cursor) {
                 case CURSOR_NEXT: {
                     cursor = CURSOR_NULL;
-                    sctp_lcd_spec_blank_sampling(cursor);
+                    sctp_lcd_spec_sample_sampling(cursor);
 
 	                report_queue = xQueueCreate(1, sizeof(esp_err_t));
                     substate = SUBSTATE_SAMPLING;
