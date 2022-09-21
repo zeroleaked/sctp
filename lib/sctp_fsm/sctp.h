@@ -42,7 +42,7 @@ public:
 	static void refreshLcdWrapper(void * pvParameter);
 
 	TaskHandle_t task_refresh_lcd;
-	static QueueHandle_t lcd_refresh_queue;
+	QueueHandle_t lcd_refresh_queue;
 
 	calibration_t calibration;
 
