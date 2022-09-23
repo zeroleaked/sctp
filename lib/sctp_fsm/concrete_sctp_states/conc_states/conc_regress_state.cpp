@@ -45,34 +45,25 @@ void ConcRegress::enter(Sctp* sctp)
 		}
 
 		float sum_absorbance = 0;
-		float sum_absorbance_sq = 0;
 		float sum_concentration = 0;
+		float sum_concentration_sq = 0;
 		float sum_product = 0;
-		float min_absorbance = sctp->curve.absorbance[0];
-		float max_absorbance = sctp->curve.absorbance[0];
 		for (int i=0; i < standards_length; i++) {
 			ESP_LOGI(TAG, "i=%d, (%f, %f)", i, sctp->curve.absorbance[i], sctp->curve.concentration[i]);
 			sum_absorbance += sctp->curve.absorbance[i];
-			sum_absorbance_sq += sctp->curve.absorbance[i] * sctp->curve.absorbance[i];
 			sum_concentration += sctp->curve.concentration[i];
+			sum_concentration_sq += sctp->curve.concentration[i] * sctp->curve.concentration[i];
 			sum_product += sctp->curve.absorbance[i] * sctp->curve.concentration[i];
-
-			if (sctp->curve.absorbance[i] < min_absorbance) {
-				min_absorbance = sctp->curve.absorbance[i];
-			}
-			else if (sctp->curve.absorbance[i] > max_absorbance) {
-				max_absorbance = sctp->curve.absorbance[i];
-			}
 		}
-		float divider = standards_length * sum_absorbance_sq - sum_absorbance * sum_absorbance;
+		float divider = standards_length * sum_concentration_sq - sum_concentration * sum_concentration;
 		assert(divider != 0);
-		regress_line->gradient = (standards_length * sum_product - sum_absorbance * sum_concentration) / divider;
-		regress_line->offset = (sum_concentration * sum_absorbance_sq - sum_absorbance * sum_product) / divider;
+		regress_line->gradient = (standards_length * sum_product - sum_concentration * sum_absorbance) / divider;
+		regress_line->offset = (sum_absorbance * sum_concentration_sq - sum_concentration * sum_product) / divider;
 		ESP_LOGI(TAG, "m=%f, b=%f", regress_line->gradient, regress_line->offset);
 
 		if (interpolate) {
 			ESP_LOGI(TAG, "interpolating");
-			sctp->curve.concentration[standards_length] = sctp->curve.absorbance[standards_length] * regress_line->gradient + regress_line->offset;
+			sctp->curve.absorbance[standards_length] = sctp->curve.concentration[standards_length] * regress_line->gradient + regress_line->offset;
 			sctp->curve.points++;
 		}
 
