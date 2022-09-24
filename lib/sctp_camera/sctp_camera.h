@@ -31,6 +31,7 @@ typedef struct {
     int pin_vsync;                  
     int pin_href;                   
     int pin_pclk;                   
+    int pin_stnby;                   
 
     // XCLK config
     int xclk_freq_hz;
@@ -53,6 +54,8 @@ camera_fb_t* sctp_camera_fb_get();
 sensor_t * sctp_camera_sensor_get();
 void sctp_camera_fb_return(camera_fb_t * fb);
 esp_err_t sctp_camera_deinit();
+// esp_err_t sctp_camera_standby_start(camera_config_t* config);
+// esp_err_t sctp_camera_standby_end();
 
 #ifdef __cplusplus
 }

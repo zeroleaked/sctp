@@ -4,19 +4,20 @@
 #define CAM_PIN_SIOD 11
 #define CAM_PIN_SIOC 10
 
-#define CAM_PIN_D9 19
-#define CAM_PIN_D8 8
-#define CAM_PIN_D7 18
-#define CAM_PIN_D6 17
-#define CAM_PIN_D5 16
-#define CAM_PIN_D4 15
-#define CAM_PIN_D3 7
-#define CAM_PIN_D2 6
-#define CAM_PIN_D1 5
-#define CAM_PIN_D0 4
-#define CAM_PIN_VSYNC 20
-#define CAM_PIN_HREF 9
-#define CAM_PIN_PCLK 1
+#define CAM_PIN_D9 39
+#define CAM_PIN_D8 1
+#define CAM_PIN_D7 38
+#define CAM_PIN_D6 20
+#define CAM_PIN_D5 37
+#define CAM_PIN_D4 19
+#define CAM_PIN_D3 36
+#define CAM_PIN_D2 21
+#define CAM_PIN_D1 35
+#define CAM_PIN_D0 47
+#define CAM_PIN_VSYNC 41
+#define CAM_PIN_HREF 42
+#define CAM_PIN_PCLK 40
+#define CAM_PIN_STNBY 48
 
 static camera_config_t camera_config = {
         .pin_reset = CAM_PIN_RESET,
@@ -37,6 +38,7 @@ static camera_config_t camera_config = {
         .pin_vsync = CAM_PIN_VSYNC,
         .pin_href = CAM_PIN_HREF,
         .pin_pclk = CAM_PIN_PCLK,
+        .pin_stnby = CAM_PIN_STNBY,
 
         //XCLK 20MHz or 10MHz for OV2640 double FPS (Experimental)
         // .xclk_freq_hz = 20000000,

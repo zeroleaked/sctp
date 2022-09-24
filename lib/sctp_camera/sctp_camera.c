@@ -159,3 +159,16 @@ esp_err_t sctp_camera_deinit()
 
     return ret;
 }
+
+// esp_err_t sctp_camera_standby_start(camera_config_t* config) {
+//     // move this to sctp_sensor_init
+//     // gpio_config_t conf = { 0 };
+//     // conf.pin_bit_mask = 1LL << config->pin_stnby;
+//     // conf.mode = GPIO_MODE_OUTPUT;
+//     // gpio_config(&conf);
+
+//     gpio_set_level(config->pin_stnby, 1);
+//     ESP_LOGD(TAG, "camera on standby");
+// };
+
+// esp_err_t sctp_camera_standby_end() {};
