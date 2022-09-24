@@ -3,16 +3,93 @@
 #include <esp_log.h>
 
 #include "sctp_sensor.h"
+#include "sctp_camera.h"
+#include "camera_config.h"
 
 static const char TAG[] = "sctp_sensor";
 
-esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t * blank_take) {
-    vTaskDelay(5000 / portTICK_RATE_MS);
+esp_err_t sctp_sensor_init() {
+    // standby pin init
+    gpio_config_t conf = {};
+    conf.pin_bit_mask = 1LL << camera_config.pin_stnby;
+    conf.mode = GPIO_MODE_OUTPUT;
+    gpio_config(&conf);
 
-    for (int i = 0; i < calibration->length; i++) {
-        blank_take->readout[calibration->length-i-1] = (float)(i+calibration->start) * calibration->gain + calibration->bias;
+    // start standby
+    gpio_set_level( (gpio_num_t) camera_config.pin_stnby, 1);
+
+    return ESP_OK;
+};
+
+void standby_start() {
+    gpio_set_level((gpio_num_t) camera_config.pin_stnby, 1 );
+}
+
+void standby_end() {
+    gpio_set_level((gpio_num_t) camera_config.pin_stnby, 0 );
+}
+
+esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t * blank_take) {
+    standby_end();
+
+    sctp_camera_init(&camera_config);
+    sensor_t *camera_sensor = sctp_camera_sensor_get();
+    camera_sensor->set_row_start(camera_sensor, calibration->row);
+    ESP_LOGI(TAG, "row set to %d", calibration->row);
+
+    int exposure = blank_take->exposure;
+    int setpoint = 600;
+    int error = setpoint;
+    float kp = 0.05;
+    int tolerance = 50;
+    int iter = 0;
+    while ((error > tolerance) || (error < -tolerance)) {
+        camera_sensor->set_shutter_width(camera_sensor, exposure);
+        // flush
+        camera_fb_t * take = sctp_camera_fb_get();
+        sctp_camera_fb_return(take);
+        
+        take = sctp_camera_fb_get();
+
+        // max search
+        int max = 0;
+        for (int i=0; i<calibration->length; i++) {
+            uint16_t readout = take->buf[(calibration->start+i) * 2] << 8 | take->buf[(calibration->start+i)*2 +1];
+            // ESP_LOGI(TAG, "i=%d, readout=%d", i, readout);
+            if ( readout > max ) {
+                max = readout;
+            }
+        }
+        sctp_camera_fb_return(take);
+        ESP_LOGI(TAG, "%d:%d", iter, max);
+        // ESP_LOGI(TAG, "exposure=%d, max=%d", exposure, max);
+
+        error = setpoint - max;
+        if ((error > tolerance) || (error < -tolerance)) {
+            exposure = exposure + kp * error;
+            if (exposure < 0) {
+                return ESP_ERR_NOT_FOUND;
+            }
+        }
+        // ESP_LOGI(TAG, "error=%d, new exposure=%d", error, exposure);
+
+
+        if (exposure > 2048) {
+            return ESP_ERR_NOT_FOUND;
+        }
+        iter++;
     }
-    blank_take->exposure = 400;
+
+    camera_fb_t * take = sctp_camera_fb_get();
+    for (int i=0; i < calibration->length; i++) {
+        uint16_t readout = take->buf[(calibration->start+i) * 2] << 8 | take->buf[(calibration->start+i) * 2 +1 ];
+        blank_take->readout[i] = readout;
+    }
+    sctp_camera_fb_return(take);
+
+    sctp_camera_deinit();
+
+    blank_take->exposure = exposure;
     blank_take->gain = 1;
     
     return ESP_OK;

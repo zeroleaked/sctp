@@ -7,6 +7,7 @@
 #include "sctp_sensor.h"
 #include "sctp_camera.h"
 #include "camera_config.h"
+#include "sctp_common_types.h"
 
 //platformio test --environment esp32-s3-devkitc-1 --filter fsm/test_idle -vvv
 
@@ -62,14 +63,14 @@ void row_search () {
 }
 
 void row_print() {
-    uint16_t row = 477;
+    uint16_t row = 486;
     uint8_t samples = 30;
     float * arr = ( float *) malloc (sizeof (float) * 1280 * 30);
     memset(arr, 0, sizeof(float) * 1280);
     assert(sctp_camera_init(&camera_config) == ESP_OK);
 
     sensor_t *s = sctp_camera_sensor_get();
-    s->set_shutter_width(s, 1024);
+    s->set_shutter_width(s, 512);
     s->set_row_start(s, 0x000C + row);
 
     for (int j=0; j<samples; j++) {
@@ -97,6 +98,33 @@ void row_print() {
     free(arr);
 }
 
+void test_spectrum_blank() {
+    sctp_sensor_init();
+
+    calibration_t calibration;
+	calibration.gain = -0.7698064209;
+	calibration.bias = 1025.924915;
+	calibration.start = 423;
+	calibration.length = 392;
+    calibration.row = 486;
+
+    blank_take_t blank_take;
+    blank_take.exposure = 10;
+    blank_take.gain = 1;
+    blank_take.readout = (float *) malloc (sizeof(float) * calibration.length);
+
+    esp_err_t err = sctp_sensor_spectrum_blank(&calibration, &blank_take);
+
+    TEST_ASSERT_EQUAL(ESP_OK, err);
+
+    assert(err == ESP_OK);
+
+    for (int i=0; i<calibration.length; i++) {
+        ESP_LOGI(TAG, "%d:%f", i, blank_take.readout[i]);
+    }
+
+    free(blank_take.readout);
+}
 
 extern "C" {
 
@@ -107,10 +135,10 @@ void app_main();
 void app_main() {
     UNITY_BEGIN();
 
-    // RUN_TEST(concentration_mvp);
     // RUN_TEST(init_test);
     // RUN_TEST(row_search);
-    RUN_TEST(row_print);
+    // RUN_TEST(row_print);
+    RUN_TEST(test_spectrum_blank);
 
     UNITY_END();
 }

@@ -41,6 +41,7 @@ typedef struct {
 	float gain;
 	float bias;
 
+	uint16_t row;
 	uint16_t start; // pixel column index
 	uint16_t length; // length of full spectrum
 } calibration_t;
