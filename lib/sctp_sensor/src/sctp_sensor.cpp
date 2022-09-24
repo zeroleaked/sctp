@@ -1,5 +1,6 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <math.h>
 #include <esp_log.h>
 
 #include "sctp_sensor.h"
@@ -47,6 +48,10 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
         camera_sensor->set_shutter_width(camera_sensor, exposure);
         // flush
         camera_fb_t * take = sctp_camera_fb_get();
+        sctp_camera_fb_return(take);
+        take = sctp_camera_fb_get();
+        sctp_camera_fb_return(take);
+        take = sctp_camera_fb_get();
         sctp_camera_fb_return(take);
         take = sctp_camera_fb_get();
         sctp_camera_fb_return(take);
@@ -113,6 +118,10 @@ esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t 
     sctp_camera_fb_return(take);
     take = sctp_camera_fb_get();
     sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
 
     take = sctp_camera_fb_get();
     for (int i=0; i < calibration->length; i++) {
@@ -129,15 +138,107 @@ esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t 
 };
 
 esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t wavelength, blank_take_t * blank_take) {
-    vTaskDelay(5000 / portTICK_RATE_MS);
-    *(blank_take->readout) = 753.1;
-    ESP_LOGI(TAG, "wl=%d", wavelength);
+    standby_end();
+
+    sctp_camera_init(&camera_config);
+    sensor_t *camera_sensor = sctp_camera_sensor_get();
+    camera_sensor->set_row_start(camera_sensor, calibration->row);
+    ESP_LOGI(TAG, "row set to %d", calibration->row);
+
+    int exposure = blank_take->exposure;
+    int setpoint = 600;
+    int error = setpoint;
+    float kp = 0.2;
+    int tolerance = 50;
+    int iter = 0;
+
+    // wl = px * gain + bias
+    // px = (wl - bias) / gain
+    uint16_t px = round((float) ((wavelength - calibration->bias) / calibration->gain));
+    ESP_LOGI(TAG, "wl=%d, px=%d", wavelength, px);
+
+    while ((error > tolerance) || (error < -tolerance)) {
+        camera_sensor->set_shutter_width(camera_sensor, exposure);
+        // flush
+        camera_fb_t * take = sctp_camera_fb_get();
+        sctp_camera_fb_return(take);
+        take = sctp_camera_fb_get();
+        sctp_camera_fb_return(take);
+        take = sctp_camera_fb_get();
+        sctp_camera_fb_return(take);
+        take = sctp_camera_fb_get();
+        sctp_camera_fb_return(take);
+
+        take = sctp_camera_fb_get();
+        uint16_t readout = take->buf[px * 2] << 8 | take->buf[px*2 +1];
+        sctp_camera_fb_return(take);
+        ESP_LOGI(TAG, "%d:%d", iter, readout);
+        // ESP_LOGI(TAG, "exposure=%d, max=%d", exposure, max);
+
+        error = setpoint - readout;
+        if ((error > tolerance) || (error < -tolerance)) {
+            exposure = exposure + kp * error;
+            if (exposure < 0) {
+                ESP_LOGE(TAG, "exposure too low");
+                return ESP_ERR_NOT_FOUND;
+            }
+        // ESP_LOGI(TAG, "error=%d, new exposure=%d", error, exposure);
+        }
+
+
+        if (exposure > 2048) {
+            ESP_LOGE(TAG, "exposure too high");
+            return ESP_ERR_NOT_FOUND;
+        }
+        iter++;
+    }
+
+    camera_fb_t * take = sctp_camera_fb_get();
+    *blank_take->readout = take->buf[px * 2] << 8 | take->buf[px*2 +1];
+    sctp_camera_fb_return(take);
+
+    sctp_camera_deinit();
+
+    ESP_LOGI(TAG, "exposure=%d", exposure);
+    blank_take->exposure = exposure;
+    blank_take->gain = 1;
+    
+    standby_start();
+
     return ESP_OK;
 };
 
 
 esp_err_t sctp_sensor_concentration_sample(calibration_t * calibration, uint16_t wavelength, blank_take_t * blank_take, float * sample_take) {
-    vTaskDelay(5000 / portTICK_RATE_MS);
-    *sample_take = 677.79;
+    standby_end();
+
+    sctp_camera_init(&camera_config);
+    sensor_t *camera_sensor = sctp_camera_sensor_get();
+    camera_sensor->set_row_start(camera_sensor, calibration->row);
+    camera_sensor->set_shutter_width(camera_sensor, blank_take->exposure);
+
+    ESP_LOGI(TAG, "exposure set to %d", blank_take->exposure);
+    
+    // flush
+    camera_fb_t * take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    
+    uint16_t px = round((float) ((wavelength - calibration->bias) / calibration->gain));
+    ESP_LOGI(TAG, "wl=%d, px=%d", wavelength, px);
+
+    take = sctp_camera_fb_get();
+    *sample_take = take->buf[px * 2] << 8 | take->buf[px*2 +1];
+    sctp_camera_fb_return(take);
+
+    sctp_camera_deinit();
+
+    standby_start();
+
     return ESP_OK;
 }

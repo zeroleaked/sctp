@@ -159,6 +159,63 @@ void test_spectrum() {
     free(sample_take);
 }
 
+void test_quant_blank() {
+    sctp_sensor_init();
+
+    calibration_t calibration;
+	calibration.gain = -0.7698064209;
+	calibration.bias = 1025.924915;
+	calibration.start = 423;
+	calibration.length = 392;
+    calibration.row = 486;
+
+    blank_take_t blank_take;
+    blank_take.exposure = 10;
+    blank_take.gain = 1;
+    blank_take.readout = (float *) malloc (sizeof(float));
+
+    esp_err_t err = sctp_sensor_concentration_blank(&calibration, 600, &blank_take);
+    TEST_ASSERT_EQUAL(ESP_OK, err);
+
+    ESP_LOGI(TAG, "blank taken!");
+    ESP_LOGI(TAG, "blank = %f", *blank_take.readout);
+
+    free(blank_take.readout);
+}
+
+void test_quant() {
+    sctp_sensor_init();
+
+    calibration_t calibration;
+	calibration.gain = -0.7698064209;
+	calibration.bias = 1025.924915;
+	calibration.start = 423;
+	calibration.length = 392;
+    calibration.row = 486;
+
+    blank_take_t blank_take;
+    blank_take.exposure = 10;
+    blank_take.gain = 1;
+    blank_take.readout = (float *) malloc (sizeof(float));
+
+    uint16_t wavelength = 600;
+
+    esp_err_t err = sctp_sensor_concentration_blank(&calibration, wavelength, &blank_take);
+    TEST_ASSERT_EQUAL(ESP_OK, err);
+
+    ESP_LOGI(TAG, "blank taken! Taking sample soon....");
+    vTaskDelay(5000/ portTICK_PERIOD_MS);
+    float * sample_take = (float *) malloc (sizeof(float));
+    err = sctp_sensor_concentration_sample(&calibration, wavelength, &blank_take, sample_take);
+    TEST_ASSERT_EQUAL(ESP_OK, err);
+    ESP_LOGI(TAG, "sample taken");
+
+    ESP_LOGI(TAG, "blank=%f, sample=%f", *blank_take.readout, *sample_take);
+
+    free(blank_take.readout);
+    free(sample_take);
+}
+
 extern "C" {
 
 void app_main();
@@ -172,7 +229,9 @@ void app_main() {
     // RUN_TEST(row_search);
     // RUN_TEST(row_print);
     // RUN_TEST(test_spectrum_blank);
-    RUN_TEST(test_spectrum);
+    // RUN_TEST(test_spectrum);
+    // RUN_TEST(test_quant_blank);
+    RUN_TEST(test_quant);
 
     UNITY_END();
 }
