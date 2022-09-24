@@ -278,76 +278,71 @@ void sctp_lcd_spec_result_clear(uint8_t cursor)
 
 void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance, uint16_t length)
 {
-  int y_max = 1;
-  int y_min = 0;
-  int x_max = 700;
-  int x_min = 400;
   // display.setTextColor(TFT_TOSCA);
   // display.setTextSize(1);
   // display.setCursor(10, 10);
   // display.println("ABSORBANCE");
-  display.drawRect(33, 35, 305, 225, TFT_BLACK);
-  display.setCursor(10, 30);
-  display.println(y_max);
-  display.setCursor(10, 250);
-  display.println(y_min);
-  display.setCursor(23, 265);
-  display.println(x_min);
-  display.setCursor(325, 265);
-  display.println(x_max);
   
+  // wavelength = x;
+  // absorbance = y;
+  //length = 430;
+
+  display.drawRect(38, 35, 305, 225, TFT_BLACK);
+
+  float a_max = absorbance[0];
+  float a_min = absorbance[0];
+  float wl_max = wavelength[0];
+  float wl_min = wavelength[length-1];
+  for(int i=1;i<length;i++) {
+    if (absorbance[i] >= a_max) a_max = absorbance[i];
+    else a_min = absorbance[i];
+  }
+
+  display.setTextColor(TFT_TOSCA);
+  display.setTextSize(1);
+  for(int i=0; i<5; i++) {
+    char a[] = "X.X";
+    sprintf(a, "%.1f", (double)a_max - a_max/4*i);
+    display.setCursor(8, 30 + 55*i);
+    display.println(a);
+    display.setCursor(25 + 75*i, 265);
+    display.println((int)round(wl_min + (wl_max-wl_min)/4*i));
+  }
+  ESP_LOGI(TAG, "dah setengah");
+
   int i = 0;
   int x_px;
   int y_px;
   float peak_abs = absorbance[0];
   float peak_wl= wavelength[0];
   
-  while(i < length){
-    if(wavelength[i] == wavelength[i+1]){
-      x_px = wavelength[i] - x_min + 35;
-      y_px = 260 - ((absorbance[i] + absorbance[i+1]) / 2) * 225;
-      i = i+2;
-    }
-    else{
-      x_px = wavelength[i] - x_min + 35;
-      y_px = 260 - absorbance[i] * 225;
-      i = i+1;
-    }
+  for(i=0;i<length;i++){
+    ESP_LOGI(TAG, "i=%d", i);
+    ESP_LOGI(TAG, "abs=%.3f", absorbance[i]);
+    // if(wavelength[i] == wavelength[i+1]){
+    //   x_px = wavelength[i] - wl_min + 35;
+    //   y_px = 260 - ((absorbance[i] + absorbance[i+1]) / 2 - a_min) / (a_max-a_min) * 225;
+    //   i = i+2;
+    // }
+    x_px = wavelength[i] - wl_min + 35;
+    y_px = 260 - (absorbance[i]-a_min) / (a_max-a_min) * 225;
     
     if(i==1){
       if(absorbance[i] > peak_abs){
         peak_abs = absorbance[i];
         peak_wl = wavelength[i];
       }
-      display.drawPixel(x_px, y_px-1, TFT_MUSTARD);
-      display.drawPixel(x_px, y_px, TFT_MUSTARD);
-      display.drawPixel(x_px, y_px+1, TFT_MUSTARD);
-      display.drawPixel(x_px+1, y_px-1, TFT_MUSTARD);
-      display.drawPixel(x_px+1, y_px, TFT_MUSTARD);
-      display.drawPixel(x_px+1, y_px+1, TFT_MUSTARD);
+      display.fillRect(x_px, y_px-1, 2, 3, TFT_TOSCA);
     }
-    else if(i==sizeof(wavelength)){
-      display.drawPixel(x_px, y_px-1, TFT_MUSTARD);
-      display.drawPixel(x_px, y_px, TFT_MUSTARD);
-      display.drawPixel(x_px, y_px+1, TFT_MUSTARD);
-      display.drawPixel(x_px-1, y_px-1, TFT_MUSTARD);
-      display.drawPixel(x_px-1, y_px, TFT_MUSTARD);
-      display.drawPixel(x_px-1, y_px+1, TFT_MUSTARD);
+    else if(i==length-1){
+      display.fillRect(x_px-1, y_px-1, 2, 3, TFT_TOSCA);
     }
     else{
       if(absorbance[i] > peak_abs){
         peak_abs = absorbance[i];
         peak_wl = wavelength[i];
       }
-      display.drawPixel(x_px, y_px-1, TFT_MUSTARD);
-      display.drawPixel(x_px, y_px, TFT_MUSTARD);
-      display.drawPixel(x_px, y_px+1, TFT_MUSTARD);
-      display.drawPixel(x_px-1, y_px-1, TFT_MUSTARD);
-      display.drawPixel(x_px-1, y_px, TFT_MUSTARD);
-      display.drawPixel(x_px-1, y_px+1, TFT_MUSTARD);
-      display.drawPixel(x_px+1, y_px-1, TFT_MUSTARD);
-      display.drawPixel(x_px+1, y_px, TFT_MUSTARD);
-      display.drawPixel(x_px+1, y_px+1, TFT_MUSTARD);
+      display.fillRect(x_px-1, y_px-1, 3, 3, TFT_TOSCA);
     }
   }
   
@@ -851,9 +846,9 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   // float conc[] = {0.16, 0.4, 0.86, 1.04}; 
   // float ab[] = {0.08, 0.2, 0.42, 0.52};
   float a_min = 0;
-  float a_max = ab[1];
+  float a_max = ab[0];
   float c_min = 0;
-  float c_max = conc[1];
+  float c_max = conc[0];
 
   for(int i=1;i<curve.points;i++) {
     if (ab[i] >= a_max) a_max = ab[i];
@@ -875,8 +870,8 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   int x_px;
   int y_px;
 
-  //float m = (*regress_line).gradient / 1000; //CHANGE LATER
-  float m = 100; //test case
+  //float m = 100; //test case
+  float m = (*regress_line).gradient;
   float c = (*regress_line).offset;
   for(int i=1;i<329;i++) {
     x_px = 75+i;
@@ -893,15 +888,6 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
     i = i+1;
 
     display.fillRect(x_px-3, y_px-3, 7, 7, TFT_MUSTARD);
-    // display.drawPixel(x_px-1, y_px-1, TFT_TOSCA);
-    // display.drawPixel(x_px-1, y_px, TFT_TOSCA);
-    // display.drawPixel(x_px-1, y_px+1, TFT_TOSCA);
-    // display.drawPixel(x_px, y_px-1, TFT_TOSCA);
-    // display.drawPixel(x_px, y_px, TFT_TOSCA);
-    // display.drawPixel(x_px, y_px+1, TFT_TOSCA);
-    // display.drawPixel(x_px+1, y_px-1, TFT_TOSCA);
-    // display.drawPixel(x_px+1, y_px, TFT_TOSCA);
-    // display.drawPixel(x_px+1, y_px+1, TFT_TOSCA);
   }
 
   switch(cursor) {

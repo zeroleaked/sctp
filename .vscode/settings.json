@@ -4,6 +4,9 @@
         "freertos.h": "c",
         "stdint.h": "c",
         "*.ipp": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "esp_err.h": "c",
+        "cmath": "cpp",
+        "random": "cpp"
     }
 }
