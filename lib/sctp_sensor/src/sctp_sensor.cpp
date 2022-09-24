@@ -101,25 +101,20 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
 };
 
 esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t * blank_take, float * sample_take) {
-    ESP_LOGI(TAG, "sctp_sensor_spectrum_sample()");
     standby_end();
 
     sctp_camera_init(&camera_config);
-    ESP_LOGI(TAG, "init done");
     sensor_t *camera_sensor = sctp_camera_sensor_get();
     camera_sensor->set_row_start(camera_sensor, calibration->row);
     camera_sensor->set_shutter_width(camera_sensor, blank_take->exposure);
 
     // flush
-    ESP_LOGI(TAG, "flushing..");
     camera_fb_t * take = sctp_camera_fb_get();
     sctp_camera_fb_return(take);
     take = sctp_camera_fb_get();
     sctp_camera_fb_return(take);
-    ESP_LOGI(TAG, "flush done");
 
     take = sctp_camera_fb_get();
-    ESP_LOGI(TAG, "fb taken");
     for (int i=0; i < calibration->length; i++) {
         uint16_t readout = take->buf[(calibration->start+i) * 2] << 8 | take->buf[(calibration->start+i) * 2 + 1 ];
         sample_take[calibration->length - 1 - i] = readout;
