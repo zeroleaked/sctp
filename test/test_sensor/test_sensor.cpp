@@ -126,6 +126,39 @@ void test_spectrum_blank() {
     free(blank_take.readout);
 }
 
+void test_spectrum() {
+    sctp_sensor_init();
+
+    calibration_t calibration;
+	calibration.gain = -0.7698064209;
+	calibration.bias = 1025.924915;
+	calibration.start = 423;
+	calibration.length = 392;
+    calibration.row = 486;
+
+    blank_take_t blank_take;
+    blank_take.exposure = 10;
+    blank_take.gain = 1;
+    blank_take.readout = (float *) malloc (sizeof(float) * calibration.length);
+
+    esp_err_t err = sctp_sensor_spectrum_blank(&calibration, &blank_take);
+    TEST_ASSERT_EQUAL(ESP_OK, err);
+
+    ESP_LOGI(TAG, "blank taken! Taking sample soon....");
+    vTaskDelay(5000/ portTICK_PERIOD_MS);
+    float * sample_take = (float *) malloc (sizeof(float) * calibration.length);
+    err = sctp_sensor_spectrum_sample(&calibration, &blank_take, sample_take);
+    TEST_ASSERT_EQUAL(ESP_OK, err);
+    ESP_LOGI(TAG, "sample taken");
+
+    for (int i=0; i<calibration.length; i++) {
+        ESP_LOGI(TAG, "%d:%f:%f", i, blank_take.readout[i], sample_take[i]);
+    }
+
+    free(blank_take.readout);
+    free(sample_take);
+}
+
 extern "C" {
 
 void app_main();
@@ -138,7 +171,8 @@ void app_main() {
     // RUN_TEST(init_test);
     // RUN_TEST(row_search);
     // RUN_TEST(row_print);
-    RUN_TEST(test_spectrum_blank);
+    // RUN_TEST(test_spectrum_blank);
+    RUN_TEST(test_spectrum);
 
     UNITY_END();
 }
