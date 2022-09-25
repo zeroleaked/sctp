@@ -10,11 +10,14 @@
 #include <string.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <stdio.h>
+#include "esp_log.h"
+#include "sdkconfig.h"
+
+#include <i2cdev.h>
+
 #include "sccb.h"
 #include "sensor.h"
-#include <stdio.h>
-#include "sdkconfig.h"
-#include "esp_log.h"
 static const char* TAG = "sccb";
 
 #define LITTLETOBIG(x)          ((x<<8)|(x>>8))
@@ -39,76 +42,37 @@ const int SCCB_I2C_PORT         = 1;
 const int SCCB_I2C_PORT         = 0;
 #endif
 
+static i2c_dev_t i2c_dev;
+
 int SCCB_Init(int pin_sda, int pin_scl)
 {
     ESP_LOGI(TAG, "pin_sda %d pin_scl %d", pin_sda, pin_scl);
-    i2c_config_t conf;
-    memset(&conf, 0, sizeof(i2c_config_t));
-    conf.mode = I2C_MODE_MASTER;
-    conf.sda_io_num = pin_sda;
-    conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
-    conf.scl_io_num = pin_scl;
-    conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-    conf.master.clk_speed = SCCB_FREQ;
 
-    i2c_param_config(SCCB_I2C_PORT, &conf);
-    i2c_driver_install(SCCB_I2C_PORT, conf.mode, 0, 0, 0);
+    i2c_dev.port = SCCB_I2C_PORT;
+    i2c_dev.addr = 0x5D; // mt9m001 slave address
+    i2c_dev.cfg.sda_io_num = pin_sda;
+    i2c_dev.cfg.scl_io_num = pin_scl;
+    i2c_dev.cfg.master.clk_speed = SCCB_FREQ;
     return 0;
 }
 
-int SCCB_Deinit(void)
-{
-    return i2c_driver_delete(SCCB_I2C_PORT);
+int SCCB_Deinit(void) {
+    return ESP_OK;
+
 }
 
 uint16_t SCCB_Read(uint8_t slv_addr, uint8_t reg)
 {
-    uint16_t data=0;
-    uint8_t data_L=0;
-    uint8_t data_H=0;
-    esp_err_t ret = ESP_FAIL;
+    uint16_t in_data = 0;
+    i2c_dev_read(&i2c_dev, &reg, 1, &in_data, 2);
 
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, ( slv_addr << 1 ) | WRITE_BIT, ACK_CHECK_EN); // slave write address 
-    i2c_master_write_byte(cmd, reg, ACK_CHECK_EN); // register address to be read
-    i2c_master_stop(cmd);
-    ret = i2c_master_cmd_begin(SCCB_I2C_PORT, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    if(ret != ESP_OK) return -1;
-
-    cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, ( slv_addr << 1 ) | READ_BIT, ACK_CHECK_EN); // slave read address
-    i2c_master_read_byte(cmd, &data_H, ACK_VAL); // first byte read
-    i2c_master_read_byte(cmd, &data_L, NACK_VAL); // first byte read
-    i2c_master_stop(cmd);
-    ret = i2c_master_cmd_begin(SCCB_I2C_PORT, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    if(ret != ESP_OK) {
-        ESP_LOGE(TAG, "SCCB_Read Failed addr:0x%02x, reg:0x%02x, data:0x%02x, ret:%d", slv_addr, reg, data, ret);
-    }
-
-    data = ((uint16_t )data_H << 8) |  data_L;
-    return data;
+    uint16_t byte_flip = ((in_data & 0x00FF) << 8) | ((in_data & 0xFF00) >> 8); 
+    return byte_flip;
 }
 
 uint8_t SCCB_Write(uint8_t slv_addr, uint8_t reg, uint16_t data)
 {
-    uint8_t data_L = data & 0x00FF;
-    uint8_t data_H = data >> 8;
-    esp_err_t ret = ESP_FAIL;
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, ( slv_addr << 1 ) | WRITE_BIT, ACK_CHECK_EN);
-    i2c_master_write_byte(cmd, reg, ACK_CHECK_EN);
-    i2c_master_write_byte(cmd, data_H, ACK_CHECK_EN);
-    i2c_master_write_byte(cmd, data_L, ACK_CHECK_EN);
-    i2c_master_stop(cmd);
-    ret = i2c_master_cmd_begin(SCCB_I2C_PORT, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    if(ret != ESP_OK) {
-        ESP_LOGE(TAG, "SCCB_Write Failed addr:0x%02x, reg:0x%02x, data:0x%02x, ret:%d", slv_addr, reg, data, ret);
-    }
-    return ret == ESP_OK ? 0 : -1;
+    uint16_t byte_flip = ((data & 0x00FF) << 8) | ((data & 0xFF00) >> 8); 
+    esp_err_t ret = i2c_dev_write(&i2c_dev, &reg, 1, &byte_flip, 2);
+    return ret;
 }

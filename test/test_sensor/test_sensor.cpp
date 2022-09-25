@@ -4,10 +4,14 @@
 #include <freertos/task.h>
 #include <string.h>
 
+#include <i2cdev.h>
+
 #include "sctp_sensor.h"
 #include "sctp_camera.h"
 #include "camera_config.h"
 #include "sctp_common_types.h"
+
+#include "mt9m001.h"
 
 //platformio test --environment esp32-s3-devkitc-1 --filter fsm/test_idle -vvv
 
@@ -21,6 +25,7 @@ static const char TAG[] = "test_sensor";
 // }
 
 void row_search () {
+    i2cdev_init();
     assert(sctp_camera_init(&camera_config) == ESP_OK);
             vTaskDelay(1000);
 
@@ -63,6 +68,7 @@ void row_search () {
 }
 
 void row_print() {
+    i2cdev_init();
     uint16_t row = 486;
     uint8_t samples = 30;
     float * arr = ( float *) malloc (sizeof (float) * 1280 * 30);
@@ -99,6 +105,7 @@ void row_print() {
 }
 
 void test_spectrum_blank() {
+    i2cdev_init();
     sctp_sensor_init();
 
     calibration_t calibration;
@@ -127,6 +134,7 @@ void test_spectrum_blank() {
 }
 
 void test_spectrum() {
+    i2cdev_init();
     sctp_sensor_init();
 
     calibration_t calibration;
@@ -160,6 +168,7 @@ void test_spectrum() {
 }
 
 void test_quant_blank() {
+    i2cdev_init();
     sctp_sensor_init();
 
     calibration_t calibration;
@@ -184,6 +193,7 @@ void test_quant_blank() {
 }
 
 void test_quant() {
+    i2cdev_init();
     sctp_sensor_init();
 
     calibration_t calibration;
@@ -217,6 +227,7 @@ void test_quant() {
 }
 
 void test_exposure() {
+    i2cdev_init();
     sctp_camera_init(&camera_config);
 
     calibration_t calibration;
@@ -265,6 +276,13 @@ void test_exposure() {
 
 }
 
+void init_test() {
+    i2cdev_init();
+
+    sctp_camera_init(&camera_config);
+
+}
+
 extern "C" {
 
 void app_main();
@@ -278,11 +296,11 @@ void app_main() {
     // RUN_TEST(row_search);
     // RUN_TEST(row_print);
     // RUN_TEST(test_spectrum_blank);
-    // RUN_TEST(test_spectrum);
+    RUN_TEST(test_spectrum);
     // RUN_TEST(test_quant_blank);
     // RUN_TEST(test_quant);
 
-    RUN_TEST(test_exposure);
+    // RUN_TEST(test_exposure);
 
     UNITY_END();
 }
