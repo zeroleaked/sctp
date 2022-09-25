@@ -1,4 +1,6 @@
 #include "sctp_lcd.h"
+#include "math.h"
+#include <esp_log.h>
 
 void sctp_lcd_start() {};
 void sctp_lcd_clear() {};

@@ -12,6 +12,7 @@ static const char TAG[] = "sctp";
 Sctp::Sctp()
 {
 	// todo load calibration
+	calibration.row = 477;
 	calibration.gain = -0.7698064209;
 	calibration.bias = 1025.924915;
 	calibration.start = 423;
@@ -93,6 +94,7 @@ void Sctp::refreshLcd()
 	command_t command;
 	TickType_t xLastWakeTime = xTaskGetTickCount();
 	QueueHandle_t queue = lcd_refresh_queue; // copy handle as local variable, somehow task loop don't like member variables
+	ESP_LOGI(TAG, "refreshLcd: queue=0x%08x", (unsigned) queue);
 	for (;;) {
 		vTaskDelayUntil( &xLastWakeTime, 300 / portTICK_RATE_MS );
 		if (xQueueReceive(queue, &command, 0) == pdTRUE) {
