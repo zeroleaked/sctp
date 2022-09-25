@@ -39,7 +39,7 @@ static void takeSpectrumSample(void * pvParameters) {
 
 	esp_err_t report = sctp_sensor_spectrum_sample(calibration, blank_take, sample_take);
 
-    float * absorbance = ((taskParam_t *) pvParameters)->sample_take;
+    float * absorbance = ((taskParam_t *) pvParameters)->absorbance;
 
 	// castings
 	float * blank_buffer = blank_take->readout;
