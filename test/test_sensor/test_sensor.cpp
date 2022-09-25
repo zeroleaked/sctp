@@ -216,6 +216,55 @@ void test_quant() {
     free(sample_take);
 }
 
+void test_exposure() {
+    sctp_camera_init(&camera_config);
+
+    calibration_t calibration;
+	calibration.gain = -0.7698064209;
+	calibration.bias = 1025.924915;
+	calibration.start = 423;
+	calibration.length = 392;
+    calibration.row = 486;
+
+    sensor_t *s = sctp_camera_sensor_get();
+    s->set_row_start(s, 0x000C + calibration.row);
+
+    uint16_t * buffer = (uint16_t *) malloc(sizeof(uint16_t) * calibration.length * 30);
+
+    uint16_t * sample_total = (uint16_t *) malloc(sizeof(uint16_t) * calibration.length);
+    memset(sample_total, 0, sizeof(uint16_t) * calibration.length);
+
+    for (int i=0; i<20; i++) {
+        s->set_shutter_width(s, (i+1)*100);
+
+        camera_fb_t * take = sctp_camera_fb_get();
+        sctp_camera_fb_return(take);
+        take = sctp_camera_fb_get();
+        sctp_camera_fb_return(take);
+        take = sctp_camera_fb_get();
+        sctp_camera_fb_return(take);
+        take = sctp_camera_fb_get();
+        sctp_camera_fb_return(take);
+
+        for (int k=0; k<30; k++) {
+            take = sctp_camera_fb_get();
+
+            for (int j=0; j<calibration.length; j++) {
+                uint16_t readout = take->buf[(calibration.start + calibration.length -1 -j) * 2] << 8 | take->buf[(calibration.start + calibration.length -1 -j) * 2 + 1];
+                sample_total[j] += readout;
+                buffer[i*calibration.length+ calibration.length -1 - j] = readout;
+            }
+            sctp_camera_fb_return(take);
+        }
+
+
+
+    }
+
+
+
+}
+
 extern "C" {
 
 void app_main();
@@ -231,7 +280,9 @@ void app_main() {
     // RUN_TEST(test_spectrum_blank);
     // RUN_TEST(test_spectrum);
     // RUN_TEST(test_quant_blank);
-    RUN_TEST(test_quant);
+    // RUN_TEST(test_quant);
+
+    RUN_TEST(test_exposure);
 
     UNITY_END();
 }
