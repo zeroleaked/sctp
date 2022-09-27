@@ -12,7 +12,7 @@ static const char TAG[] = "sctp";
 Sctp::Sctp()
 {
 	// todo load calibration
-	calibration.row = 477;
+	calibration.row = 496;
 	calibration.gain = -0.7698064209;
 	calibration.bias = 1025.924915;
 	calibration.start = 423;
