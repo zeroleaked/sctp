@@ -2,6 +2,10 @@
 
 #include <stdint.h>
 
+#define SCTP_I2C_PORT 0
+#define SCTP_I2C_SCL GPIO_NUM_10
+#define SCTP_I2C_SDA GPIO_NUM_11 
+
 typedef enum {
 	COMMAND_NONE,
 	SPECTRUM_BLANK,

@@ -1,8 +1,6 @@
 #pragma once
 
-#include <LovyanGFX.h>
 #include <stdint.h>
-#include "sctp_common_types.h"
 
 #define LCD_PIN_MISO    12
 #define LCD_PIN_MOSI    13
@@ -122,22 +120,22 @@ void sctp_lcd_spec_save_finish(char saved_name[20]);
 void sctp_lcd_spec_save_finish_cursor(uint8_t cursor);
 
 void sctp_lcd_conc_curves_opening(uint8_t cursor);
-void sctp_lcd_conc_curves_loading_floats(uint8_t cursor);
 void sctp_lcd_conc_curves_list(uint8_t cursor, curve_t curves[6]);
 void sctp_lcd_conc_curves_list_cursor(uint8_t cursor);
 void sctp_lcd_conc_curves_list_clear(uint8_t cursor);
+void sctp_lcd_conc_curves_loading_floats(uint8_t cursor);
 
 void sctp_lcd_conc_wavelength(uint8_t cursor, uint16_t wavelength);
-void sctp_lcd_conc_wavelength_number(uint16_t wavelength);
 void sctp_lcd_conc_wavelength_clear(uint8_t cursor);
+void sctp_lcd_conc_wavelength_number(uint16_t wavelength);
 
 void sctp_lcd_conc_table_opening(uint8_t cursor);
 void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curve);
 void sctp_lcd_conc_table_clear(uint8_t cursor, uint8_t row_offset, curve_t curve);
 void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration);
 
-void sctp_lcd_conc_blank_sampling(uint8_t cursor);
 void sctp_lcd_conc_blank_waiting(uint8_t cursor);
+void sctp_lcd_conc_blank_sampling(uint8_t cursor);
 void sctp_lcd_conc_blank_clear(uint8_t cursor);
 
 void sctp_lcd_conc_sample_sampling(uint8_t cursor);

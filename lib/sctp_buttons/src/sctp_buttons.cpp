@@ -6,6 +6,7 @@
 #include <pcf8574.h>
 
 #include "sctp_buttons.h"
+#include "sctp_common_types.h"
 
 static const char TAG[] = "sctp_buttons";
 
@@ -15,7 +16,7 @@ void pcf8574_init(i2c_dev_t *pcf, uint8_t *pcf_val) {
     memset(pcf, 0, sizeof(i2c_dev_t));
 
     // Init i2c device descriptor
-    pcf8574_init_desc(pcf, I2C_ADDR, 0, CONFIG_EXAMPLE_I2C_MASTER_SDA, CONFIG_EXAMPLE_I2C_MASTER_SCL);
+    pcf8574_init_desc(pcf, I2C_ADDR, SCTP_I2C_PORT, SCTP_I2C_SDA, SCTP_I2C_SCL);
 }
 
 void sctp_buttons_init(QueueHandle_t * button_events) {
