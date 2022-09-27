@@ -34,7 +34,7 @@ static void takeSpectrumBlank(void * pvParameters) {
     calibration_t * calibration = ((taskParam_t *) pvParameters)->calibration;
 
 	assert(blank_take->readout != NULL);
-	blank_take->exposure = 200;
+	blank_take->exposure = 100;
 	blank_take->gain = 1;
 	esp_err_t report = sctp_sensor_spectrum_blank(calibration, blank_take);
 	
@@ -78,20 +78,20 @@ void SpecBlank::okay(Sctp* sctp)
         case SUBSTATE_SAMPLING: {
             switch (cursor) {
                 case CURSOR_CANCEL: {
-                    vTaskDelete(taskHandle);
-                    taskHandle = NULL;
-                    vQueueDelete(report_queue);
-                    report_queue = NULL;
+                    // vTaskDelete(taskHandle);
+                    // taskHandle = NULL;
+                    // vQueueDelete(report_queue);
+                    // report_queue = NULL;
 
-                    free(taskParam);
-                    taskParam = NULL;
-                    free(sctp->blank_take->readout);
-                    sctp->blank_take->readout = NULL;
-                    free(sctp->blank_take);
-                    sctp->blank_take = NULL;
+                    // free(taskParam);
+                    // taskParam = NULL;
+                    // free(sctp->blank_take->readout);
+                    // sctp->blank_take->readout = NULL;
+                    // free(sctp->blank_take);
+                    // sctp->blank_take = NULL;
 
-                    substate = SUBSTATE_WAITING;
-	                sctp_lcd_spec_blank_waiting(cursor);
+                    // substate = SUBSTATE_WAITING;
+	                // sctp_lcd_spec_blank_waiting(cursor);
                     break;
                 }
             }
