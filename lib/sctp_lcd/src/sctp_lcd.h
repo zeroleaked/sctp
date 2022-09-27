@@ -1,15 +1,22 @@
 #pragma once
 
 #include <LovyanGFX.h>
+#include <stdint.h>
+#include "sctp_common_types.h"
 
 #define LCD_PIN_MISO    12
 #define LCD_PIN_MOSI    13
 #define LCD_PIN_SCLK    14
-#define LCD_PIN_CS      36
-#define LCD_PIN_DC      37
-#define LCD_PIN_BL      47
-#define LCD_PIN_RST     48
 
+// #define LCD_PIN_CS      36
+// #define LCD_PIN_DC      37
+// #define LCD_PIN_BL      47
+// #define LCD_PIN_RST     48
+
+#define LCD_PIN_CS      15
+#define LCD_PIN_DC      33
+#define LCD_PIN_BL      32
+#define LCD_PIN_RST     26
 
 class LGFX : public lgfx::LGFX_Device
 {
@@ -58,7 +65,7 @@ class LGFX : public lgfx::LGFX_Device
         cfg.panel_height     =   480;  // 実際に表示可能な高さ
         cfg.offset_x         =     0;  // パネルのX方向オフセット量
         cfg.offset_y         =     0;  // パネルのY方向オフセット量
-        cfg.offset_rotation  =     3;  // 回転方向の値のオフセット 0~7 (4~7は上下反転)
+        cfg.offset_rotation  =     1;  // 回転方向の値のオフセット 0~7 (4~7は上下反転)
         cfg.dummy_read_pixel =     8;  // ピクセル読出し前のダミーリードのビット数
         cfg.dummy_read_bits  =     1;  // ピクセル以外のデータ読出し前のダミーリードのビット数
         cfg.readable         =  true;  // データ読出しが可能な場合 trueに設定
@@ -92,7 +99,53 @@ class LGFX : public lgfx::LGFX_Device
 };
 
 void sctp_lcd_clear();
+
 void sctp_lcd_start();
-void sctp_lcd_menu(int cursor);
-void sctp_lcd_menu_clear(int cursor);
-void sctp_lcd_conc_input_1(int cursor);
+
+void sctp_lcd_menu(uint8_t cursor);
+void sctp_lcd_menu_clear(uint8_t cursor);
+
+void sctp_lcd_spec_blank_sampling(uint8_t cursor);
+void sctp_lcd_spec_blank_waiting(uint8_t cursor);
+void sctp_lcd_spec_blank_clear(uint8_t cursor);
+
+void sctp_lcd_spec_sample_sampling(uint8_t cursor);
+void sctp_lcd_spec_sample_waiting(uint8_t cursor);
+void sctp_lcd_spec_sample_clear(uint8_t cursor);
+
+void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance, uint16_t length);
+void sctp_lcd_spec_result_clear(uint8_t cursor);
+void sctp_lcd_spec_result_cursor(uint8_t cursor);
+
+void sctp_lcd_spec_save_saving();
+void sctp_lcd_spec_save_finish(char saved_name[20]);
+void sctp_lcd_spec_save_finish_cursor(uint8_t cursor);
+
+void sctp_lcd_conc_curves_opening(uint8_t cursor);
+void sctp_lcd_conc_curves_loading_floats(uint8_t cursor);
+void sctp_lcd_conc_curves_list(uint8_t cursor, curve_t curves[6]);
+void sctp_lcd_conc_curves_list_cursor(uint8_t cursor);
+void sctp_lcd_conc_curves_list_clear(uint8_t cursor);
+
+void sctp_lcd_conc_wavelength(uint8_t cursor, uint16_t wavelength);
+void sctp_lcd_conc_wavelength_number(uint16_t wavelength);
+void sctp_lcd_conc_wavelength_clear(uint8_t cursor);
+
+void sctp_lcd_conc_table_opening(uint8_t cursor);
+void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curve);
+void sctp_lcd_conc_table_clear(uint8_t cursor, uint8_t row_offset, curve_t curve);
+void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration);
+
+void sctp_lcd_conc_blank_sampling(uint8_t cursor);
+void sctp_lcd_conc_blank_waiting(uint8_t cursor);
+void sctp_lcd_conc_blank_clear(uint8_t cursor);
+
+void sctp_lcd_conc_sample_sampling(uint8_t cursor);
+void sctp_lcd_conc_sample_waiting(uint8_t cursor);
+void sctp_lcd_conc_sample_clear(uint8_t cursor);
+
+void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterpolated, conc_regression_t * regress_line);
+void sctp_lcd_conc_regress_error(uint8_t cursor);
+
+void sctp_lcd_history_list(uint8_t cursor, history_t * history_list, uint8_t history_list_length);
+void sctp_lcd_history_list_clear(uint8_t cursor);
