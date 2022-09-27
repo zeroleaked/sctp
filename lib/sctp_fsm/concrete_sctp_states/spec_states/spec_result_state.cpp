@@ -25,7 +25,7 @@ void SpecResult::enter(Sctp* sctp)
 	if (sctp->spectrum_wavelength == NULL) {
 		sctp->spectrum_wavelength = (float *) malloc(sizeof(float) * sctp->calibration.length);
 		for (int i=0; i<sctp->calibration.length; i++) {
-			sctp->spectrum_wavelength[i] = (float)(i + sctp->calibration.start) * sctp->calibration.gain + sctp->calibration.bias;
+			sctp->spectrum_wavelength[sctp->calibration.length-1-i] = (float)(i + sctp->calibration.start) * sctp->calibration.gain + sctp->calibration.bias;
 		}
 	}
 	sctp_lcd_spec_result(cursor, sctp->spectrum_wavelength, sctp->absorbance, sctp->calibration.length);
