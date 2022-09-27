@@ -9,15 +9,33 @@
 
 static const char TAG[] = "sctp_sensor";
 
+#define PIN_LAMP_SWITCH GPIO_NUM_16
+
+// called on sctp startup
 esp_err_t sctp_sensor_init() {
     // standby pin init
     gpio_config_t conf = {};
-    conf.pin_bit_mask = 1LL << camera_config.pin_stnby;
+    conf.intr_type = GPIO_INTR_DISABLE;
     conf.mode = GPIO_MODE_OUTPUT;
+    conf.pin_bit_mask = 1LL << camera_config.pin_stnby;
+    conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    conf.pull_up_en = GPIO_PULLUP_DISABLE;
     gpio_config(&conf);
 
     // start standby
     gpio_set_level( (gpio_num_t) camera_config.pin_stnby, 1);
+
+    // lamp pin init
+    conf = {};
+    conf.intr_type = GPIO_INTR_DISABLE;
+    conf.mode = GPIO_MODE_OUTPUT;
+    conf.pin_bit_mask = 1LL << PIN_LAMP_SWITCH;
+    conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&conf);
+
+    // turn off level
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
 
     return ESP_OK;
 };
@@ -44,6 +62,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     float kp = 0.2;
     int tolerance = 50;
     int iter = 0;
+    gpio_set_level( PIN_LAMP_SWITCH, 1);
     while ((error > tolerance) || (error < -tolerance)) {
         camera_sensor->set_shutter_width(camera_sensor, exposure);
         // flush
@@ -88,6 +107,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     }
 
     camera_fb_t * take = sctp_camera_fb_get();
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
     for (int i=0; i < calibration->length; i++) {
         uint16_t readout = take->buf[(calibration->start+i) * 2] << 8 | take->buf[(calibration->start+i) * 2 +1 ];
         blank_take->readout[calibration->length - 1 - i] = readout;
@@ -123,7 +143,9 @@ esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t 
     take = sctp_camera_fb_get();
     sctp_camera_fb_return(take);
 
+    gpio_set_level( PIN_LAMP_SWITCH, 1);
     take = sctp_camera_fb_get();
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
     for (int i=0; i < calibration->length; i++) {
         uint16_t readout = take->buf[(calibration->start+i) * 2] << 8 | take->buf[(calibration->start+i) * 2 + 1 ];
         sample_take[calibration->length - 1 - i] = readout;
@@ -146,9 +168,9 @@ esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t 
     ESP_LOGI(TAG, "row set to %d", calibration->row);
 
     int exposure = blank_take->exposure;
-    int setpoint = 600;
+    int setpoint = 650;
     int error = setpoint;
-    float kp = 0.2;
+    float kp = 1;
     int tolerance = 50;
     int iter = 0;
 
@@ -157,6 +179,7 @@ esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t 
     uint16_t px = round((float) ((wavelength - calibration->bias) / calibration->gain));
     ESP_LOGI(TAG, "wl=%d, px=%d", wavelength, px);
 
+    gpio_set_level( PIN_LAMP_SWITCH, 1);
     while ((error > tolerance) || (error < -tolerance)) {
         camera_sensor->set_shutter_width(camera_sensor, exposure);
         // flush
@@ -186,7 +209,7 @@ esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t 
         }
 
 
-        if (exposure > 2048) {
+        if (exposure > 4096) {
             ESP_LOGE(TAG, "exposure too high");
             return ESP_ERR_NOT_FOUND;
         }
@@ -194,6 +217,7 @@ esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t 
     }
 
     camera_fb_t * take = sctp_camera_fb_get();
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
     *blank_take->readout = take->buf[px * 2] << 8 | take->buf[px*2 +1];
     sctp_camera_fb_return(take);
 
@@ -232,7 +256,9 @@ esp_err_t sctp_sensor_concentration_sample(calibration_t * calibration, uint16_t
     uint16_t px = round((float) ((wavelength - calibration->bias) / calibration->gain));
     ESP_LOGI(TAG, "wl=%d, px=%d", wavelength, px);
 
+    gpio_set_level( PIN_LAMP_SWITCH, 1);
     take = sctp_camera_fb_get();
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
     *sample_take = take->buf[px * 2] << 8 | take->buf[px*2 +1];
     sctp_camera_fb_return(take);
 

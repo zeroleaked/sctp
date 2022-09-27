@@ -23,11 +23,24 @@ static const char TAG[] = "test_sensor";
 //     calibration
 //     sctp_sensor_spectrum_blank()
 // }
+#define PIN_LAMP_SWITCH GPIO_NUM_16
 
 void row_search () {
     i2cdev_init();
+
     assert(sctp_camera_init(&camera_config) == ESP_OK);
             vTaskDelay(1000);
+
+    // lamp pin init
+    gpio_config_t conf = {};
+    conf.intr_type = GPIO_INTR_DISABLE;
+    conf.mode = GPIO_MODE_OUTPUT;
+    conf.pin_bit_mask = 1LL << PIN_LAMP_SWITCH;
+    conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&conf);
+
+    gpio_set_level( PIN_LAMP_SWITCH, 1);
 
     sensor_t *s = sctp_camera_sensor_get();
     s->set_shutter_width(s, 512);
@@ -61,6 +74,7 @@ void row_search () {
             sctp_camera_fb_return(camera_fb);
         }
     }
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
     ESP_LOGI(TAG, "max_row=%d with val=%d", max_val_row, max_val);
 
     sctp_camera_deinit();
@@ -71,14 +85,39 @@ void row_print() {
     i2cdev_init();
     uint16_t row = 486;
     uint8_t samples = 30;
-    float * arr = ( float *) malloc (sizeof (float) * 1280 * 30);
-    memset(arr, 0, sizeof(float) * 1280);
+    float * arr = ( float *) malloc (sizeof (float) * 1280 * samples);
+    memset(arr, 0, sizeof(float) * 1280 * samples);
     assert(sctp_camera_init(&camera_config) == ESP_OK);
 
+
+    // lamp pin init
+    gpio_config_t conf = {};
+    conf.intr_type = GPIO_INTR_DISABLE;
+    conf.mode = GPIO_MODE_OUTPUT;
+    conf.pin_bit_mask = 1LL << PIN_LAMP_SWITCH;
+    conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&conf);
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
+
+
     sensor_t *s = sctp_camera_sensor_get();
-    s->set_shutter_width(s, 512);
+    s->set_shutter_width(s, 609);
     s->set_row_start(s, 0x000C + row);
 
+    camera_fb_t * take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+
+    ESP_LOGI(TAG, "lamp config done. turning on");
+
+    gpio_set_level( PIN_LAMP_SWITCH, 1);
+    vTaskDelay(30000/ portTICK_PERIOD_MS);
     for (int j=0; j<samples; j++) {
         camera_fb_t * camera_fb = sctp_camera_fb_get(); 
         for (int i=0; i<1280; i++) {
@@ -88,6 +127,8 @@ void row_print() {
         }
         sctp_camera_fb_return(camera_fb);
     }
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
+    ESP_LOGI(TAG, "turned off");
 
     for (int i=0; i<1280; i++) {
         vTaskDelay(10/ portTICK_PERIOD_MS);
@@ -113,10 +154,10 @@ void test_spectrum_blank() {
 	calibration.bias = 1025.924915;
 	calibration.start = 423;
 	calibration.length = 392;
-    calibration.row = 486;
+    calibration.row = 499;
 
     blank_take_t blank_take;
-    blank_take.exposure = 10;
+    blank_take.exposure = 610;
     blank_take.gain = 1;
     blank_take.readout = (float *) malloc (sizeof(float) * calibration.length);
 
@@ -142,7 +183,7 @@ void test_spectrum() {
 	calibration.bias = 1025.924915;
 	calibration.start = 423;
 	calibration.length = 392;
-    calibration.row = 486;
+    calibration.row = 499;
 
     blank_take_t blank_take;
     blank_take.exposure = 10;
@@ -176,17 +217,18 @@ void test_quant_blank() {
 	calibration.bias = 1025.924915;
 	calibration.start = 423;
 	calibration.length = 392;
-    calibration.row = 486;
+    calibration.row = 499;
 
     blank_take_t blank_take;
-    blank_take.exposure = 10;
+    blank_take.exposure = 400;
     blank_take.gain = 1;
     blank_take.readout = (float *) malloc (sizeof(float));
 
-    esp_err_t err = sctp_sensor_concentration_blank(&calibration, 600, &blank_take);
+    esp_err_t err = sctp_sensor_concentration_blank(&calibration, 650, &blank_take);
     TEST_ASSERT_EQUAL(ESP_OK, err);
 
     ESP_LOGI(TAG, "blank taken!");
+    // ESP_LOGI(TAG, "exposure = %f", blank_take.exposure);
     ESP_LOGI(TAG, "blank = %f", *blank_take.readout);
 
     free(blank_take.readout);
@@ -201,7 +243,7 @@ void test_quant() {
 	calibration.bias = 1025.924915;
 	calibration.start = 423;
 	calibration.length = 392;
-    calibration.row = 486;
+    calibration.row = 499;
 
     blank_take_t blank_take;
     blank_take.exposure = 10;
@@ -235,7 +277,7 @@ void test_exposure() {
 	calibration.bias = 1025.924915;
 	calibration.start = 423;
 	calibration.length = 392;
-    calibration.row = 486;
+    calibration.row = 499;
 
     sensor_t *s = sctp_camera_sensor_get();
     s->set_row_start(s, 0x000C + calibration.row);
@@ -283,10 +325,70 @@ void init_test() {
 
 }
 
+void test_lamp() {
+    i2cdev_init();
+    uint16_t row = 486;
+    uint16_t samples = 200;
+    uint32_t * arr = ( uint32_t *) malloc (sizeof (uint32_t) * samples);
+    timeval * time = ( timeval *) malloc (sizeof (timeval) * samples);
+    memset(arr, 0, sizeof(uint32_t) * samples);
+    assert(sctp_camera_init(&camera_config) == ESP_OK);
+
+
+    // lamp pin init
+    gpio_config_t conf = {};
+    conf.intr_type = GPIO_INTR_DISABLE;
+    conf.mode = GPIO_MODE_OUTPUT;
+    conf.pin_bit_mask = 1LL << PIN_LAMP_SWITCH;
+    conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&conf);
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
+
+
+    sensor_t *s = sctp_camera_sensor_get();
+    s->set_shutter_width(s, 1108);
+    s->set_row_start(s, 0x000C + row);
+
+    camera_fb_t * take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+
+    ESP_LOGI(TAG, "lamp config done. turning on");
+
+
+    uint16_t pixel = 488;
+    gpio_set_level( PIN_LAMP_SWITCH, 1);
+    for (int j=0; j<samples; j++) {
+        ESP_LOGI(TAG, "j=%d", j);
+        camera_fb_t * camera_fb = sctp_camera_fb_get(); 
+        arr[j] = (camera_fb->buf[pixel*2] << 8) | camera_fb->buf[1 + pixel*2];
+        time[j]= camera_fb->timestamp;
+        sctp_camera_fb_return(camera_fb);
+        vTaskDelay(750 / portTICK_PERIOD_MS);
+    }
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
+    ESP_LOGI(TAG, "turned off");
+
+    for (int i=0; i<samples; i++) {
+        vTaskDelay(10/ portTICK_PERIOD_MS);
+        ESP_LOGI(TAG, "%ld:%d", time[i].tv_sec*1000+time[i].tv_usec/1000, arr[i]);
+    }
+
+    sctp_camera_deinit();
+
+    free(arr);
+    free(time);
+}
+
 extern "C" {
 
 void app_main();
-
 }
 
 void app_main() {
@@ -296,10 +398,12 @@ void app_main() {
     // RUN_TEST(row_search);
     // RUN_TEST(row_print);
     // RUN_TEST(test_spectrum_blank);
-    RUN_TEST(test_spectrum);
+    // RUN_TEST(test_spectrum);
     // RUN_TEST(test_quant_blank);
     // RUN_TEST(test_quant);
 
+
+    RUN_TEST(test_lamp);
     // RUN_TEST(test_exposure);
 
     UNITY_END();
