@@ -133,6 +133,8 @@ void sctp_lcd_blank_waiting(uint8_t cursor)
 
 void sctp_lcd_blank_sampling(uint8_t cursor)
 {
+  display.fillRoundRect(120, 160, 120, 40, 10, TFT_WHITE);
+
   switch(cursor) {
     case 0: {
       display.fillRoundRect(245, 160, 120, 40, 10, TFT_LIGHTGREY);
@@ -146,7 +148,7 @@ void sctp_lcd_blank_sampling(uint8_t cursor)
 
   display.setTextColor(TFT_BLACK);
   display.setTextSize(1);
-  display.setCursor(155, 175);
+  display.setCursor(150, 175);
   display.println("CANCEL");
   display.drawRoundRect(120, 160, 120, 40, 10, TFT_BLACK);
   display.setCursor(280, 175);
