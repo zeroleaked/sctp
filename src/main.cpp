@@ -62,7 +62,7 @@ void buttons_task() {
             vTaskDelay(200/portTICK_PERIOD_MS);
         }
         // ESP_LOGI(TAG, "state=%d", sctp.getCurrentStateId());
-        vTaskDelay(400/portTICK_PERIOD_MS);
+        vTaskDelay(200/portTICK_PERIOD_MS);
     }
 }
 
