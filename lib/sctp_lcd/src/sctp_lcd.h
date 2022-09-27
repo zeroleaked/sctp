@@ -1,5 +1,7 @@
 #pragma once
 
+#include <LovyanGFX.h>
+#include "sctp_common_types.h"
 #include <stdint.h>
 
 #define LCD_PIN_MISO    12
