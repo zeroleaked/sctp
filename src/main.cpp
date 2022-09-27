@@ -16,7 +16,6 @@ static const char TAG[] = "main";
 i2c_dev_t pcf;
 uint8_t pcf_val;
 uint8_t button;
-static button_state button_s = waiting;
 
 Sctp sctp;
 QueueHandle_t button_events;

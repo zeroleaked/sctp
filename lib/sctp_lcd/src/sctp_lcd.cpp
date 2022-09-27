@@ -287,12 +287,12 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
   // absorbance = y;
   //length = 430;
 
-  display.drawRect(38, 35, 305, 225, TFT_BLACK);
+  display.drawRect(38, 35, 303, 225, TFT_BLACK);
 
   float a_max = absorbance[0];
-  float a_min = absorbance[0];
-  float wl_max = wavelength[0];
-  float wl_min = wavelength[length-1];
+  float a_min = 0;
+  float wl_min = wavelength[0];
+  float wl_max = wavelength[length-1];
   for(int i=1;i<length;i++) {
     if (absorbance[i] >= a_max) a_max = absorbance[i];
     else a_min = absorbance[i];
@@ -317,17 +317,17 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
   float peak_wl= wavelength[0];
   
   for(i=0;i<length;i++){
-    ESP_LOGI(TAG, "i=%d", i);
+    // ESP_LOGI(TAG, "i=%d", i);
     ESP_LOGI(TAG, "abs=%.3f", absorbance[i]);
     // if(wavelength[i] == wavelength[i+1]){
     //   x_px = wavelength[i] - wl_min + 35;
     //   y_px = 260 - ((absorbance[i] + absorbance[i+1]) / 2 - a_min) / (a_max-a_min) * 225;
     //   i = i+2;
     // }
-    x_px = wavelength[i] - wl_min + 35;
+    x_px = wavelength[i] - wl_min + 39;
     y_px = 260 - (absorbance[i]-a_min) / (a_max-a_min) * 225;
     
-    if(i==1){
+    if(i==0){
       if(absorbance[i] > peak_abs){
         peak_abs = absorbance[i];
         peak_wl = wavelength[i];
@@ -819,6 +819,8 @@ void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration){
 
 void sctp_lcd_conc_regress_error(uint8_t cursor)
 {
+  display.fillRoundRect(180, 160, 120, 40, 10, TFT_LIGHTGREY);
+  display.drawRoundRect(180, 160, 120, 40, 10, TFT_BLACK);
   display.setTextColor(TFT_MUSTARD);
   display.setTextSize(1);
   display.setCursor(165, 125);
@@ -826,7 +828,6 @@ void sctp_lcd_conc_regress_error(uint8_t cursor)
   display.setTextColor(TFT_BLACK);
   display.setCursor(228, 175);
   display.println("OK");
-  display.drawRoundRect(180, 160, 120, 40, 10, TFT_BLACK);
 }
 
 void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterpolated, conc_regression_t * regress_line)
