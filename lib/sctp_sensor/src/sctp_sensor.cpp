@@ -55,6 +55,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     sensor_t *camera_sensor = sctp_camera_sensor_get();
     camera_sensor->set_row_start(camera_sensor, calibration->row);
     ESP_LOGI(TAG, "row set to %d", calibration->row);
+    ESP_LOGI(TAG, "sensor_spec_blank start");
 
     int exposure = blank_take->exposure;
     int setpoint = 600;
@@ -63,9 +64,12 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     int tolerance = 50;
     int iter = 0;
     gpio_set_level( PIN_LAMP_SWITCH, 1);
+    vTaskDelay(30000 / portTICK_PERIOD_MS);
     while ((error > tolerance) || (error < -tolerance)) {
+        ESP_LOGI(TAG, "setting shutter %d", exposure);
         camera_sensor->set_shutter_width(camera_sensor, exposure);
         // flush
+        ESP_LOGI(TAG, "flushing");
         camera_fb_t * take = sctp_camera_fb_get();
         sctp_camera_fb_return(take);
         take = sctp_camera_fb_get();
@@ -75,7 +79,9 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
         take = sctp_camera_fb_get();
         sctp_camera_fb_return(take);
 
+        ESP_LOGI(TAG, "getting frame");
         take = sctp_camera_fb_get();
+        ESP_LOGI(TAG, "frame got");
 
         // max search
         int max = 0;
@@ -133,6 +139,10 @@ esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t 
     camera_sensor->set_row_start(camera_sensor, calibration->row);
     camera_sensor->set_shutter_width(camera_sensor, blank_take->exposure);
 
+    gpio_set_level( PIN_LAMP_SWITCH, 1);
+
+    vTaskDelay(30000 / portTICK_PERIOD_MS);
+    
     // flush
     camera_fb_t * take = sctp_camera_fb_get();
     sctp_camera_fb_return(take);
@@ -143,7 +153,6 @@ esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t 
     take = sctp_camera_fb_get();
     sctp_camera_fb_return(take);
 
-    gpio_set_level( PIN_LAMP_SWITCH, 1);
     take = sctp_camera_fb_get();
     gpio_set_level( PIN_LAMP_SWITCH, 0);
     for (int i=0; i < calibration->length; i++) {
