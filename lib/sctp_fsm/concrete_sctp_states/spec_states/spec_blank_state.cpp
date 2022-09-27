@@ -50,6 +50,7 @@ void SpecBlank::okay(Sctp* sctp)
         case SUBSTATE_WAITING: {
             switch (cursor) {
                 case CURSOR_NEXT: {
+                    sctp_lcd_spec_blank_clear(cursor);
                     cursor = CURSOR_NULL;
                     sctp_lcd_spec_blank_sampling(cursor);
 
@@ -122,6 +123,9 @@ void SpecBlank::arrowLeft(Sctp* sctp)
                     cursor = CURSOR_CANCEL;
 	                sctp_lcd_spec_blank_sampling(cursor);
                     break;
+                }
+                case CURSOR_CANCEL: {
+	                sctp_lcd_spec_blank_sampling(cursor);
                 }
             }
         }
