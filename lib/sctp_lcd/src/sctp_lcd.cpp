@@ -295,7 +295,6 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
   float wl_max = wavelength[length-1];
   for(int i=1;i<length;i++) {
     if (absorbance[i] >= a_max) a_max = absorbance[i];
-    else a_min = absorbance[i];
   }
 
   display.setTextColor(TFT_TOSCA);
