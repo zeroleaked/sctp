@@ -154,7 +154,7 @@ void test_spectrum_blank() {
 	calibration.bias = 1025.924915;
 	calibration.start = 423;
 	calibration.length = 392;
-    calibration.row = 499;
+    calibration.row = 496;
 
     blank_take_t blank_take;
     blank_take.exposure = 610;
@@ -397,13 +397,13 @@ void app_main() {
     // RUN_TEST(init_test);
     // RUN_TEST(row_search);
     // RUN_TEST(row_print);
-    // RUN_TEST(test_spectrum_blank);
+    RUN_TEST(test_spectrum_blank);
     // RUN_TEST(test_spectrum);
     // RUN_TEST(test_quant_blank);
     // RUN_TEST(test_quant);
 
 
-    RUN_TEST(test_lamp);
+    // RUN_TEST(test_lamp);
     // RUN_TEST(test_exposure);
 
     UNITY_END();
