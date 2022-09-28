@@ -32,8 +32,9 @@ void ConcTable::enter(Sctp * sctp) {
 
 	cursor = CURSOR_CONC_0;
 	substate = SUBSTATE_CURSOR;
+	row_offset = 0;
 
-	sctp_lcd_conc_table_opening(cursor);
+	sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
 }
 
 void ConcTable::okay(Sctp* sctp) {

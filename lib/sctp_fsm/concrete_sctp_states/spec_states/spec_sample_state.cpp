@@ -78,7 +78,7 @@ void SpecSample::okay(Sctp* sctp)
                 	((taskParam_t *) taskParam)->sample_take = sctp->sample_take;
                 	((taskParam_t *) taskParam)->absorbance = sctp->absorbance;
 
-                    xTaskCreatePinnedToCore(takeSpectrumSample, "takeSpectrumBlank", 2048, taskParam, 4, &taskHandle, 1);
+                    xTaskCreatePinnedToCore(takeSpectrumSample, "takeSpectrumSample", 4096, taskParam, 4, &taskHandle, 1);
                     break;
                 }
                 case CURSOR_CANCEL: {

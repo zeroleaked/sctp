@@ -34,7 +34,7 @@ static void takeSpectrumBlank(void * pvParameters) {
     calibration_t * calibration = ((taskParam_t *) pvParameters)->calibration;
 
 	assert(blank_take->readout != NULL);
-	blank_take->exposure = 10;
+	blank_take->exposure = 200;
 	blank_take->gain = 1;
 	esp_err_t report = sctp_sensor_spectrum_blank(calibration, blank_take);
 	
@@ -64,7 +64,7 @@ void SpecBlank::okay(Sctp* sctp)
                 	((taskParam_t *) taskParam)->calibration = &sctp->calibration;
                 	((taskParam_t *) taskParam)->blank_take = sctp->blank_take;
                     
-                    xTaskCreatePinnedToCore(takeSpectrumBlank, "takeSpectrumBlank", 2048, taskParam, 4, &taskHandle, 1);
+                    xTaskCreatePinnedToCore(takeSpectrumBlank, "takeSpectrumBlank", 8192, taskParam, 4, &taskHandle, 1);
                     break;
                 }
                 case CURSOR_CANCEL: {

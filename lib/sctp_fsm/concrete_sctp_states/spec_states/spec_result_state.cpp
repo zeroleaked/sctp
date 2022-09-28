@@ -19,6 +19,7 @@ static const char TAG[] = "spec_result_state";
 
 void SpecResult::enter(Sctp* sctp)
 {
+	ESP_LOGI(TAG, "length=%d", sctp->calibration.length);
 	sctp_lcd_clear();
 	cursor = CURSOR_SAVE;
 	if (sctp->spectrum_wavelength == NULL) {
