@@ -31,6 +31,7 @@ void app_main(void)
 {
     esp_err_t ret;
     ESP_LOGI(TAG, "HELLO WORLD :)");
+    gpio_pullup_en(PIN_NUM_MOSI);
 
     dummy.id = 1;
     dummy.wavelength = 550;
@@ -108,10 +109,13 @@ void app_main(void)
     // Use POSIX and C standard library functions to work with files.
 
     // First create a file.
-    char name[] = "/curveXXX_XXXnm.csv";
-    sprintf(name, "/curve%d_%dnm.csv", dummy.id, dummy.wavelength);
+    char name[] = "/XXXX_XXXXnm.csv";
+    sprintf(name, "/%d_%dnm.csv", dummy.id, dummy.wavelength);
 
-    const char file_curves[30] = strcat(MOUNT_POINT, name);
+    char file_curves[30];
+    strcat(file_curves, MOUNT_POINT);
+    strcat(file_curves, name);
+    //const char *file_curves = MOUNT_POINT"/1_550nm.csv";
 
     ESP_LOGI(TAG, "Opening file %s", file_curves);
     FILE *f = fopen(file_curves, "w");
@@ -121,32 +125,32 @@ void app_main(void)
     }
     fprintf(f, "id, %d\n", dummy.id);
     fprintf(f, "wavelength, %d\n", dummy.wavelength);
-    fprintf(f, "index, ");
+    fprintf(f, "index, concentration, absorbance\n");
     for(int i=0; i < dummy.points; i++) {
-        fprintf(f, "")
+        fprintf(f, "%d, %.3f, %.3f\n", i+1, dummy.concentration[i], dummy.absorbance[i]);
     }
     fclose(f);
     ESP_LOGI(TAG, "File written");
 
-    const char *file_foo = MOUNT_POINT"/foo.txt";
+    // const char *file_foo = MOUNT_POINT"/foo.txt";
 
-    // Check if destination file exists before renaming
-    struct stat st;
-    if (stat(file_foo, &st) == 0) {
-        // Delete it if it exists
-        unlink(file_foo);
-    }
+    // // Check if destination file exists before renaming
+    // struct stat st;
+    // if (stat(file_foo, &st) == 0) {
+    //     // Delete it if it exists
+    //     unlink(file_foo);
+    // }
 
-    // Rename original file
-    ESP_LOGI(TAG, "Renaming file %s to %s", file_hello, file_foo);
-    if (rename(file_hello, file_foo) != 0) {
-        ESP_LOGE(TAG, "Rename failed");
-        return;
-    }
+    // // Rename original file
+    // ESP_LOGI(TAG, "Renaming file %s to %s", file_hello, file_foo);
+    // if (rename(file_hello, file_foo) != 0) {
+    //     ESP_LOGE(TAG, "Rename failed");
+    //     return;
+    // }
 
     // Open renamed file for reading
-    ESP_LOGI(TAG, "Reading file %s", file_foo);
-    f = fopen(file_foo, "r");
+    ESP_LOGI(TAG, "Reading file %s", file_curves);
+    f = fopen(file_curves, "r");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open file for reading");
         return;
