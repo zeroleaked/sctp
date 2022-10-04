@@ -23,7 +23,7 @@
 #define CURSOR_SAVE 9
 #define CURSOR_BACK 10
 
-#define MAX_POINTS 15
+#define MAX_POINTS 10
 
 static const char TAG[] = "conc_table_state";
 
