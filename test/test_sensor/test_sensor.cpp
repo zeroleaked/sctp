@@ -13,7 +13,7 @@
 
 #include "mt9m001.h"
 
-//platformio test --environment esp32-s3-devkitc-1 --filter fsm/test_idle -vvv
+//platformio test --filter test_sensor -vvv
 
 
 static const char TAG[] = "test_sensor";
@@ -41,6 +41,8 @@ void row_search () {
     gpio_config(&conf);
 
     gpio_set_level( PIN_LAMP_SWITCH, 1);
+
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
 
     sensor_t *s = sctp_camera_sensor_get();
     s->set_shutter_width(s, 512);
@@ -83,7 +85,7 @@ void row_search () {
 
 void row_print() {
     i2cdev_init();
-    uint16_t row = 486;
+    uint16_t row = 499;
     uint8_t samples = 30;
     float * arr = ( float *) malloc (sizeof (float) * 1280 * samples);
     memset(arr, 0, sizeof(float) * 1280 * samples);
@@ -102,7 +104,7 @@ void row_print() {
 
 
     sensor_t *s = sctp_camera_sensor_get();
-    s->set_shutter_width(s, 609);
+    s->set_shutter_width(s, 100);
     s->set_row_start(s, 0x000C + row);
 
     camera_fb_t * take = sctp_camera_fb_get();
@@ -157,7 +159,8 @@ void test_spectrum_blank() {
     calibration.row = 499;
 
     blank_take_t blank_take;
-    blank_take.exposure = 610;
+    blank_take.exposure = (uint16_t *) malloc (sizeof(uint16_t) * calibration.length);
+    blank_take.exposure[0] = 200;
     blank_take.gain = 1;
     blank_take.readout = (float *) malloc (sizeof(float) * calibration.length);
 
@@ -172,41 +175,42 @@ void test_spectrum_blank() {
     }
 
     free(blank_take.readout);
+    free(blank_take.exposure);
 }
 
-void test_spectrum() {
-    i2cdev_init();
-    sctp_sensor_init();
+// void test_spectrum() {
+//     i2cdev_init();
+//     sctp_sensor_init();
 
-    calibration_t calibration;
-	calibration.gain = -0.7698064209;
-	calibration.bias = 1025.924915;
-	calibration.start = 423;
-	calibration.length = 392;
-    calibration.row = 499;
+//     calibration_t calibration;
+// 	calibration.gain = -0.7698064209;
+// 	calibration.bias = 1025.924915;
+// 	calibration.start = 423;
+// 	calibration.length = 392;
+//     calibration.row = 499;
 
-    blank_take_t blank_take;
-    blank_take.exposure = 10;
-    blank_take.gain = 1;
-    blank_take.readout = (float *) malloc (sizeof(float) * calibration.length);
+//     blank_take_t blank_take;
+//     blank_take.exposure = 10;
+//     blank_take.gain = 1;
+//     blank_take.readout = (float *) malloc (sizeof(float) * calibration.length);
 
-    esp_err_t err = sctp_sensor_spectrum_blank(&calibration, &blank_take);
-    TEST_ASSERT_EQUAL(ESP_OK, err);
+//     esp_err_t err = sctp_sensor_spectrum_blank(&calibration, &blank_take);
+//     TEST_ASSERT_EQUAL(ESP_OK, err);
 
-    ESP_LOGI(TAG, "blank taken! Taking sample soon....");
-    vTaskDelay(5000/ portTICK_PERIOD_MS);
-    float * sample_take = (float *) malloc (sizeof(float) * calibration.length);
-    err = sctp_sensor_spectrum_sample(&calibration, &blank_take, sample_take);
-    TEST_ASSERT_EQUAL(ESP_OK, err);
-    ESP_LOGI(TAG, "sample taken");
+//     ESP_LOGI(TAG, "blank taken! Taking sample soon....");
+//     vTaskDelay(5000/ portTICK_PERIOD_MS);
+//     float * sample_take = (float *) malloc (sizeof(float) * calibration.length);
+//     err = sctp_sensor_spectrum_sample(&calibration, &blank_take, sample_take);
+//     TEST_ASSERT_EQUAL(ESP_OK, err);
+//     ESP_LOGI(TAG, "sample taken");
 
-    for (int i=0; i<calibration.length; i++) {
-        ESP_LOGI(TAG, "%d:%f:%f", i, blank_take.readout[i], sample_take[i]);
-    }
+//     for (int i=0; i<calibration.length; i++) {
+//         ESP_LOGI(TAG, "%d:%f:%f", i, blank_take.readout[i], sample_take[i]);
+//     }
 
-    free(blank_take.readout);
-    free(sample_take);
-}
+//     free(blank_take.readout);
+//     free(sample_take);
+// }
 
 void test_quant_blank() {
     i2cdev_init();
@@ -220,7 +224,8 @@ void test_quant_blank() {
     calibration.row = 499;
 
     blank_take_t blank_take;
-    blank_take.exposure = 400;
+    uint16_t exposure = 10;
+    blank_take.exposure = &exposure;
     blank_take.gain = 1;
     blank_take.readout = (float *) malloc (sizeof(float));
 
@@ -246,7 +251,8 @@ void test_quant() {
     calibration.row = 499;
 
     blank_take_t blank_take;
-    blank_take.exposure = 10;
+    uint16_t exposure = 10;
+    blank_take.exposure = &exposure;
     blank_take.gain = 1;
     blank_take.readout = (float *) malloc (sizeof(float));
 
@@ -395,7 +401,7 @@ void app_main() {
     UNITY_BEGIN();
 
     // RUN_TEST(init_test);
-    // RUN_TEST(row_search);
+    RUN_TEST(row_search);
     // RUN_TEST(row_print);
     // RUN_TEST(test_spectrum_blank);
     // RUN_TEST(test_spectrum);
@@ -403,7 +409,7 @@ void app_main() {
     // RUN_TEST(test_quant);
 
 
-    RUN_TEST(test_lamp);
+    // RUN_TEST(test_lamp);
     // RUN_TEST(test_exposure);
 
     UNITY_END();

@@ -41,7 +41,7 @@ static void takeConcentrationBlank(void * pvParameters) {
     calibration_t * calibration = ((taskParam_t *) pvParameters)->calibration;
 
 	assert(blank_take->readout != NULL);
-	blank_take->exposure = 10;
+	*blank_take->exposure = 10;
 	blank_take->gain = 1;
 	esp_err_t report = sctp_sensor_concentration_blank(calibration, wavelength, blank_take);
 	
@@ -66,6 +66,7 @@ void ConcBlank::okay(Sctp* sctp)
                     assert(sctp->blank_take == NULL);
                     sctp->blank_take = (blank_take_t *) malloc (sizeof(blank_take_t));
 	                sctp->blank_take->readout = (float *) malloc(sizeof(float));
+	                sctp->blank_take->exposure = (uint16_t *) malloc(sizeof(uint16_t));
 
                 	((taskParam_t *) taskParam)->report_queue = report_queue;
                 	((taskParam_t *) taskParam)->calibration = &sctp->calibration;
