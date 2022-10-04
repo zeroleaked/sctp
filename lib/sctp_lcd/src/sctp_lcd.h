@@ -116,6 +116,7 @@ void sctp_lcd_spec_sample_clear(uint8_t cursor);
 void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance, uint16_t length);
 void sctp_lcd_spec_result_clear(uint8_t cursor);
 void sctp_lcd_spec_result_cursor(uint8_t cursor);
+void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t length);
 
 void sctp_lcd_spec_save_saving();
 void sctp_lcd_spec_save_finish(char saved_name[20]);

@@ -418,6 +418,8 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
   display.println("MAIN MENU");
 }
 
+void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t length) {}
+
 void sctp_lcd_spec_result_cursor(uint8_t cursor){}
 
 void sctp_lcd_conc_curves_opening(uint8_t cursor){}

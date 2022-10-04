@@ -24,4 +24,5 @@ private:
 	SpecResult& operator=(const SpecResult& other);
 
     uint8_t cursor;
+	uint8_t substate;
 };
