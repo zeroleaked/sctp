@@ -5,6 +5,33 @@
 
 #include "sctp_flash.h"
 
+#include <esp_err.h>
+#include <stdint.h>
+
+#include <string.h>
+#include <sys/unistd.h>
+#include <sys/stat.h>
+#include "esp_vfs_fat.h"
+#include "sdmmc_cmd.h"
+
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <dirent.h>
+
+#include "sctp_common_types.h"
+
+#define MOUNT_POINT "/sdcard"
+
+#define PIN_NUM_MISO    GPIO_NUM_4
+#define PIN_NUM_MOSI    GPIO_NUM_5
+#define PIN_NUM_CLK     GPIO_NUM_6
+#define PIN_NUM_CS_EXT  GPIO_NUM_7
+#define PIN_NUM_CS_INT  GPIO_NUM_15
+
+void sctp_flash_init(sdmmc_card_t * card, gpio_num_t cs_gpio);
+void sctp_flash_deinit(sdmmc_card_t * card);
+
 static const char TAG[] = "sctp_flash";
 sdmmc_host_t host = SDSPI_HOST_DEFAULT();
 
@@ -44,7 +71,7 @@ void sctp_flash_init(sdmmc_card_t * card, gpio_num_t cs_gpio) {
 
     // This initializes the slot without card detect (CD) and write protect (WP) signals.
     sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
-    slot_config.gpio_cs = PIN_NUM_CS_INT;
+    slot_config.gpio_cs = cs_gpio;
     slot_config.host_id = (spi_host_device_t)host.slot;
 
     ESP_LOGI(TAG, "Mounting filesystem");
@@ -91,13 +118,17 @@ esp_err_t sctp_flash_save_spectrum(float * absorbance, float * wavelength, uint1
     if (dir == NULL) {
         ESP_LOGI(TAG, "Could'nt open directory");
     }
-    while ((de = readdir(dir)) != NULL)
-        count++;
+    char * temp;
+    while ((de = readdir(dir)) != NULL) {
+        temp = de->d_name;
+        if(temp[0] != '_' && temp[0] != '.')
+            count++;
+    }
     closedir(dir);
 
     // Create a file.
-    char file_spec[] = "/sdcard/spectrum/spectrum_XXX.csv";
-    sprintf(file_spec, "/sdcard/spectrum/spectrum_%d.csv", count+1);
+    char file_spec[] = "/sdcard/spectrum/spec_XXXX.csv";
+    sprintf(file_spec, "/sdcard/spectrum/spec_%d.csv", count+1);
 
     ESP_LOGI(TAG, "Opening file %s", file_spec);
     FILE *f = fopen(file_spec, "w");
@@ -147,6 +178,74 @@ esp_err_t sctp_flash_save_curve(curve_t curve) {
     return ESP_OK;
 }
 
+esp_err_t sctp_flash_save_calibration(calibration_t data, char * filename) {
+    // First create a file.
+    char file_cal[] = "/sdcard/calibration.csv";
+
+    ESP_LOGI(TAG, "Opening file %s", file_cal);
+    FILE *f = fopen(file_cal, "w");
+    if (f == NULL) {
+        ESP_LOGE(TAG, "Failed to open file for writing");
+        return ESP_FAIL;
+    }
+    fprintf(f, "gain, %.3f\n", (double)data.gain);
+    fprintf(f, "bias, %.3f\n", (double)data.bias);
+    fprintf(f, "row, %d\n", data.row);
+    fprintf(f, "start, %d\n", data.start);
+    fprintf(f, "length, %d\n", data.length);
+    fclose(f);
+    ESP_LOGI(TAG, "File written");
+
+    return ESP_OK;
+}
+
+esp_err_t sctp_flash_load_calibration(calibration_t * data, char * filename) {
+    char line[NAME_LEN];
+    char file_cal[] = "/sdcard/calibration.csv";
+    char *temp;
+
+    // Open file for reading
+    ESP_LOGI(TAG, "Reading file %s", file_cal);
+    FILE *f = fopen(file_cal, "r");
+    if (f == NULL) {
+        ESP_LOGE(TAG, "Failed to open file for reading");
+        return;
+    }
+    int i = 0;
+    while(fgets(line, sizeof(line), f)) {
+        switch(i) {
+            case 0: {
+                temp = strtok(line, ", ");
+                data->gain = (float) atof(strtok(NULL, ", "));
+                break;
+            }
+            case 1: {
+                temp = strtok(line, ", ");
+                data->bias = (float) atof(strtok(NULL, ", "));
+                break;
+            }
+            case 2: {
+                temp = strtok(line, ", ");
+                data->row = atoi(strtok(NULL, ", "));
+                break;
+            }
+            case 3: {
+                temp = strtok(line, ", ");
+                data->start = atoi(strtok(NULL, ", "));
+                break;
+            }
+            case 4: {
+                temp = strtok(line, ", ");
+                data->length = atoi(strtok(NULL, ", "));
+                break;
+            }
+        }
+        i++;
+    }
+    fclose(f);
+    return ESP_OK;
+}
+
 const char mockup_curves_filename[][20] = {
     "curve1_400nm.csv",
     "curve2_450nm.csv",
@@ -157,47 +256,9 @@ const char mockup_curves_filename[][20] = {
 };
 
 esp_err_t sctp_flash_load_curve_list(curve_t curves[6]) {
-    vTaskDelay(2000 / portTICK_RATE_MS);
-    // wavelength = 0 then empty
-
-    for (int i=0; i<6; i++) {
-        curves[i].id = i;
-
-        if (i < 3) {
-            curves[i].wavelength = 400 + i*50;
-            curves[i].points = 5;
-        }
-        else if (i == 3) {
-            curves[i].wavelength = 700;
-            curves[i].points = 5;
-        }
-        else {
-            curves[i].wavelength = 0;
-            curves[i].points = 0;
-        }
-
-        strcpy(curves[i].filename, mockup_curves_filename[i]);
-    }
-
-    return ESP_OK;
-}
-
-esp_err_t sctp_flash_load_curve_floats(curve_t * curve) {
-    for (int i=0; i < 15; i++) {
-        curve->absorbance[i] = 0;
-        curve->concentration[i] = 0;
-        if (i < curve->points) {
-            curve->absorbance[i] = (i+1) * 0.1;
-            curve->concentration[i] = (i+1) * 0.001;
-        }
-    }
-
-    return ESP_OK;
-}
-
-esp_err_t sctp_flash_load_history_list(char ** filenames) {
-    char* dir_name = "/sdcard/spectrum";
+    char *temp;
     struct dirent *de;
+    char dir_name[] = "/sdcard/curves/";
     int i = 0;
 
     DIR *dir = opendir(dir_name);
@@ -205,11 +266,124 @@ esp_err_t sctp_flash_load_history_list(char ** filenames) {
         ESP_LOGI(TAG, "Could'nt open directory");
     }
     while ((de = readdir(dir)) != NULL) {
-        filenames[i] = de->d_name;
-        i++;
+        temp = de->d_name;
+        if(temp[0] != '_' && temp[0] != '.') {
+            strcpy(curves[i].filename, temp);
+            ESP_LOGI(TAG, "%s", curves[i].filename);
+            i++;
+        }
     }
     closedir(dir);
+    return ESP_OK;
+    // wavelength = 0 then empty
+
+    // for (int i=0; i<6; i++) {
+    //     curves[i].id = i;
+
+    //     if (i < 3) {
+    //         curves[i].wavelength = 400 + i*50;
+    //         curves[i].points = 5;
+    //     }
+    //     else if (i == 3) {
+    //         curves[i].wavelength = 700;
+    //         curves[i].points = 5;
+    //     }
+    //     else {
+    //         curves[i].wavelength = 0;
+    //         curves[i].points = 0;
+    //     }
+
+    //     strcpy(curves[i].filename, mockup_curves_filename[i]);
+    // }
+}
+
+esp_err_t sctp_flash_load_curve_floats(curve_t * curve) {
+    char line[2 * NAME_LEN];
+    char file_curves[] = "/sdcard/curves/";
+    char *temp;
+    strcat(file_curves, curve->filename);
+
+    // Open file for reading
+    ESP_LOGI(TAG, "Reading file %s", file_curves);
+    FILE *f = fopen(file_curves, "r");
+    if (f == NULL) {
+        ESP_LOGE(TAG, "Failed to open file for reading");
+        return;
+    }
+    int i = 0;
+    while(fgets(line, sizeof(line), f)) {
+        if(i==0) {
+            temp = strtok(line, ", ");
+            curve->id = atoi(strtok(NULL, ", "));
+        } else if(i==1) {
+            temp = strtok(line, ", ");
+            curve->wavelength = atoi(strtok(NULL, ", "));
+        } else if(i==2) {
+        } else {
+            temp = strtok(line, ", ");
+            int idx = atoi(temp);     
+            curve->concentration[idx-1] = (float) atof(strtok(NULL, ", "));
+            curve->absorbance[idx-1] = (float) atof(strtok(NULL, ", "));
+        }
+        i++;
+    }
+    fclose(f);
+    curve->points = i-3;
+
+    // for (int i=0; i < 15; i++) {
+    //     curve->absorbance[i] = 0;
+    //     curve->concentration[i] = 0;
+    //     if (i < curve->points) {
+    //         curve->absorbance[i] = (i+1) * 0.1;
+    //         curve->concentration[i] = (i+1) * 0.001;
+    //     }
+    // }
+
+    return ESP_OK;
+}
+
+esp_err_t sctp_flash_load_history_list(char filenames[FILE_LEN][NAME_LEN]) {
+    uint8_t count = 0;
+    struct stat sb;
+    char temp[NAME_LEN];
+
+    for(int i=0; i<60; i++) {
+        char dir_name[] = "/sdcard/spectrum/";
+        sprintf(temp, "spec_%d.csv", i+1);
+        strcat(dir_name, temp);
+        if(stat(dir_name, &sb) == 0) {
+            ESP_LOGI(TAG, "match");
+            ESP_LOGI(TAG, "%d, %s", i, temp);
+            strcpy(filenames[count], temp);
+            count++;
+        }
+    }
+    return ESP_OK;
 }
 
 esp_err_t sctp_flash_load_spectrum(char * filename, float * absorbance, float * wavelength, uint16_t length) {
+    char line[NAME_LEN];
+    char file_spec[] = "/sdcard/spectrum/";
+    char filename[] = "spec_6.csv";
+    strcat(file_spec, filename);
+
+    // Open file for reading
+    ESP_LOGI(TAG, "Reading file %s", file_spec);
+    FILE *f = fopen(file_spec, "r");
+    if (f == NULL) {
+        ESP_LOGE(TAG, "Failed to open file for reading");
+        return;
+    }
+    int i = 0;
+    while(fgets(line, sizeof(line), f)) {
+        if(i != 0) {
+            wavelength[i-1] = (float) atof(strtok(line, ", "));
+            absorbance[i-1] = (float) atof(strtok(NULL, ", "));
+            ESP_LOGI(TAG, "%d, %.3f, %.3f", i, (double)wavelength[i-1], (double)absorbance[i-1]);
+        }
+        i++;
+    }
+    fclose(f);
+    length = i-1;
+    return ESP_OK;
 }
