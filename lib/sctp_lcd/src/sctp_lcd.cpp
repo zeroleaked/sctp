@@ -300,15 +300,10 @@ void sctp_lcd_spec_result_clear(uint8_t cursor)
 
 void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance, uint16_t length)
 {
-  // display.setTextColor(TFT_TOSCA);
-  // display.setTextSize(1);
-  // display.setCursor(10, 10);
-  // display.println("ABSORBANCE");
-  
-  // wavelength = x;
-  // absorbance = y;
-  //length = 430;
-
+  display.setTextColor(TFT_TOSCA);
+  display.setTextSize(1);
+  display.setCursor(40, 10);
+  display.println("Absorbance vs. Wavelength");
   display.drawRect(38, 35, 303, 225, TFT_BLACK);
 
   float a_max = absorbance[0];
@@ -318,6 +313,10 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
   for(int i=1;i<length;i++) {
     if (absorbance[i] >= a_max) a_max = absorbance[i];
   }
+  if(a_max <= 0.8)
+    a_max = 0.8;
+  else
+    a_max = 1.2;
 
   display.setTextColor(TFT_TOSCA);
   display.setTextSize(1);
@@ -333,19 +332,42 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
   int i = 0;
   int x_px;
   int y_px;
+  int y_prev;
   float peak_abs = absorbance[0];
   float peak_wl= wavelength[0];
   
   for(i=0;i<length;i++){
-    // ESP_LOGI(TAG, "i=%d", i);
-    // if(wavelength[i] == wavelength[i+1]){
-    //   x_px = wavelength[i] - wl_min + 35;
-    //   y_px = 260 - ((absorbance[i] + absorbance[i+1]) / 2 - a_min) / (a_max-a_min) * 225;
-    //   i = i+2;
-    // }
-    x_px = wavelength[i] - wl_min + 39;
+    x_px = (wavelength[i] - wl_min) / (wl_max-wl_min) * 300 + 39;
     y_px = 260 - (absorbance[i]-a_min) / (a_max-a_min) * 225;
-    
+    if(i==0)
+      y_prev = y_px;
+    int dy = abs(y_px-y_prev);
+    if(dy > 3 && dy < 6) {
+      if(y_prev < y_px)
+        display.fillRect(x_px-1, (y_prev + dy/2) - 1, 3, 3, TFT_TOSCA);
+      else
+        display.fillRect(x_px-1, (y_prev - dy/2) - 1, 3, 3, TFT_TOSCA);
+    } else if(dy >= 6 && dy < 12) {
+      if(y_prev < y_px){
+        display.fillRect(x_px-1, (y_prev + dy/3) - 1, 3, 3, TFT_TOSCA);
+        display.fillRect(x_px-1, (y_prev + dy*2/3) - 1, 3, 3, TFT_TOSCA);
+      } else {
+        display.fillRect(x_px-1, (y_prev - dy/3) - 1, 3, 3, TFT_TOSCA);
+        display.fillRect(x_px-1, (y_prev - dy*2/3) - 1, 3, 3, TFT_TOSCA);
+      }
+    } else if(dy >= 12) {
+      if(y_prev < y_px){
+        display.fillRect(x_px-2, (y_prev + dy/4) - 1, 3, 3, TFT_TOSCA);
+        display.fillRect(x_px-1, (y_prev + dy*2/4) - 1, 3, 3, TFT_TOSCA);
+        display.fillRect(x_px-1, (y_prev + dy*3/4) - 1, 3, 3, TFT_TOSCA);
+      } else {
+        display.fillRect(x_px-2, (y_prev - dy*3/4) - 1, 3, 3, TFT_TOSCA);
+        display.fillRect(x_px-1, (y_prev - dy*2/4) - 1, 3, 3, TFT_TOSCA);
+        display.fillRect(x_px-1, (y_prev - dy/4) - 1, 3, 3, TFT_TOSCA);
+      }
+    }
+    y_prev = y_px;
+
     if(i==0){
       if(absorbance[i] > peak_abs){
         peak_abs = absorbance[i];
@@ -373,29 +395,33 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
   display.setCursor(105, 290);
   display.println((int)peak_wl);
   display.setCursor(140, 290);
-  display.println("nm,    ABS:");
-  display.setCursor(245, 290);
+  display.println("nm,    ABSORBANCE:");
+  display.setCursor(345, 290);
   display.println(peak_abs);
   
   switch(cursor){
     case 0:{
+      display.fillRoundRect(365, 35, 100, 35, 5, TFT_LIGHTGREY);
+      break;
+    }    
+    case 1:{
       display.fillRoundRect(365, 85, 100, 35, 5, TFT_LIGHTGREY);
       break;
     }
-    case 1:{
+    case 2:{
       display.fillRoundRect(365, 135, 100, 35, 5, TFT_LIGHTGREY);
       break;
     }
-    case 2:{
+    case 3:{
       display.fillRoundRect(365, 185, 100, 35, 5, TFT_LIGHTGREY);
       break;
     }
-    case 3:{
+    case 4:{
       display.fillRoundRect(365, 235, 100, 35, 5, TFT_LIGHTGREY);
       break;
     }
     default:{
-      display.fillRoundRect(365, 85, 100, 35, 5, TFT_LIGHTGREY);
+      display.fillRoundRect(365, 35, 100, 35, 5, TFT_LIGHTGREY);
       break;
     }
   }
@@ -418,7 +444,103 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
   display.println("MAIN MENU");
 }
 
-void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t length) {}
+void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t length) {
+  display.setTextColor(TFT_TOSCA);
+  display.setTextSize(0.75);
+  display.setCursor(5, 8);
+  display.println("Absorbance");
+  display.drawRect(35, 27, 363, 270, TFT_BLACK);
+
+  float a_max = absorbance[0];
+  float a_min = 0;
+  float wl_min = wavelength[0];
+  float wl_max = wavelength[length-1];
+  for(int i=1;i<length;i++) {
+    if (absorbance[i] >= a_max) a_max = absorbance[i];
+  }
+  if(a_max <= 0.8)
+    a_max = 0.8;
+  else
+    a_max = 1.2;
+
+  display.setTextColor(TFT_TOSCA);
+  display.setTextSize(1);
+  for(int i=0; i<5; i++) {
+    char a[] = "X.X";
+    sprintf(a, "%.1f", (double)a_max - a_max/4*i);
+    display.setCursor(5, 30 + 65*i);
+    display.println(a);
+    display.setCursor(22 + 90*i, 265);
+    display.println((int)round(wl_min + (wl_max-wl_min)/4*i));
+  }
+
+  int i = 0;
+  int x_px;
+  int y_px;
+  int y_prev;
+  float peak_abs = absorbance[0];
+  float peak_wl= wavelength[0];
+  
+  for(i=0;i<length;i++){
+    x_px = (wavelength[i] - wl_min) / (wl_max-wl_min) * 300 + 39;
+    y_px = 260 - (absorbance[i]-a_min) / (a_max-a_min) * 225;
+    if(i==0)
+      y_prev = y_px;
+    int dy = abs(y_px-y_prev);
+    if(dy > 3 && dy < 6) {
+      if(y_prev < y_px)
+        display.fillRect(x_px-1, (y_prev + dy/2) - 1, 3, 3, TFT_TOSCA);
+      else
+        display.fillRect(x_px-1, (y_prev - dy/2) - 1, 3, 3, TFT_TOSCA);
+    } else if(dy >= 6 && dy < 12) {
+      if(y_prev < y_px){
+        display.fillRect(x_px-1, (y_prev + dy/3) - 1, 3, 3, TFT_TOSCA);
+        display.fillRect(x_px-1, (y_prev + dy*2/3) - 1, 3, 3, TFT_TOSCA);
+      } else {
+        display.fillRect(x_px-1, (y_prev - dy/3) - 1, 3, 3, TFT_TOSCA);
+        display.fillRect(x_px-1, (y_prev - dy*2/3) - 1, 3, 3, TFT_TOSCA);
+      }
+    } else if(dy >= 12) {
+      if(y_prev < y_px){
+        display.fillRect(x_px-2, (y_prev + dy/4) - 1, 3, 3, TFT_TOSCA);
+        display.fillRect(x_px-1, (y_prev + dy*2/4) - 1, 3, 3, TFT_TOSCA);
+        display.fillRect(x_px-1, (y_prev + dy*3/4) - 1, 3, 3, TFT_TOSCA);
+      } else {
+        display.fillRect(x_px-2, (y_prev - dy*3/4) - 1, 3, 3, TFT_TOSCA);
+        display.fillRect(x_px-1, (y_prev - dy*2/4) - 1, 3, 3, TFT_TOSCA);
+        display.fillRect(x_px-1, (y_prev - dy/4) - 1, 3, 3, TFT_TOSCA);
+      }
+    }
+    y_prev = y_px;
+
+    if(i==0){
+      if(absorbance[i] > peak_abs){
+        peak_abs = absorbance[i];
+        peak_wl = wavelength[i];
+      }
+      display.fillRect(x_px, y_px-1, 2, 3, TFT_TOSCA);
+    }
+    else if(i==length-1){
+      display.fillRect(x_px-1, y_px-1, 2, 3, TFT_TOSCA);
+    }
+    else{
+      if(absorbance[i] > peak_abs){
+        peak_abs = absorbance[i];
+        peak_wl = wavelength[i];
+      }
+      display.fillRect(x_px-1, y_px-1, 3, 3, TFT_TOSCA);
+    }
+  }
+  
+  peak_wl = round(peak_wl);
+
+  display.setTextColor(TFT_TOSCA);
+  display.setTextSize(0.75);
+  display.setCursor(404, 260);
+  display.println("Wavelength");
+  display.setCursor(404, 275);
+  display.println("(nm)");
+}
 
 void sctp_lcd_spec_result_cursor(uint8_t cursor){}
 
