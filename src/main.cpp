@@ -47,8 +47,8 @@ void buttons_task() {
             vTaskDelay(200/portTICK_PERIOD_MS);
         }
         if (((pcf_val>>2)&1)==0) {
-            ESP_LOGI(TAG, "button UP pressed");
-            sctp.arrowUp();
+            ESP_LOGI(TAG, "button DOWN pressed");
+            sctp.arrowDown();
             vTaskDelay(200/portTICK_PERIOD_MS);
         }
         if (((pcf_val>>3)&1)==0) {
@@ -57,8 +57,8 @@ void buttons_task() {
             vTaskDelay(200/portTICK_PERIOD_MS);
         }
         if (((pcf_val>>4)&1)==0) {
-            ESP_LOGI(TAG, "button DOWN pressed");
-            sctp.arrowDown();
+            ESP_LOGI(TAG, "button UP pressed");
+            sctp.arrowUp();
             vTaskDelay(200/portTICK_PERIOD_MS);
         }
         // ESP_LOGI(TAG, "state=%d", sctp.getCurrentStateId());
