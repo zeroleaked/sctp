@@ -36,11 +36,7 @@ typedef struct {
 	uint16_t length; // length of full spectrum
 } calibration_t;
 
-sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-sdmmc_card_t * card;
-const char mount_point[] = MOUNT_POINT;
-
-void sctp_flash_init(gpio_num_t cs_gpio) {
+void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** card) {
     esp_err_t ret;
     ESP_LOGI(TAG, "HELLO WORLD :)");
     gpio_pullup_en(PIN_NUM_MOSI);
@@ -55,11 +51,8 @@ void sctp_flash_init(gpio_num_t cs_gpio) {
         .allocation_unit_size = 16 * 1024
     };
     
-    const char mount_point[] = MOUNT_POINT;
     ESP_LOGI(TAG, "Initializing SD card");
     ESP_LOGI(TAG, "Using SPI peripheral");
-
-    //sdmmc_host_t host = SDSPI_HOST_DEFAULT();
 
     spi_bus_config_t bus_cfg = {
         .mosi_io_num = PIN_NUM_MOSI,
@@ -69,7 +62,7 @@ void sctp_flash_init(gpio_num_t cs_gpio) {
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
     };
-    ret = spi_bus_initialize((spi_host_device_t)host.slot, &bus_cfg, SPI_DMA_CH_AUTO);
+    ret = spi_bus_initialize(host->slot, &bus_cfg, SPI_DMA_CH_AUTO);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize bus.");
         return;
@@ -78,10 +71,11 @@ void sctp_flash_init(gpio_num_t cs_gpio) {
     // This initializes the slot without card detect (CD) and write protect (WP) signals.
     sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
     slot_config.gpio_cs = cs_gpio;
-    slot_config.host_id = (spi_host_device_t)host.slot;
+    slot_config.host_id = host->slot;
 
     ESP_LOGI(TAG, "Mounting filesystem");
-    ret = esp_vfs_fat_sdspi_mount(mount_point, &host, &slot_config, &mount_config, &card);
+    const char mount_point[] = MOUNT_POINT;
+    ret = esp_vfs_fat_sdspi_mount(mount_point, host, &slot_config, &mount_config, card);
 
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
@@ -96,17 +90,18 @@ void sctp_flash_init(gpio_num_t cs_gpio) {
     ESP_LOGI(TAG, "Filesystem mounted");
 
     // Card has been initialized, print its properties
-    sdmmc_card_print_info(stdout, card);
+    sdmmc_card_print_info(stdout, *card);
 }
 
-void sctp_flash_deinit() {
+void sctp_flash_deinit(sdmmc_host_t * host, sdmmc_card_t * card) {
     //sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     // All done, unmount partition and disable SPI peripheral
+    const char mount_point[] = MOUNT_POINT;
     esp_vfs_fat_sdcard_unmount(mount_point, card);
     ESP_LOGI(TAG, "Card unmounted");
 
     //deinitialize the bus after all devices are removed
-    spi_bus_free((spi_host_device_t)host.slot);
+    spi_bus_free(host->slot);
 }
 
 esp_err_t sctp_flash_save_calibration(calibration_t data, char * filename) {
@@ -251,7 +246,13 @@ void test1(void)
 //     sdmmc_card_print_info(stdout, card);
 
     // Use POSIX and C standard library functions to work with files.
-    sctp_flash_init(PIN_NUM_CS);
+
+
+
+    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    sdmmc_card_t * card;
+
+    sctp_flash_init(PIN_NUM_CS, &host, &card);
 
     calibration_t calibration;
     calibration_t calibration_load;
