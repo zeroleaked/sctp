@@ -332,13 +332,20 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
   int i = 0;
   int x_px;
   int y_px;
+  int x_next;
   int y_prev;
   float peak_abs = absorbance[0];
   float peak_wl= wavelength[0];
   
   for(i=0;i<length;i++){
     x_px = (wavelength[i] - wl_min) / (wl_max-wl_min) * 300 + 39;
-    y_px = 260 - (absorbance[i]-a_min) / (a_max-a_min) * 225;
+    x_next = (wavelength[i+1] - wl_min) / (wl_max-wl_min) * 300 + 39;
+
+    if(x_px == x_next) {
+      y_px = 260 - ((absorbance[i] + absorbance[i+1]) / 2 - a_min) / (a_max-a_min) * 225;
+    } else {
+      y_px = 260 - (absorbance[i]-a_min) / (a_max-a_min) * 225;
+    }
     if(i==0)
       y_prev = y_px;
     int dy = abs(y_px-y_prev);
@@ -387,6 +394,8 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
     }
   }
   
+  if(x_px == x_next) i = i + 2;
+
   peak_wl = round(peak_wl);
   display.setTextColor(TFT_BLACK);
   display.setTextSize(1);
@@ -477,15 +486,24 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   int i = 0;
   int x_px;
   int y_px;
+  int x_next;
   int y_prev;
   float peak_abs = absorbance[0];
   float peak_wl= wavelength[0];
   
   for(i=0;i<length;i++){
     x_px = (wavelength[i] - wl_min) / (wl_max-wl_min) * 300 + 39;
-    y_px = 260 - (absorbance[i]-a_min) / (a_max-a_min) * 225;
-    if(i==0)
+    x_next = (wavelength[i+1] - wl_min) / (wl_max-wl_min) * 300 + 39;
+
+    if(x_px == x_next) {
+      y_px = 260 - ((absorbance[i] + absorbance[i+1]) / 2 - a_min) / (a_max-a_min) * 225;
+    } else {
+      y_px = 260 - (absorbance[i]-a_min) / (a_max-a_min) * 225;
+    }
+
+    if(i==0) {
       y_prev = y_px;
+    }
     int dy = abs(y_px-y_prev);
     if(dy > 3 && dy < 6) {
       if(y_prev < y_px)
@@ -531,7 +549,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
       display.fillRect(x_px-1, y_px-1, 3, 3, TFT_TOSCA);
     }
   }
-  
+  if(x_px == x_next) i = i + 2;
   peak_wl = round(peak_wl);
 
   display.setTextColor(TFT_TOSCA);
