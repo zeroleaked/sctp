@@ -60,12 +60,13 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     int exposure = blank_take->exposure;
     int setpoint = 600;
     int error = setpoint;
-    float kp = 0.2;
+    float kp = 0.05;
     int tolerance = 50;
     int iter = 0;
     gpio_set_level( PIN_LAMP_SWITCH, 1);
     vTaskDelay(30000 / portTICK_PERIOD_MS);
     while ((error > tolerance) || (error < -tolerance)) {
+        ESP_LOGI(TAG, "iter %d", iter);
         ESP_LOGI(TAG, "setting shutter %d", exposure);
         camera_sensor->set_shutter_width(camera_sensor, exposure);
         // flush
@@ -97,12 +98,13 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
         // ESP_LOGI(TAG, "exposure=%d, max=%d", exposure, max);
 
         error = setpoint - max;
+        ESP_LOGI(TAG, "error=%d", error);
         if ((error > tolerance) || (error < -tolerance)) {
             exposure = exposure + kp * error;
+            ESP_LOGI(TAG, "error=%d, sug exposure=%d", error, exposure);
             if (exposure < 0) {
                 return ESP_ERR_NOT_FOUND;
             }
-        // ESP_LOGI(TAG, "error=%d, new exposure=%d", error, exposure);
         }
 
 
@@ -111,6 +113,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
         }
         iter++;
     }
+    ESP_LOGI(TAG, "out of loop");
 
     camera_fb_t * take = sctp_camera_fb_get();
     gpio_set_level( PIN_LAMP_SWITCH, 0);
