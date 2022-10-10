@@ -148,5 +148,5 @@ void sctp_lcd_conc_sample_clear(uint8_t cursor);
 void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterpolated, conc_regression_t * regress_line);
 void sctp_lcd_conc_regress_error(uint8_t cursor);
 
-void sctp_lcd_history_list(uint8_t cursor, history_t * history_list, uint8_t history_list_length);
+void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[60][25]);
 void sctp_lcd_history_list_clear(uint8_t cursor);

@@ -133,28 +133,6 @@ void sctp_lcd_blank_waiting(uint8_t cursor)
 
 void sctp_lcd_blank_sampling(uint8_t cursor)
 {
-  display.fillRoundRect(120, 160, 120, 40, 10, TFT_WHITE);
-
-  switch(cursor) {
-    case 0: {
-      display.fillRoundRect(245, 160, 120, 40, 10, TFT_LIGHTGREY);
-      break;
-    }
-    case 1: {
-      display.fillRoundRect(120, 160, 120, 40, 10, TFT_LIGHTGREY);
-      break;
-    }
-  }
-
-  display.setTextColor(TFT_BLACK);
-  display.setTextSize(1);
-  display.setCursor(150, 175);
-  display.println("CANCEL");
-  display.drawRoundRect(120, 160, 120, 40, 10, TFT_BLACK);
-  display.setCursor(280, 175);
-  display.println("NEXT");
-  display.drawRoundRect(245, 160, 120, 40, 10, TFT_BLACK);
-
   display.setTextColor(TFT_MUSTARD);
   display.setCursor(90, 225);
   display.println("Measuring Absorbance Reference...");
@@ -341,6 +319,7 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
     x_px = (wavelength[i] - wl_min) / (wl_max-wl_min) * 300 + 39;
     x_next = (wavelength[i+1] - wl_min) / (wl_max-wl_min) * 300 + 39;
 
+    if(absorbance[i] < 1) absorbance[i] = 0;
     if(x_px == x_next) {
       y_px = 260 - ((absorbance[i] + absorbance[i+1]) / 2 - a_min) / (a_max-a_min) * 225;
     } else {
@@ -495,6 +474,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
     x_px = (wavelength[i] - wl_min) / (wl_max-wl_min) * 300 + 39;
     x_next = (wavelength[i+1] - wl_min) / (wl_max-wl_min) * 300 + 39;
 
+    if(absorbance[i] < 1) absorbance[i] = 0;
     if(x_px == x_next) {
       y_px = 260 - ((absorbance[i] + absorbance[i+1]) / 2 - a_min) / (a_max-a_min) * 225;
     } else {
@@ -945,7 +925,7 @@ void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration){
   switch(cursor) {
     case 0: {
       display.fillRect(195, 75, 75, 35, TFT_LIGHTGREY);
-      display.setCursor(200, 80);
+      display.setCursor(180, 60);
       char c[] = "X.XXX";
       sprintf(c, "%.3f", (double)concentration);
       display.println(c);
@@ -953,7 +933,7 @@ void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration){
     }
     case 1: {
       display.fillRect(195, 115, 75, 35, TFT_LIGHTGREY);
-      display.setCursor(200, 120);
+      display.setCursor(180, 100);
       char c[] = "X.XXX";
       sprintf(c, "%.3f", (double)concentration);
       display.println(c);
@@ -961,7 +941,7 @@ void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration){
     }
     case 2: {
       display.fillRect(195, 155, 75, 35, TFT_LIGHTGREY);
-      display.setCursor(200, 160);
+      display.setCursor(180, 140);
       char c[] = "X.XXX";
       sprintf(c, "%.3f", (double)concentration);
       display.println(c);
@@ -969,7 +949,7 @@ void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration){
     }
     case 3: {
       display.fillRect(195, 195, 75, 35, TFT_LIGHTGREY);
-      display.setCursor(200, 200);
+      display.setCursor(180, 180);
       char c[] = "X.XXX";
       sprintf(c, "%.3f", (double)concentration);
       display.println(c);
@@ -1092,9 +1072,6 @@ void sctp_lcd_conc_sample_clear(uint8_t cursor){
   sctp_lcd_sample_clear(cursor);
 }
 
-void sctp_lcd_history_list(uint8_t cursor, history_t * history_list, uint8_t history_list_length){}
-void sctp_lcd_history_list_clear(uint8_t cursor){}
-
 void sctp_lcd_settings_clear(uint8_t cursor)
 {
   display.setTextColor(TFT_BLACK);
@@ -1144,4 +1121,80 @@ void sctp_lcd_settings(uint8_t cursor)
   display.setCursor(190, 225);
   display.println("MAIN MENU");
   display.drawRoundRect(120, 210, 245, 40, 10, TFT_BLACK);
+}
+
+void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[60][25]){
+  display.setTextColor(TFT_TOSCA);
+  display.setTextSize(1.25);
+  display.setCursor(60, 30);
+  display.println("Filename");
+
+  switch(cursor) {
+    case 0: {
+      display.fillRoundRect(40, 62, 400, 30, 5, TFT_LIGHTGREY);
+      break;
+    }
+    case 1: {
+      display.fillRoundRect(40, 102, 400, 30, 5, TFT_LIGHTGREY);
+      break;
+    }
+    case 2: {
+      display.fillRoundRect(40, 142, 400, 30, 5, TFT_LIGHTGREY);
+      break;
+    }
+    case 3: {
+      display.fillRoundRect(40, 182, 400, 30, 5, TFT_LIGHTGREY);
+      break;
+    }
+    case 4: {
+      display.fillRoundRect(40, 222, 400, 30, 5, TFT_LIGHTGREY);
+      break;
+    }
+    case 5: {
+      display.fillRoundRect(185, 270, 120, 30, 10, TFT_LIGHTGREY);  
+      break;
+    }
+  }
+  
+  display.setTextSize(1);
+  display.setTextColor(TFT_BLACK);
+
+  for(int i=0; i<5; i++) {
+   display.setCursor(60, 70 + 40*i);
+   display.println(filenames[i+row_offset]);
+  }
+   
+  display.setTextColor(TFT_BLACK);
+  display.setCursor(220, 278);
+  display.println("BACK");
+  display.drawRoundRect(185, 270, 120, 30, 10, TFT_BLACK);  
+}
+
+void sctp_lcd_history_list_clear(uint8_t cursor) {
+    switch(cursor) {
+    case 0: {
+      display.fillRoundRect(40, 62, 400, 30, 5, TFT_WHITE);
+      break;
+    }
+    case 1: {
+      display.fillRoundRect(40, 102, 400, 30, 5, TFT_WHITE);
+      break;
+    }
+    case 2: {
+      display.fillRoundRect(40, 142, 400, 30, 5, TFT_WHITE);
+      break;
+    }
+    case 3: {
+      display.fillRoundRect(40, 182, 400, 30, 5, TFT_WHITE);
+      break;
+    }
+    case 4: {
+      display.fillRoundRect(40, 222, 400, 30, 5, TFT_WHITE);
+      break;
+    }
+    case 5: {
+      display.fillRoundRect(185, 270, 120, 30, 10, TFT_WHITE);  
+      break;
+    }
+  }
 }
