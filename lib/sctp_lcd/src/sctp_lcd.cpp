@@ -981,7 +981,7 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   display.setTextSize(1);
   display.setCursor(75, 10);
   display.println("CONC VS. ABS");
-  display.drawRect(74, 34, 332, 222, TFT_BLACK);
+  display.drawRect(71, 31, 335, 225, TFT_BLACK);
 
   float* conc = curve.concentration;
   float* ab = curve.absorbance;
@@ -1021,7 +1021,6 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
     y_px = 255 - (y - a_min) / (a_max - a_min) * 220;
     display.fillRect(x_px-1, y_px-1, 3, 3, TFT_TOSCA);
   }
-
 
   //Scatter plot of points
   while(i < curve.points){
