@@ -1126,31 +1126,35 @@ void sctp_lcd_settings(uint8_t cursor)
 void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[60][25]){
   display.setTextColor(TFT_TOSCA);
   display.setTextSize(1.25);
-  display.setCursor(60, 30);
+  display.setCursor(60, 20);
   display.println("Filename");
 
   switch(cursor) {
     case 0: {
-      display.fillRoundRect(40, 62, 400, 30, 5, TFT_LIGHTGREY);
+      display.fillRoundRect(40, 52, 400, 30, 5, TFT_LIGHTGREY);
       break;
     }
     case 1: {
-      display.fillRoundRect(40, 102, 400, 30, 5, TFT_LIGHTGREY);
+      display.fillRoundRect(40, 87, 400, 30, 5, TFT_LIGHTGREY);
       break;
     }
     case 2: {
-      display.fillRoundRect(40, 142, 400, 30, 5, TFT_LIGHTGREY);
+      display.fillRoundRect(40, 122, 400, 30, 5, TFT_LIGHTGREY);
       break;
     }
     case 3: {
-      display.fillRoundRect(40, 182, 400, 30, 5, TFT_LIGHTGREY);
+      display.fillRoundRect(40, 157, 400, 30, 5, TFT_LIGHTGREY);
       break;
     }
     case 4: {
-      display.fillRoundRect(40, 222, 400, 30, 5, TFT_LIGHTGREY);
+      display.fillRoundRect(40, 192, 400, 30, 5, TFT_LIGHTGREY);
       break;
     }
     case 5: {
+      display.fillRoundRect(40, 227, 400, 30, 5, TFT_LIGHTGREY);
+      break;
+    }
+    case 6: {
       display.fillRoundRect(185, 270, 120, 30, 10, TFT_LIGHTGREY);  
       break;
     }
@@ -1159,8 +1163,8 @@ void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[6
   display.setTextSize(1);
   display.setTextColor(TFT_BLACK);
 
-  for(int i=0; i<5; i++) {
-   display.setCursor(60, 70 + 40*i);
+  for(int i=0; i<6; i++) {
+   display.setCursor(60, 60 + 35*i);
    display.println(filenames[i+row_offset]);
   }
    
@@ -1173,26 +1177,30 @@ void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[6
 void sctp_lcd_history_list_clear(uint8_t cursor) {
     switch(cursor) {
     case 0: {
-      display.fillRoundRect(40, 62, 400, 30, 5, TFT_WHITE);
+      display.fillRoundRect(40, 52, 400, 30, 5, TFT_WHITE);
       break;
     }
     case 1: {
-      display.fillRoundRect(40, 102, 400, 30, 5, TFT_WHITE);
+      display.fillRoundRect(40, 87, 400, 30, 5, TFT_WHITE);
       break;
     }
     case 2: {
-      display.fillRoundRect(40, 142, 400, 30, 5, TFT_WHITE);
+      display.fillRoundRect(40, 122, 400, 30, 5, TFT_WHITE);
       break;
     }
     case 3: {
-      display.fillRoundRect(40, 182, 400, 30, 5, TFT_WHITE);
+      display.fillRoundRect(40, 157, 400, 30, 5, TFT_WHITE);
       break;
     }
     case 4: {
-      display.fillRoundRect(40, 222, 400, 30, 5, TFT_WHITE);
+      display.fillRoundRect(40, 192, 400, 30, 5, TFT_WHITE);
       break;
     }
     case 5: {
+      display.fillRoundRect(40, 227, 400, 30, 5, TFT_WHITE);
+      break;
+    }
+    case 6: {
       display.fillRoundRect(185, 270, 120, 30, 10, TFT_WHITE);  
       break;
     }
