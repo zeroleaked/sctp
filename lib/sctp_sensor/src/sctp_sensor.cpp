@@ -11,6 +11,65 @@ static const char TAG[] = "sctp_sensor";
 
 #define PIN_LAMP_SWITCH GPIO_NUM_16
 
+void buffer_flush() {
+    camera_fb_t * take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+    take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+}
+
+#define LAMP_CHECK_BUFFER_SIZE 20
+
+esp_err_t halogen_wait(uint16_t pixel) {
+    camera_fb_t * take = sctp_camera_fb_get();
+    sctp_camera_fb_return(take);
+
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    const TickType_t xFrequency = 1000 / portTICK_PERIOD_MS;
+    uint16_t buffer[LAMP_CHECK_BUFFER_SIZE] = {0};
+    uint16_t last_check = 0;
+    bool isbreak = false;
+    for (int i=0; i<90; i++) {
+
+        vTaskDelayUntil( &xLastWakeTime, xFrequency );
+        buffer_flush();
+        take = sctp_camera_fb_get();
+        uint16_t readout = (take->buf[pixel * 2] << 8) | (take->buf[pixel*2 + 1]);
+        sctp_camera_fb_return(take);
+
+        for (int j=0; j<LAMP_CHECK_BUFFER_SIZE; j++) {
+            if (i >= j) buffer[j] += readout;
+        }
+        // ESP_LOGI(TAG, "%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d", i, buffer[0], buffer[1], buffer[2], buffer[3], buffer[4],
+        // buffer[5], buffer[6], buffer[7], buffer[8], buffer[9], buffer[10], buffer[11], buffer[12], buffer[13], buffer[14], buffer[15], buffer[16],
+        // buffer[17], buffer[18], buffer[19]);
+
+        if (i >= LAMP_CHECK_BUFFER_SIZE) {
+            uint8_t cursor = (i+1)%20;
+            if (buffer[cursor] <= last_check) {
+                ESP_LOGI(TAG, "%d <= %d", buffer[cursor], last_check);
+                isbreak = true;
+                break;
+            }
+        }
+        if (i >= LAMP_CHECK_BUFFER_SIZE -1) {
+            uint8_t cursor = (i+1)%20;
+            last_check = buffer[cursor];
+            buffer[cursor] = 0;
+            // ESP_LOGI(TAG, "%d:%d", i, last_check);
+        }
+    }
+    if (isbreak) return ESP_OK;
+    else {
+        ESP_LOGE(TAG, "unsteady readout");
+        return ESP_FAIL;
+    }
+}
+
 // called on sctp startup
 esp_err_t sctp_sensor_init() {
     // standby pin init
@@ -55,29 +114,24 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     sensor_t *camera_sensor = sctp_camera_sensor_get();
     camera_sensor->set_row_start(camera_sensor, calibration->row);
     ESP_LOGI(TAG, "row set to %d", calibration->row);
-
     int exposure = blank_take->exposure[0];
-    int setpoint = 600;
-    int error = setpoint;
-    float kp = 0.2;
-    const int tolerance = 50;
-    gpio_set_level( PIN_LAMP_SWITCH, 1);
-    vTaskDelay(30000 / portTICK_PERIOD_MS);
-    ESP_LOGI(TAG, "lamp heating done");
-
     ESP_LOGI(TAG, "setting to %d exposure", exposure);
     camera_sensor->set_shutter_width(camera_sensor, exposure);
-    // flush
-    camera_fb_t * take = sctp_camera_fb_get();
-    sctp_camera_fb_return(take);
-    take = sctp_camera_fb_get();
-    sctp_camera_fb_return(take);
-    take = sctp_camera_fb_get();
-    sctp_camera_fb_return(take);
-    take = sctp_camera_fb_get();
-    sctp_camera_fb_return(take);
 
-    take = sctp_camera_fb_get();
+    int setpoint = 575;
+    int error = setpoint;
+    float kp = 0.2;
+    const int tolerance = 25;
+    gpio_set_level( PIN_LAMP_SWITCH, 1);
+    // vTaskDelay(30000 / portTICK_PERIOD_MS);
+    halogen_wait(calibration->start);
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
+    return ESP_FAIL;
+    ESP_LOGI(TAG, "lamp heating done");
+
+    buffer_flush();
+
+    camera_fb_t * take = sctp_camera_fb_get();
     assert(take != NULL);
 
     bool max_exposure = false;

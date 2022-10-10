@@ -29,7 +29,7 @@ void row_search () {
     i2cdev_init();
 
     assert(sctp_camera_init(&camera_config) == ESP_OK);
-            vTaskDelay(1000);
+    vTaskDelay(1000);
 
     // lamp pin init
     gpio_config_t conf = {};
@@ -152,15 +152,15 @@ void test_spectrum_blank() {
     sctp_sensor_init();
 
     calibration_t calibration;
-	calibration.gain = -0.7698064209;
-	calibration.bias = 1025.924915;
-	calibration.start = 423;
-	calibration.length = 392;
-    calibration.row = 499;
+	calibration.gain = -0.7666855524;
+	calibration.bias = 1013.975014;
+	calibration.start = 409;
+	calibration.length = 393;
+    calibration.row = 481;
 
     blank_take_t blank_take;
     blank_take.exposure = (uint16_t *) malloc (sizeof(uint16_t) * calibration.length);
-    blank_take.exposure[0] = 200;
+    blank_take.exposure[0] = 10;
     blank_take.gain = 1;
     blank_take.readout = (float *) malloc (sizeof(float) * calibration.length);
 
@@ -401,9 +401,9 @@ void app_main() {
     UNITY_BEGIN();
 
     // RUN_TEST(init_test);
-    RUN_TEST(row_search);
+    // RUN_TEST(row_search);
     // RUN_TEST(row_print);
-    // RUN_TEST(test_spectrum_blank);
+    RUN_TEST(test_spectrum_blank);
     // RUN_TEST(test_spectrum);
     // RUN_TEST(test_quant_blank);
     // RUN_TEST(test_quant);
