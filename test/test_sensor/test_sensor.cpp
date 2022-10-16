@@ -13,8 +13,9 @@
 
 #include "mt9m001.h"
 
-//platformio test --filter test_sensor -vvv
-
+/***
+pio test --filter test_sensor -vvv
+***/
 
 static const char TAG[] = "test_sensor";
 
@@ -29,7 +30,6 @@ void row_search () {
     i2cdev_init();
 
     assert(sctp_camera_init(&camera_config) == ESP_OK);
-    vTaskDelay(1000);
 
     // lamp pin init
     gpio_config_t conf = {};
@@ -42,7 +42,7 @@ void row_search () {
 
     gpio_set_level( PIN_LAMP_SWITCH, 1);
 
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
+    // vTaskDelay(5000 / portTICK_PERIOD_MS);
 
     sensor_t *s = sctp_camera_sensor_get();
     s->set_shutter_width(s, 512);
@@ -52,11 +52,21 @@ void row_search () {
     uint16_t max_val_row = 0;
     camera_fb_t * camera_fb = NULL;
     for (int i=0; i<1024; i++) {
-        if (!(i % 50)) ESP_LOGI(TAG, "i=%d", i);
+        if (!(i % 50))
+            ESP_LOGI(TAG, "i=%d", i);
         uint32_t val = 0;
 
         if (i%3 == 0) {
             s->set_row_start(s, 0x000C + i);
+            camera_fb_t * take = sctp_camera_fb_get();
+            sctp_camera_fb_return(take);
+            take = sctp_camera_fb_get();
+            sctp_camera_fb_return(take);
+            take = sctp_camera_fb_get();
+            sctp_camera_fb_return(take);
+            take = sctp_camera_fb_get();
+            sctp_camera_fb_return(take);
+
             camera_fb = sctp_camera_fb_get();
             assert(camera_fb != NULL);
         }
@@ -85,7 +95,7 @@ void row_search () {
 
 void row_print() {
     i2cdev_init();
-    uint16_t row = 471;
+    uint16_t row = 475;
     uint8_t samples = 30;
     float * arr = ( float *) malloc (sizeof (float) * 1280 * samples);
     memset(arr, 0, sizeof(float) * 1280 * samples);
@@ -104,7 +114,8 @@ void row_print() {
 
 
     sensor_t *s = sctp_camera_sensor_get();
-    s->set_shutter_width(s, 100);
+    // s->set_gain(s, 8);
+    s->set_shutter_width(s, 4000);
     s->set_row_start(s, 0x000C + row);
 
     camera_fb_t * take = sctp_camera_fb_get();
@@ -119,7 +130,7 @@ void row_print() {
     ESP_LOGI(TAG, "lamp config done. turning on");
 
     gpio_set_level( PIN_LAMP_SWITCH, 1);
-    // vTaskDelay(30000/ portTICK_PERIOD_MS);
+    vTaskDelay(3000/ portTICK_PERIOD_MS);
     for (int j=0; j<samples; j++) {
         camera_fb_t * camera_fb = sctp_camera_fb_get(); 
         for (int i=0; i<1280; i++) {
@@ -134,11 +145,14 @@ void row_print() {
 
     for (int i=0; i<1280; i++) {
         vTaskDelay(10/ portTICK_PERIOD_MS);
-        ESP_LOGI(TAG, "%d:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f",
-            i, arr[i+1280*0], arr[i+1280*1], arr[i+1280*2], arr[i+1280*3], arr[i+1280*4], arr[i+1280*5], arr[i+1280*6], arr[i+1280*7],
-            arr[i+1280*8], arr[i+1280*9], arr[i+1280*10], arr[i+1280*11], arr[i+1280*12], arr[i+1280*13], arr[i+1280*14], arr[i+1280*15],
-            arr[i+1280*16], arr[i+1280*17], arr[i+1280*18], arr[i+1280*19], arr[i+1280*20], arr[i+1280*21], arr[i+1280*22], arr[i+1280*23],
-            arr[i+1280*24], arr[i+1280*25], arr[i+1280*26], arr[i+1280*27], arr[i+1280*28], arr[i+1280*29]);
+
+        ESP_LOGI(TAG, "%d:%f",
+            i, arr[i+1280*0]);
+        // ESP_LOGI(TAG, "%d:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f:%f",
+        //     i, arr[i+1280*0], arr[i+1280*1], arr[i+1280*2], arr[i+1280*3], arr[i+1280*4], arr[i+1280*5], arr[i+1280*6], arr[i+1280*7],
+        //     arr[i+1280*8], arr[i+1280*9], arr[i+1280*10], arr[i+1280*11], arr[i+1280*12], arr[i+1280*13], arr[i+1280*14], arr[i+1280*15],
+        //     arr[i+1280*16], arr[i+1280*17], arr[i+1280*18], arr[i+1280*19], arr[i+1280*20], arr[i+1280*21], arr[i+1280*22], arr[i+1280*23],
+        //     arr[i+1280*24], arr[i+1280*25], arr[i+1280*26], arr[i+1280*27], arr[i+1280*28], arr[i+1280*29]);
 
     }
 
@@ -156,11 +170,11 @@ void test_spectrum_blank() {
 	calibration.bias = 1013.975014;
 	calibration.start = 409;
 	calibration.length = 393;
-    calibration.row = 481;
+    calibration.row = 489;
 
     blank_take_t blank_take;
     blank_take.exposure = (uint16_t *) malloc (sizeof(uint16_t) * calibration.length);
-    blank_take.exposure[0] = 10;
+    blank_take.exposure[0] = 7800;
     blank_take.gain = 1;
     blank_take.readout = (float *) malloc (sizeof(float) * calibration.length);
 
@@ -171,46 +185,57 @@ void test_spectrum_blank() {
     assert(err == ESP_OK);
 
     for (int i=0; i<calibration.length; i++) {
-        ESP_LOGI(TAG, "%d:%f", i, blank_take.readout[i]);
+        ESP_LOGI(TAG, "%d:%f:%d", i, blank_take.readout[i], blank_take.exposure[i]);
     }
 
     free(blank_take.readout);
     free(blank_take.exposure);
 }
 
-// void test_spectrum() {
-//     i2cdev_init();
-//     sctp_sensor_init();
+void test_spectrum() {
+    i2cdev_init();
+    sctp_sensor_init();
 
-//     calibration_t calibration;
-// 	calibration.gain = -0.7698064209;
-// 	calibration.bias = 1025.924915;
-// 	calibration.start = 423;
-// 	calibration.length = 392;
-//     calibration.row = 499;
+    calibration_t calibration;
+	calibration.gain = -0.7666855524;
+	calibration.bias = 1013.975014;
+	calibration.start = 409;
+	calibration.length = 393;
+    calibration.row = 489;
 
-//     blank_take_t blank_take;
-//     blank_take.exposure = 10;
-//     blank_take.gain = 1;
-//     blank_take.readout = (float *) malloc (sizeof(float) * calibration.length);
+    blank_take_t blank_take;
+    blank_take.exposure = (uint16_t *) malloc (sizeof(uint16_t) * calibration.length);
+    blank_take.exposure[0] = 7800;
+    blank_take.gain = 1;
+    blank_take.readout = (float *) malloc (sizeof(float) * calibration.length);
 
-//     esp_err_t err = sctp_sensor_spectrum_blank(&calibration, &blank_take);
-//     TEST_ASSERT_EQUAL(ESP_OK, err);
+    esp_err_t err = sctp_sensor_spectrum_blank(&calibration, &blank_take);
 
-//     ESP_LOGI(TAG, "blank taken! Taking sample soon....");
-//     vTaskDelay(5000/ portTICK_PERIOD_MS);
-//     float * sample_take = (float *) malloc (sizeof(float) * calibration.length);
-//     err = sctp_sensor_spectrum_sample(&calibration, &blank_take, sample_take);
-//     TEST_ASSERT_EQUAL(ESP_OK, err);
-//     ESP_LOGI(TAG, "sample taken");
+    TEST_ASSERT_EQUAL(ESP_OK, err);
 
-//     for (int i=0; i<calibration.length; i++) {
-//         ESP_LOGI(TAG, "%d:%f:%f", i, blank_take.readout[i], sample_take[i]);
-//     }
+    assert(err == ESP_OK);
 
-//     free(blank_take.readout);
-//     free(sample_take);
-// }
+    for (int i=0; i<calibration.length; i++) {
+        ESP_LOGI(TAG, "%d:%f:%d", i, blank_take.readout[i], blank_take.exposure[i]);
+    }
+
+    ESP_LOGI(TAG, "blank taken! Taking sample soon....");
+    vTaskDelay(300000/ portTICK_PERIOD_MS);
+    ESP_LOGI(TAG, "Taking now!");
+    float * sample_take = (float *) malloc (sizeof(float) * calibration.length);
+    err = sctp_sensor_spectrum_sample(&calibration, &blank_take, sample_take);
+    TEST_ASSERT_EQUAL(ESP_OK, err);
+    ESP_LOGI(TAG, "sample taken");
+
+    for (int i=0; i<calibration.length; i++) {
+        ESP_LOGI(TAG, "%d:%f:%f:%d", i, blank_take.readout[i], sample_take[i], blank_take.exposure[i]);
+        vTaskDelay(10 /portTICK_PERIOD_MS);
+    }
+
+    free(blank_take.readout);
+    free(blank_take.exposure);
+    free(sample_take);
+}
 
 void test_quant_blank() {
     i2cdev_init();
@@ -323,13 +348,6 @@ void test_exposure() {
     }
 
 
-
-}
-
-void init_test() {
-    i2cdev_init();
-
-    sctp_camera_init(&camera_config);
 
 }
 
@@ -457,12 +475,11 @@ void app_main();
 void app_main() {
     UNITY_BEGIN();
 
-    // RUN_TEST(init_test);
     // RUN_TEST(row_search);
-    RUN_TEST(row_print);
+    // RUN_TEST(row_print);
 
     // RUN_TEST(test_spectrum_blank);
-    // RUN_TEST(test_spectrum);
+    RUN_TEST(test_spectrum);
     // RUN_TEST(test_quant_blank);
     // RUN_TEST(test_quant);
 

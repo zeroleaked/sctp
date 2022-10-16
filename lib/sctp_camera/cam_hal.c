@@ -285,7 +285,7 @@ esp_err_t cam_config(const camera_config_t *config)
     ret = ll_cam_init_isr(cam_obj);
     ESP_RETURN_ON_ERROR(ret, TAG, "cam intr alloc failed");
 
-    xTaskCreatePinnedToCore(cam_task, "cam_task", 2048, NULL, configMAX_PRIORITIES - 2, &cam_obj->task_handle, 1);
+    xTaskCreatePinnedToCore(cam_task, "cam_task", 4096, NULL, configMAX_PRIORITIES - 2, &cam_obj->task_handle, 1);
 
     ESP_LOGI(TAG, "cam config ok");
     return ESP_OK;

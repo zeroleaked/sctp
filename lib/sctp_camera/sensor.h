@@ -20,6 +20,7 @@ typedef struct _sensor {
     int  (*set_row_start)       (sensor_t *sensor, uint16_t row_start);
     int  (*set_shutter_width)   (sensor_t *sensor, uint16_t shutter_width);
     int  (*set_gain)            (sensor_t *sensor, int gain);
+    int  (*read_reg)            (sensor_t *sensor, uint8_t reg_addr, uint16_t * data);
     // int  (*set_hmirror)         (sensor_t *sensor, int enable);
     // int  (*set_vflip)           (sensor_t *sensor, int enable);
 
