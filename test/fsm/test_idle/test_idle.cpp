@@ -56,9 +56,10 @@ void app_main();
 void app_main() {
     UNITY_BEGIN();
 
-    RUN_TEST(arrowUp);
-    RUN_TEST(arrowDown);
-    RUN_TEST(arrowLeft);
+    // RUN_TEST(arrowUp);
+    // RUN_TEST(arrowDown);
+    // RUN_TEST(arrowLeft);
+    RUN_TEST(okay);
     RUN_TEST(arrowRight);
 
     UNITY_END();
