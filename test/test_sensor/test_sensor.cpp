@@ -95,7 +95,7 @@ void row_search () {
 
 void row_print() {
     i2cdev_init();
-    uint16_t row = 475;
+    uint16_t row = 492;
     uint8_t samples = 30;
     float * arr = ( float *) malloc (sizeof (float) * 1280 * samples);
     memset(arr, 0, sizeof(float) * 1280 * samples);
@@ -115,7 +115,7 @@ void row_print() {
 
     sensor_t *s = sctp_camera_sensor_get();
     // s->set_gain(s, 8);
-    s->set_shutter_width(s, 4000);
+    s->set_shutter_width(s, 1500);
     s->set_row_start(s, 0x000C + row);
 
     camera_fb_t * take = sctp_camera_fb_get();
@@ -246,22 +246,20 @@ void test_quant_blank() {
 	calibration.bias = 1025.924915;
 	calibration.start = 423;
 	calibration.length = 392;
-    calibration.row = 499;
+    calibration.row = 489;
 
     blank_take_t blank_take;
-    uint16_t exposure = 10;
+    uint16_t exposure = 100;
     blank_take.exposure = &exposure;
-    blank_take.gain = 1;
-    blank_take.readout = (float *) malloc (sizeof(float));
+    float readout = 0;
+    blank_take.readout = &readout;
 
-    esp_err_t err = sctp_sensor_concentration_blank(&calibration, 650, &blank_take);
+    esp_err_t err = sctp_sensor_concentration_blank(&calibration, 520, &blank_take);
     TEST_ASSERT_EQUAL(ESP_OK, err);
 
     ESP_LOGI(TAG, "blank taken!");
-    // ESP_LOGI(TAG, "exposure = %f", blank_take.exposure);
+    ESP_LOGI(TAG, "exposure = %d", *blank_take.exposure);
     ESP_LOGI(TAG, "blank = %f", *blank_take.readout);
-
-    free(blank_take.readout);
 }
 
 void test_quant() {
@@ -273,30 +271,29 @@ void test_quant() {
 	calibration.bias = 1025.924915;
 	calibration.start = 423;
 	calibration.length = 392;
-    calibration.row = 499;
+    calibration.row = 489;
 
     blank_take_t blank_take;
     uint16_t exposure = 10;
     blank_take.exposure = &exposure;
     blank_take.gain = 1;
-    blank_take.readout = (float *) malloc (sizeof(float));
+    float blank_readout = 0;
+    blank_take.readout = &blank_readout;
 
-    uint16_t wavelength = 600;
+    uint16_t wavelength = 520;
 
     esp_err_t err = sctp_sensor_concentration_blank(&calibration, wavelength, &blank_take);
     TEST_ASSERT_EQUAL(ESP_OK, err);
 
     ESP_LOGI(TAG, "blank taken! Taking sample soon....");
-    vTaskDelay(5000/ portTICK_PERIOD_MS);
-    float * sample_take = (float *) malloc (sizeof(float));
-    err = sctp_sensor_concentration_sample(&calibration, wavelength, &blank_take, sample_take);
+    vTaskDelay(10000/ portTICK_PERIOD_MS);
+    float sample_readout = 0;
+    err = sctp_sensor_concentration_sample(&calibration, wavelength, &blank_take, &sample_readout);
     TEST_ASSERT_EQUAL(ESP_OK, err);
     ESP_LOGI(TAG, "sample taken");
 
-    ESP_LOGI(TAG, "blank=%f, sample=%f", *blank_take.readout, *sample_take);
+    ESP_LOGI(TAG, "%f:%f:%d", *blank_take.readout, sample_readout, *blank_take.exposure);
 
-    free(blank_take.readout);
-    free(sample_take);
 }
 
 void test_exposure() {
@@ -304,10 +301,10 @@ void test_exposure() {
     sctp_camera_init(&camera_config);
 
     calibration_t calibration;
-	calibration.gain = -0.7698064209;
-	calibration.bias = 1025.924915;
-	calibration.start = 423;
-	calibration.length = 392;
+	calibration.gain = -0.7666855524;
+	calibration.bias = 1013.975014;
+	calibration.start = 409;
+	calibration.length = 393;
     calibration.row = 499;
 
     sensor_t *s = sctp_camera_sensor_get();
@@ -476,10 +473,10 @@ void app_main() {
     UNITY_BEGIN();
 
     // RUN_TEST(row_search);
-    // RUN_TEST(row_print);
+    RUN_TEST(row_print);
 
     // RUN_TEST(test_spectrum_blank);
-    RUN_TEST(test_spectrum);
+    // RUN_TEST(test_spectrum);
     // RUN_TEST(test_quant_blank);
     // RUN_TEST(test_quant);
 
