@@ -19,8 +19,17 @@
 #include <stdlib.h>
 #include <dirent.h>
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_system.h"
+#include "nvs_flash.h"
+#include "nvs.h"
+#include "driver/gpio.h"
+#include "esp_log.h"
+
 static const char *TAG = "example";
 
+#define STORAGE_NAMESPACE "storage"
 #define MOUNT_POINT "/sdcard"
 
 // Pin assignments can be set in menuconfig, see "SD SPI Example Configuration" menu.
@@ -50,6 +59,18 @@ typedef struct {
 	float * absorbance;
 	float * concentration;
 } curve_t;
+
+typedef struct
+{
+    // char *filename; // curve1_400nm.csv\0 (17 char)
+    char filename[20];    // curve1_400nm.csv\0 (17 char) // 20
+    uint16_t wavelength;  // 2
+    uint8_t id;           // 1
+    uint8_t points;       // 1
+    float absorbance[10]; // 40
+    float concentration[10];
+} flash_curve_t;
+
 
 void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** card) {
     esp_err_t ret;
@@ -228,57 +249,248 @@ esp_err_t sctp_flash_load_curve_list(curve_t curves[6]) {
     return ESP_OK;
 }
 
-void test1(void)
-{
-    // Use POSIX and C standard library functions to work with files.
+void sctp_flash_nvs_init() {
+    esp_err_t err = nvs_flash_init();
 
-    // sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    // sdmmc_card_t * card;
-
-    // sctp_flash_init(PIN_NUM_CS, &host, &card);
-
-    calibration_t calibration;
-    calibration_t calibration_load;
-    float gain = 0;
-	float bias = 0;
-	uint16_t row = 0;
-	uint16_t start = 0; // pixel column index
-	uint16_t length = 0; // length of full spectrum
-    calibration_load.gain = gain;
-    calibration_load.bias = bias;
-    calibration_load.row = row;
-    calibration_load.start = start;
-    calibration_load.length = length;
-    char * calibration_file;
-    calibration_file = malloc(sizeof(char)*NAME_LEN);
-    calibration.row = 496;
-	calibration.gain = -0.7698064209;
-	calibration.bias = 1025.924915;
-	calibration.start = 423;
-	calibration.length = 392;
-
-    curve_t loaded[6];
-    sctp_flash_load_curve_list(loaded);
-    // for(int i=0;i<6;i++) {
-    //     ESP_LOGI(TAG, "%s", loaded[i].filename);
-    // }
-
-    // gpio_pullup_en(PIN_NUM_CS);
-    // gpio_pullup_en(PIN_NUM_MISO);
-    // gpio_pullup_en(PIN_NUM_CLK);
-
-    // sctp_flash_save_calibration(calibration, calibration_file);
-    // sctp_flash_load_calibration(&calibration_load, calibration_file);
-
-    // ESP_LOGI(TAG, "%.10f", calibration_load.gain);
-    // ESP_LOGI(TAG, "%.10f", calibration_load.bias);
-    // ESP_LOGI(TAG, "%d", calibration_load.row);
-    // ESP_LOGI(TAG, "%d", calibration_load.start);
-    // ESP_LOGI(TAG, "%d", calibration_load.length);
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    {
+        // NVS partition was truncated and needs to be erased
+        // Retry nvs_flash_init
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(err);
 }
 
-void app_main(void) {
-    UNITY_BEGIN();
-    RUN_TEST(test1);
-    UNITY_END();
+esp_err_t sctp_flash_nvs_save_calibration(calibration_t *calibration) {
+    nvs_handle_t my_handle;
+    esp_err_t err;
+
+    // Open
+    err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
+    if (err != ESP_OK)
+        return err;
+
+    // Initialize the size of memory space required for blob
+    size_t required_size = sizeof(calibration_t);
+    calibration_t *flash_calibration = malloc(required_size);
+
+    // Write value
+    err = nvs_set_blob(my_handle, "flash_calibration", calibration, required_size);
+    free(flash_calibration);
+
+    if (err != ESP_OK)
+        return err;
+
+    // Commit
+    err = nvs_commit(my_handle);
+    if (err != ESP_OK)
+    {
+        ESP_LOGI(TAG, "Save failed.");
+        return err;
+    } else
+        ESP_LOGI(TAG, "Successfully saved calibration values to nvs.");
+
+    // Close
+    nvs_close(my_handle);
+    return ESP_OK;
+    }
+
+esp_err_t sctp_flash_nvs_load_calibration(calibration_t *calibration) {
+    nvs_handle_t my_handle;
+    esp_err_t err;
+
+    // Open
+    err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
+    if (err != ESP_OK)
+        return err;
+
+    // Read run time blob
+    size_t required_size = sizeof(calibration_t); // value will default to 0, if not set yet in NVS
+    // obtain required memory space to store blob being read from NVS
+    err = nvs_get_blob(my_handle, "calibration", NULL, &required_size);
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
+        return err;
+    if (required_size == 0)
+    {
+        ESP_LOGI(TAG, "Nothing saved yet!\n");
+    }
+    else
+    {
+        err = nvs_get_blob(my_handle, "calibration", calibration, &required_size);
+        if (err != ESP_OK)
+        {
+            free(calibration);
+            return err;
+        }
+        ESP_LOGI(TAG, "gain: %.10f", (double)calibration->gain);
+        ESP_LOGI(TAG, "bias: %.10f", (double)calibration->bias);
+        ESP_LOGI(TAG, "row: %d", calibration->row);
+        ESP_LOGI(TAG, "start: %d", calibration->start);
+        ESP_LOGI(TAG, "length: %d", calibration->length);
+
+        free(calibration);
+    }
+    // Close
+    nvs_close(my_handle);
+    return ESP_OK;
 }
+
+esp_err_t sctp_flash_nvs_save_curve(curve_t curves[6]) {
+    nvs_handle_t my_handle;
+    esp_err_t err;
+    char key[20];
+
+    // Open
+    err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
+    if (err != ESP_OK)
+        return err;
+
+    // Initialize the size of memory space required for blob
+    flash_curve_t *flash_curve;
+    size_t required_size = sizeof(flash_curve_t);
+    flash_curve = malloc(required_size);
+    for(int i=0; i<6; i++) {
+        if(curves[i].wavelength==0)
+            continue;
+        flash_curve->id = curves[i].id;
+        flash_curve->points = curves[i].points;
+        flash_curve->wavelength = curves[i].wavelength;
+        strcpy(flash_curve->filename, curves[i].filename);
+        for (int j = 0; j < curves[i].points; j++)
+        {
+            flash_curve->concentration[j] = (curves[i].concentration)[j];
+            flash_curve->absorbance[j] = (curves[i].absorbance)[j];
+        }
+        // Write value
+        sprintf(key, "curve_%d", i+1);
+        err = nvs_set_blob(my_handle, key, flash_curve, required_size);
+    }
+    free(flash_curve);
+
+    if (err != ESP_OK)
+        return err;
+
+    // Commit
+    err = nvs_commit(my_handle);
+    if (err != ESP_OK)
+    {
+        ESP_LOGI(TAG, "Save failed.");
+        return err;
+    } else
+        ESP_LOGI(TAG, "Successfully saved curve values to nvs.");
+
+    // Close
+    nvs_close(my_handle);
+    return ESP_OK;
+}
+
+esp_err_t sctp_flash_nvs_load_curve(curve_t *curves[6]) {
+    nvs_handle_t my_handle;
+    esp_err_t err;
+
+    // Open
+    err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
+    if (err != ESP_OK)
+        return err;
+
+    // Read run time blob
+    size_t required_size = sizeof(flash_curve_t); // value will default to 0, if not set yet in NVS
+    // obtain required memory space to store blob being read from NVS
+    err = nvs_get_blob(my_handle, "flash_curve", NULL, &required_size);
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
+        return err;
+    if (required_size == 0)
+    {
+        ESP_LOGI(TAG, "Nothing saved yet!\n");
+    }
+    else
+    {
+        flash_curve_t *flash_curve = malloc(required_size);
+        char key[20];
+        for(int i=0; i<6; i++) {
+            sprintf(key, "curve_%d", i+1);
+            err = nvs_get_blob(my_handle, key, flash_curve, &required_size);
+            memcpy(curves[i], flash_curve, required_size);
+            if (err != ESP_OK)
+            {
+                free(flash_curve);
+                return err;
+            }
+            ESP_LOGI(TAG, "id: %d", curves[i]->id);
+            ESP_LOGI(TAG, "wavelength: %d", curves[i]->wavelength);
+            ESP_LOGI(TAG, "points: %d", curves[i]->points);
+            ESP_LOGI(TAG, "filename: %s", curves[i]->filename);
+            for(int j=0; j < curves[i]->points; j++) {
+                ESP_LOGI(TAG, "%.3f, %.3f", (double)(curves[i]->concentration)[j], (double)(curves[i]->absorbance)[j]);
+            }
+        }
+        free(flash_curve);
+    }
+    // Close
+    nvs_close(my_handle);
+    return ESP_OK;
+}
+
+    void test1(void)
+    {
+        // Use POSIX and C standard library functions to work with files.
+
+        // sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+        // sdmmc_card_t * card;
+
+        // sctp_flash_init(PIN_NUM_CS, &host, &card);
+
+        calibration_t calibration;
+        calibration_t calibration_load;
+        float gain = 0;
+        float bias = 0;
+        uint16_t row = 0;
+        uint16_t start = 0;  // pixel column index
+        uint16_t length = 0; // length of full spectrum
+        calibration_load.gain = gain;
+        calibration_load.bias = bias;
+        calibration_load.row = row;
+        calibration_load.start = start;
+        calibration_load.length = length;
+        char *calibration_file;
+        calibration_file = malloc(sizeof(char) * NAME_LEN);
+        calibration.row = 496;
+        calibration.gain = -0.7698064209;
+        calibration.bias = 1025.924915;
+        calibration.start = 423;
+        calibration.length = 392;
+
+        ESP_LOGI(TAG, "Initialized some variables.");
+
+        sctp_flash_nvs_init();
+        ESP_LOGI(TAG, "Initialized nvs handle.");
+        sctp_flash_nvs_save_calibration(&calibration);
+        sctp_flash_nvs_load_calibration(&calibration_load);
+
+        // curve_t loaded[6];
+        // sctp_flash_load_curve_list(loaded);
+        // for(int i=0;i<6;i++) {
+        //     ESP_LOGI(TAG, "%s", loaded[i].filename);
+        // }
+
+        // gpio_pullup_en(PIN_NUM_CS);
+        // gpio_pullup_en(PIN_NUM_MISO);
+        // gpio_pullup_en(PIN_NUM_CLK);
+
+        // sctp_flash_save_calibration(calibration, calibration_file);
+        // sctp_flash_load_calibration(&calibration_load, calibration_file);
+
+        // ESP_LOGI(TAG, "%.10f", calibration_load.gain);
+        // ESP_LOGI(TAG, "%.10f", calibration_load.bias);
+        // ESP_LOGI(TAG, "%d", calibration_load.row);
+        // ESP_LOGI(TAG, "%d", calibration_load.start);
+        // ESP_LOGI(TAG, "%d", calibration_load.length);
+    }
+
+    void app_main(void)
+    {
+        UNITY_BEGIN();
+        RUN_TEST(test1);
+        UNITY_END();
+    }
