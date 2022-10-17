@@ -25,7 +25,7 @@ void buffer_flush() {
 #define LAMP_CHECK_BUFFER_SIZE 20
 
 esp_err_t halogen_wait(uint16_t pixel, int tolerance) {
-    ESP_LOGI(TAG, "lamp heating...");
+    ESP_LOGI(TAG, "lamp heating... ref=%d", pixel);
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xFrequency = 1000 / portTICK_PERIOD_MS;
     uint16_t buffer[LAMP_CHECK_BUFFER_SIZE] = {0};
@@ -328,13 +328,13 @@ esp_err_t sctp_sensor_concentration_sample(calibration_t * calibration, uint16_t
 
     sctp_camera_init(&camera_config);
     sensor_t *camera_sensor = sctp_camera_sensor_get();
-    camera_sensor->set_shutter_width(camera_sensor, 100);
+    camera_sensor->set_row_start(camera_sensor, calibration->row);
+    camera_sensor->set_shutter_width(camera_sensor, 1000);
     uint16_t px = round((float) ((wavelength - calibration->bias) / calibration->gain));
     ESP_LOGI(TAG, "wl=%d, px=%d", wavelength, px);
     gpio_set_level( PIN_LAMP_SWITCH, 1);
     halogen_wait(calibration->start, 1);
     
-    camera_sensor->set_row_start(camera_sensor, calibration->row);
     camera_sensor->set_shutter_width(camera_sensor, *blank_take->exposure);
 
     ESP_LOGI(TAG, "exposure set to %d", *blank_take->exposure);

@@ -115,7 +115,7 @@ void row_print() {
 
     sensor_t *s = sctp_camera_sensor_get();
     // s->set_gain(s, 8);
-    s->set_shutter_width(s, 1500);
+    s->set_shutter_width(s, 8000);
     s->set_row_start(s, 0x000C + row);
 
     camera_fb_t * take = sctp_camera_fb_get();
@@ -132,6 +132,9 @@ void row_print() {
     gpio_set_level( PIN_LAMP_SWITCH, 1);
     vTaskDelay(3000/ portTICK_PERIOD_MS);
     for (int j=0; j<samples; j++) {
+        if (j < 2) {
+            ESP_LOGI(TAG, "j=%d", j);
+        }
         camera_fb_t * camera_fb = sctp_camera_fb_get(); 
         for (int i=0; i<1280; i++) {
             uint16_t val = (camera_fb->buf[i*2] << 8) | camera_fb->buf[1 + i*2];
@@ -262,6 +265,34 @@ void test_quant_blank() {
     ESP_LOGI(TAG, "blank = %f", *blank_take.readout);
 }
 
+void test_quant_sample() {
+    i2cdev_init();
+    sctp_sensor_init();
+
+    calibration_t calibration;
+	calibration.gain = -0.7698064209;
+	calibration.bias = 1025.924915;
+	calibration.start = 423;
+	calibration.length = 392;
+    calibration.row = 492;
+
+    blank_take_t blank_take;
+    uint16_t exposure = 8000;
+    blank_take.exposure = &exposure;
+    float blank_readout = 465;
+    blank_take.readout = &blank_readout;
+
+    uint16_t wavelength = 520;
+
+    float sample_readout = 0;
+    esp_err_t err = sctp_sensor_concentration_sample(&calibration, wavelength, &blank_take, &sample_readout);
+    TEST_ASSERT_EQUAL(ESP_OK, err);
+    ESP_LOGI(TAG, "sample taken");
+
+    ESP_LOGI(TAG, "%f:%f:%d", *blank_take.readout, sample_readout, *blank_take.exposure);
+
+}
+
 void test_quant() {
     i2cdev_init();
     sctp_sensor_init();
@@ -271,7 +302,7 @@ void test_quant() {
 	calibration.bias = 1025.924915;
 	calibration.start = 423;
 	calibration.length = 392;
-    calibration.row = 489;
+    calibration.row = 492;
 
     blank_take_t blank_take;
     uint16_t exposure = 10;
@@ -473,11 +504,12 @@ void app_main() {
     UNITY_BEGIN();
 
     // RUN_TEST(row_search);
-    RUN_TEST(row_print);
+    // RUN_TEST(row_print);
 
     // RUN_TEST(test_spectrum_blank);
     // RUN_TEST(test_spectrum);
     // RUN_TEST(test_quant_blank);
+    RUN_TEST(test_quant_sample);
     // RUN_TEST(test_quant);
 
 
