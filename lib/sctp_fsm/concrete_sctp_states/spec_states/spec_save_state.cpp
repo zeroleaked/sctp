@@ -9,8 +9,9 @@
 #define CURSOR_NULL 0
 #define CURSOR_OK 1
 
-#define SUBSTATE_SAVING 0
-#define SUBSTATE_WAITING 1
+#define SUBSTATE_NULL 0
+#define SUBSTATE_SAVING 1
+#define SUBSTATE_WAITING 2
 
 typedef struct {
 	QueueHandle_t report_queue;
@@ -39,6 +40,7 @@ static void saveSpectrum(void * pvParameters) {
 
 void SpecSave::enter(Sctp* sctp)
 {
+	substate = SUBSTATE_NULL;
 	sctp_lcd_clear();
 	cursor = CURSOR_NULL;
 	ESP_LOGI(TAG, "enter, saving...");

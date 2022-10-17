@@ -34,7 +34,7 @@ static void takeSpectrumBlank(void * pvParameters) {
     calibration_t * calibration = ((taskParam_t *) pvParameters)->calibration;
 
 	assert(blank_take->readout != NULL);
-	blank_take->exposure = 100;
+	blank_take->exposure = 50;
 	blank_take->gain = 1;
 	esp_err_t report = sctp_sensor_spectrum_blank(calibration, blank_take);
 	

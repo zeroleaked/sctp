@@ -1,6 +1,8 @@
 #include <esp_log.h>
 #include <math.h>
 
+#include <i2cdev.h>
+
 #include "sctp.h"
 #include "concrete_sctp_states/concrete_sctp_states.h"
 #include "sctp_sensor.h"
@@ -11,8 +13,10 @@ static const char TAG[] = "sctp";
 // Constructor
 Sctp::Sctp()
 {
+    i2cdev_init();
+
 	// todo load calibration
-	calibration.row = 496;
+	calibration.row = 481;
 	calibration.gain = -0.7698064209;
 	calibration.bias = 1025.924915;
 	calibration.start = 423;

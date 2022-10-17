@@ -31,7 +31,7 @@
 #define CURVE_LIST_LENGTH 6
 #define FILENAME_LENGTH 20
 
-#define MAX_POINTS 15
+#define MAX_POINTS 10
 
 static const char TAG[] = "conc_curves_state";
 
