@@ -2,9 +2,6 @@
 #include <freertos/task.h>
 #include <string.h>
 #include <esp_log.h>
-
-#include "sctp_flash.h"
-
 #include <esp_err.h>
 #include <stdint.h>
 
@@ -14,14 +11,21 @@
 #include "esp_vfs_fat.h"
 #include "sdmmc_cmd.h"
 
+#include "esp_system.h"
+#include "nvs_flash.h"
+#include "nvs.h"
+#include "driver/gpio.h"
+
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
 
+#include "sctp_flash.h"
 #include "sctp_common_types.h"
 
 #define MOUNT_POINT "/sdcard"
+#define STORAGE_NAMESPACE "storage"
 
 #define PIN_NUM_MISO    GPIO_NUM_4
 #define PIN_NUM_MOSI    GPIO_NUM_5
@@ -190,82 +194,99 @@ esp_err_t sctp_flash_save_curve_int(curve_t curve) {
     return ESP_OK;
 }
 
-esp_err_t sctp_flash_save_calibration(calibration_t data, char * filename) {
-    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    sdmmc_card_t * card;
+esp_err_t sctp_flash_nvs_save_calibration(calibration_t calibration)
+{
+    nvs_handle_t my_handle;
+    esp_err_t err;
 
-    sctp_flash_init(PIN_NUM_CS_INT, &host, &card);
-    // First create a file.
-    char file_cal[] = "/sdcard/calibration.csv";
-
-    ESP_LOGI(TAG, "Opening file %s", file_cal);
-    FILE *f = fopen(file_cal, "w");
-    if (f == NULL) {
-        ESP_LOGE(TAG, "Failed to open file for writing");
-        return ESP_FAIL;
+    // Open
+    err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
+    if (err != ESP_OK)
+    {
+        ESP_LOGI(TAG, "Opening failed.");
+        return err;
     }
-    fprintf(f, "gain, %.3f\n", (double)data.gain);
-    fprintf(f, "bias, %.3f\n", (double)data.bias);
-    fprintf(f, "row, %d\n", data.row);
-    fprintf(f, "start, %d\n", data.start);
-    fprintf(f, "length, %d\n", data.length);
-    fclose(f);
-    ESP_LOGI(TAG, "File written");
 
-    sctp_flash_deinit(&host, card);
+    // Initialize the size of memory space required for blob
+    calibration_t *flash_calibration;
+    size_t required_size = sizeof(calibration_t);
+    flash_calibration = malloc(required_size);
+
+    flash_calibration->gain = calibration.gain;
+    flash_calibration->bias = calibration.bias;
+    flash_calibration->row = calibration.row;
+    flash_calibration->start = calibration.start;
+    flash_calibration->length = calibration.length;
+
+    // Write value
+    err = nvs_set_blob(my_handle, "calibration", flash_calibration, required_size);
+    free(flash_calibration);
+
+    if (err != ESP_OK)
+    {
+        ESP_LOGI(TAG, "Writing failed.");
+        return err;
+    }
+
+    // Commit
+    err = nvs_commit(my_handle);
+    if (err != ESP_OK)
+    {
+        ESP_LOGI(TAG, "Saving failed.");
+        return err;
+    }
+    else
+    {
+        ESP_LOGI(TAG, "Successfully saved calibration values to nvs.");
+    }
+    // Close
+    nvs_close(my_handle);
     return ESP_OK;
 }
 
-esp_err_t sctp_flash_load_calibration(calibration_t * data, char * filename) {
-    char line[NAME_LEN];
-    char file_cal[] = "/sdcard/calibration.csv";
-    char *temp;
+esp_err_t sctp_flash_nvs_load_calibration(calibration_t *calibration)
+{
+    nvs_handle_t my_handle;
+    esp_err_t err;
 
-    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    sdmmc_card_t * card;
+    // Open
+    err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
+    if (err != ESP_OK)
+        return err;
 
-    sctp_flash_init(PIN_NUM_CS_INT, &host, &card);
-    // Open file for reading
-    ESP_LOGI(TAG, "Reading file %s", file_cal);
-    FILE *f = fopen(file_cal, "r");
-    if (f == NULL) {
-        ESP_LOGE(TAG, "Failed to open file for reading");
-        return;
+    // Read run time blob
+    size_t required_size = sizeof(calibration_t); // value will default to 0, if not set yet in NVS
+    // obtain required memory space to store blob being read from NVS
+    err = nvs_get_blob(my_handle, "calibration", NULL, &required_size);
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
+        return err;
+    if (required_size == 0)
+    {
+        ESP_LOGI(TAG, "Nothing saved yet!\n");
     }
-    int i = 0;
-    while(fgets(line, sizeof(line), f)) {
-        switch(i) {
-            case 0: {
-                temp = strtok(line, ", ");
-                data->gain = (float) atof(strtok(NULL, ", "));
-                break;
-            }
-            case 1: {
-                temp = strtok(line, ", ");
-                data->bias = (float) atof(strtok(NULL, ", "));
-                break;
-            }
-            case 2: {
-                temp = strtok(line, ", ");
-                data->row = atoi(strtok(NULL, ", "));
-                break;
-            }
-            case 3: {
-                temp = strtok(line, ", ");
-                data->start = atoi(strtok(NULL, ", "));
-                break;
-            }
-            case 4: {
-                temp = strtok(line, ", ");
-                data->length = atoi(strtok(NULL, ", "));
-                break;
-            }
+    else
+    {
+        err = nvs_get_blob(my_handle, "calibration", calibration, &required_size);
+        if (err != ESP_OK)
+        {
+            free(calibration);
+            return err;
         }
-        i++;
-    }
-    fclose(f);
+        else
+        {
+            ESP_LOGI(TAG, "Successfully loaded calibration values from nvs.");
+        }
 
-    sctp_flash_deinit(&host, card);
+        ESP_LOGI(TAG, "gain: %.10f", (double)calibration->gain);
+        ESP_LOGI(TAG, "bias: %.10f", (double)calibration->bias);
+        ESP_LOGI(TAG, "row: %d", calibration->row);
+        ESP_LOGI(TAG, "start: %d", calibration->start);
+        ESP_LOGI(TAG, "length: %d", calibration->length);
+
+        free(calibration);
+    }
+    // Close
+    nvs_close(my_handle);
     return ESP_OK;
 }
 
@@ -376,23 +397,44 @@ esp_err_t sctp_flash_load_curve_floats(curve_t * curve) {
     return ESP_OK;
 }
 
-esp_err_t sctp_flash_load_history_list(char filenames[FILE_LEN][NAME_LEN]) {
+esp_err_t sctp_flash_load_history_list(history_t list[FILE_LEN]) {
     uint8_t count = 0;
     struct stat sb;
-    char temp[NAME_LEN];
+    char *temp;
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t * card;
 
     sctp_flash_init(PIN_NUM_CS_EXT, &host, &card);
+    char dir_name[] = "/sdcard/spectrum/";
     for(int i=0; i<60; i++) {
-        char dir_name[] = "/sdcard/spectrum/";
         sprintf(temp, "spec_%d.csv", i+1);
         strcat(dir_name, temp);
         if(stat(dir_name, &sb) == 0) {
             ESP_LOGI(TAG, "match");
-            ESP_LOGI(TAG, "%d, %s", i, temp);
-            strcpy(filenames[count], temp);
+            strcpy(list[count].filename, temp);
+            list[count].id = count + 1;
+            list[count].measurement_mode = 0;
+            ESP_LOGI(TAG, "%d, %s", list[count].id, temp);
+            count++;
+        }
+    }
+    strcpy(dir_name, "/sdcard/curves/");
+    struct dirent *de;
+    DIR *d = opendir(dir_name);
+    if (d == NULL)
+    {
+        ESP_LOGI(TAG, "Could'nt open directory");
+    }
+    while ((de = readdir(d)) != NULL)
+    {
+        temp = de->d_name;
+        if (temp[0] != '_' && temp[0] != '.')
+        {
+            strcpy(list[count].filename, temp);
+            list[count].id = count + 1;
+            list[count].measurement_mode = 0;
+            ESP_LOGI(TAG, "%d, %s", list[count].id, temp);
             count++;
         }
     }
@@ -407,7 +449,6 @@ esp_err_t sctp_flash_load_spectrum(char * filename, float * absorbance, float * 
     sctp_flash_init(PIN_NUM_CS_EXT, &host, &card);
     char line[NAME_LEN];
     char file_spec[] = "/sdcard/spectrum/";
-    char filename[] = "spec_6.csv";
     strcat(file_spec, filename);
 
     // Open file for reading
