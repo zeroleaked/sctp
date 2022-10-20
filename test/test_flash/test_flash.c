@@ -233,38 +233,41 @@ esp_err_t sctp_flash_load_history_list(history_t list[FILE_LEN])
 {
     uint8_t count = 0;
     struct stat sb;
-    char temp[NAME_LEN];
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t *card;
 
     sctp_flash_init(PIN_NUM_CS, &host, &card);
-    char dir_name[] = "/sdcard/spectrum/";
-    for (int i = 0; i < 60; i++)
-    {
-        sprintf(temp, "spec_%d.csv", i + 1);
-        strcat(dir_name, temp);
-        if (stat(dir_name, &sb) == 0)
-        {
-            ESP_LOGI(TAG, "match");
-            strcpy(list[count].filename, temp);
-            list[count].id = count + 1;
-            list[count].measurement_mode = 0;
-            ESP_LOGI(TAG, "%d, %s", list[count].id, temp);
-            count++;
-        }
-    }
-    strcpy(dir_name, "/sdcard/curves/");
+    char spec_dir[] = "/sdcard/spectrum";
     struct dirent *de;
-    DIR *d = opendir(dir_name);
+    DIR *d = opendir(spec_dir);
     if (d == NULL)
     {
         ESP_LOGI(TAG, "Could'nt open directory");
     }
-    char *temp_dir;
+    char *temp;
     while ((de = readdir(d)) != NULL)
     {
-        temp_dir = de->d_name;
+        temp = de->d_name;
+        if (temp[0] != '_' && temp[0] != '.')
+        {
+            strcpy(list[count].filename, temp);
+            list[count].id = count + 1;
+            list[count].measurement_mode = 1;
+            ESP_LOGI(TAG, "%d, %s", list[count].id, temp);
+            count++;
+        }
+    }
+    char curve_dir[] = "/sdcard/curves";
+    // ESP_LOGI(TAG, "curve directory: %s", curve_dir);
+    d = opendir(curve_dir);
+    if (d == NULL)
+    {
+        ESP_LOGI(TAG, "Could'nt open directory");
+    }
+    while ((de = readdir(d)) != NULL)
+    {
+        temp = de->d_name;
         if (temp[0] != '_' && temp[0] != '.')
         {
             strcpy(list[count].filename, temp);
@@ -412,6 +415,7 @@ esp_err_t sctp_flash_nvs_save_curve(curve_t curves[6]) {
     esp_err_t err;
     char key[20];
 
+    sctp_flash_nvs_init();
     // Open
     err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
     if (err != ESP_OK)
@@ -422,21 +426,21 @@ esp_err_t sctp_flash_nvs_save_curve(curve_t curves[6]) {
     size_t required_size = sizeof(flash_curve_t);
     flash_curve = malloc(required_size);
     for(int i=0; i<6; i++) {
-        ESP_LOGI(TAG, "i=%d", i);
+        // ESP_LOGI(TAG, "i=%d", i);
         if(curves[i].wavelength==0)
             continue;
         flash_curve->id = curves[i].id;
         flash_curve->points = curves[i].points;
         flash_curve->wavelength = curves[i].wavelength;
-        ESP_LOGI(TAG, "CHECKPOINT 1");
+        // ESP_LOGI(TAG, "CHECKPOINT 1");
         strcpy(flash_curve->filename, curves[i].filename);
-        ESP_LOGI(TAG, "CHECKPOINT 2");
+        // ESP_LOGI(TAG, "CHECKPOINT 2");
         for (int j = 0; j < curves[i].points; j++)
         {
             flash_curve->concentration[j] = (curves[i].concentration)[j];
             flash_curve->absorbance[j] = (curves[i].absorbance)[j];
         }
-        ESP_LOGI(TAG, "CHECKPOINT 3");
+        // ESP_LOGI(TAG, "CHECKPOINT 3");
         // Write value
         sprintf(key, "curve_%d", i+1);
         err = nvs_set_blob(my_handle, key, flash_curve, required_size);
@@ -464,6 +468,7 @@ esp_err_t sctp_flash_nvs_load_curve(curve_t curves[6]) {
     nvs_handle_t my_handle;
     esp_err_t err;
 
+    sctp_flash_nvs_init();
     // Open
     err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
     if (err != ESP_OK)
@@ -488,12 +493,21 @@ esp_err_t sctp_flash_nvs_load_curve(curve_t curves[6]) {
                 continue;
             sprintf(key, "curve_%d", i+1);
             err = nvs_get_blob(my_handle, key, flash_curve, &required_size);
-            memcpy(&curves[i], flash_curve, required_size);
+            curves[i].id = flash_curve->id;
+            curves[i].points = flash_curve->points;
+            curves[i].wavelength = flash_curve->wavelength;
+            strcpy(curves[i].filename, flash_curve->filename);
+            for (int j = 0; j < curves[i].points; j++)
+            {
+                (curves[i].concentration)[j] = flash_curve->concentration[j];
+                (curves[i].absorbance)[j] = flash_curve->absorbance[j];
+            }
             if (err != ESP_OK)
             {
                 free(flash_curve);
                 return err;
-            }
+            } else
+                ESP_LOGI(TAG, "Successfully loaded slot no. %d from nvs.", i+1);
             ESP_LOGI(TAG, "id: %d", curves[i].id);
             ESP_LOGI(TAG, "wavelength: %d", curves[i].wavelength);
             ESP_LOGI(TAG, "points: %d", curves[i].points);
@@ -518,72 +532,84 @@ esp_err_t sctp_flash_nvs_load_curve(curve_t curves[6]) {
 
         // sctp_flash_init(PIN_NUM_CS, &host, &card);
 
-        curve_t curves[6];
-        curve_t loaded[6];
-        for(int i=0; i<6; i++) {
-            curves[i].id = i+1;
-            if(i < 2) {
-                curves[i].points = 10;
-                curves[i].wavelength = 500 + i*150;
-                char filename[NAME_LEN];
-                sprintf(filename, "%d_%dnm.csv", curves[i].id, curves[i].wavelength);
-                curves[i].filename = malloc(NAME_LEN);
-                strcpy(curves[i].filename, filename);
-                curves[i].concentration = malloc(sizeof(float) * curves[i].points);
-                curves[i].absorbance = malloc(sizeof(float) * curves[i].points);
-                for(int j=0; j<curves[i].points; j++) {
-                    (curves[i].concentration)[j] = 0.01 * 10;
-                    (curves[i].absorbance)[j] = 0.05 * 15 * (i+1);
-                }
-            }
-            else {
-                curves[i].wavelength = 0;
-            }
-        }
-        for(int i=0; i<6; i++) {
-            loaded[i].concentration = malloc(sizeof(float) * 10);
-            loaded[i].absorbance = malloc(sizeof(float) * 10);
-        }
+        // curve_t curves[6];
+        // curve_t loaded[6];
+        // ESP_LOGI(TAG, "Initialized some variables as follows:");
+        // for(int i=0; i<6; i++) {
+        //     curves[i].id = i+1;
+        //     if(i < 2) {
+        //         curves[i].points = 10;
+        //         curves[i].wavelength = 500 + i*150;
+        //         char filename[NAME_LEN];
+        //         sprintf(filename, "%d_%dnm.csv", curves[i].id, curves[i].wavelength);
+        //         curves[i].filename = malloc(NAME_LEN);
+        //         strcpy(curves[i].filename, filename);
+        //         curves[i].concentration = malloc(sizeof(float) * curves[i].points);
+        //         curves[i].absorbance = malloc(sizeof(float) * curves[i].points);
+        //         for(int j=0; j<curves[i].points; j++) {
+        //             (curves[i].concentration)[j] = 0.01 * 10 * (j+1);
+        //             (curves[i].absorbance)[j] = 0.05 * 15 * (j+1);
+        //         }
+        //         ESP_LOGI(TAG, "id: %d", curves[i].id);
+        //         ESP_LOGI(TAG, "wavelength: %d", curves[i].wavelength);
+        //         ESP_LOGI(TAG, "points: %d", curves[i].points);
+        //         ESP_LOGI(TAG, "filename: %s", curves[i].filename);
+        //         for (int j = 0; j < curves[i].points; j++)
+        //         {
+        //             ESP_LOGI(TAG, "%.3f, %.3f", (double)(curves[i].concentration)[j], (double)(curves[i].absorbance)[j]);
+        //         }
+        //     }
+        //     else {
+        //         curves[i].wavelength = 0;
+        //         ESP_LOGI(TAG, "Slot no. %d is left blank", i+1);
+        //     }
+        // }
 
-        calibration_t calibration;
-        calibration_t calibration_load;
-        double gain = 0;
-        double bias = 0;
-        uint16_t row = 0;
-        uint16_t start = 0;  // pixel column index
-        uint16_t length = 0; // length of full spectrum
-        calibration_load.gain = gain;
-        calibration_load.bias = bias;
-        calibration_load.row = row;
-        calibration_load.start = start;
-        calibration_load.length = length;
-        char *calibration_file;
-        calibration_file = malloc(sizeof(char) * NAME_LEN);
-        calibration.row = 496;
-        calibration.gain = -0.7698064209;
-        calibration.bias = 1025.924915;
-        calibration.start = 423;
-        calibration.length = 392;
 
-        ESP_LOGI(TAG, "Initialized some variables as follows:");
-        ESP_LOGI(TAG, "%.10f", calibration.gain);
-        ESP_LOGI(TAG, "%.10f", calibration.bias);
-        ESP_LOGI(TAG, "%d", calibration.row);
-        ESP_LOGI(TAG, "%d", calibration.start);
-        ESP_LOGI(TAG, "%d", calibration.length);
+        // for(int i=0; i<6; i++) {
+        //     loaded[i].filename = malloc(NAME_LEN);
+        //     loaded[i].concentration = malloc(sizeof(float) * 10);
+        //     loaded[i].absorbance = malloc(sizeof(float) * 10);
+        // }
 
-        sctp_flash_nvs_init();
-        ESP_LOGI(TAG, "Initialized nvs handle.");
-        //sctp_flash_nvs_save_curve(curves);
-        //sctp_flash_nvs_load_curve(loaded);
+        // calibration_t calibration;
+        // calibration_t calibration_load;
+        // double gain = 0;
+        // double bias = 0;
+        // uint16_t row = 0;
+        // uint16_t start = 0;  // pixel column index
+        // uint16_t length = 0; // length of full spectrum
+        // calibration_load.gain = gain;
+        // calibration_load.bias = bias;
+        // calibration_load.row = row;
+        // calibration_load.start = start;
+        // calibration_load.length = length;
+        // char *calibration_file;
+        // calibration_file = malloc(sizeof(char) * NAME_LEN);
+        // calibration.row = 496;
+        // calibration.gain = -0.7698064209;
+        // calibration.bias = 1025.924915;
+        // calibration.start = 423;
+        // calibration.length = 392;
+
+        // ESP_LOGI(TAG, "%.10f", calibration.gain);
+        // ESP_LOGI(TAG, "%.10f", calibration.bias);
+        // ESP_LOGI(TAG, "%d", calibration.row);
+        // ESP_LOGI(TAG, "%d", calibration.start);
+        // ESP_LOGI(TAG, "%d", calibration.length);
+
+        // sctp_flash_nvs_init();
+        // ESP_LOGI(TAG, "Initialized nvs handle.");
+        // sctp_flash_nvs_save_curve(curves);
+        // sctp_flash_nvs_load_curve(loaded);
         // sctp_flash_nvs_save_calibration(calibration);
         // sctp_flash_nvs_load_calibration(&calibration_load);
 
-        // history_t loaded[FILE_LEN];
-        // for(int i=0; i<FILE_LEN; i++) {
-        //     loaded[i].filename = malloc(NAME_LEN);
-        // }
-        // sctp_flash_load_history_list(loaded);
+        history_t loaded[FILE_LEN];
+        for(int i=0; i<FILE_LEN; i++) {
+            loaded[i].filename = malloc(NAME_LEN);
+        }
+        sctp_flash_load_history_list(loaded);
 
         // curve_t loaded[6];
         // sctp_flash_load_curve_list(loaded);
