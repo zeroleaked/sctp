@@ -49,7 +49,7 @@ typedef struct {
 
 typedef struct {
 	float * readout;
-	uint16_t exposure;
+	uint16_t * exposure;
 	uint16_t gain;
 } blank_take_t;
 

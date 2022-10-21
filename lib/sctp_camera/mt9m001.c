@@ -84,6 +84,12 @@ static int set_gain(sensor_t *sensor, int gain)
     return ret;
 }
 
+static int read_reg(sensor_t *sensor, uint8_t reg_addr, uint16_t * data)
+{
+    *data = SCCB_Read(sensor->slv_addr, reg_addr);
+    return 1;
+}
+
 int mt9m001_init(sensor_t *sensor)
 {
     sensor->reset = reset;
@@ -92,7 +98,7 @@ int mt9m001_init(sensor_t *sensor)
     sensor->set_row_start = set_row_start;
     sensor->set_shutter_width = set_shutter_width;
     sensor->set_gain = set_gain;
-    // sensor->set_framesize = set_framesize;
+    sensor->read_reg = read_reg;
     // sensor->set_contrast  = set_dummy;
     // sensor->set_brightness= set_dummy;
     // sensor->set_saturation= set_dummy;
