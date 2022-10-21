@@ -540,10 +540,6 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   display.println("(nm)");
 }
 
-void sctp_lcd_spec_result_cursor(uint8_t cursor){}
-
-void sctp_lcd_conc_curves_opening(uint8_t cursor){}
-
 void sctp_lcd_conc_curves_loading_floats(uint8_t cursor){}
 
 void sctp_lcd_conc_curves_list_clear(uint8_t cursor)
@@ -1207,40 +1203,53 @@ void sctp_lcd_history_list_clear(uint8_t cursor) {
 }
 
 void sctp_lcd_battery(uint8_t batt_level) {
-  display.fillRoundRect(464, 20, 2, 10, 2, TFT_BLACK);
-  display.drawRoundRect(424, 15, 40, 20, 5, TFT_BLACK);
-  switch(batt_level) {
+  display.fillRoundRect(464, 20, 2, 10, 2, TFT_WHITE);
+  display.drawRoundRect(424, 15, 40, 20, 5, TFT_WHITE);
+  uint8_t bars = round(batt_level/20);
+  switch(bars) {
     case 0: {
+      display.fillRoundRect(464, 20, 2, 10, 2, TFT_RED);
+      display.drawRoundRect(424, 15, 40, 20, 5, TFT_RED);
       break;
     }
     case 1: {
-      display.fillRect(427, 18, 6, 14, TFT_BLACK);
+      display.fillRoundRect(464, 20, 2, 10, 2, TFT_RED);
+      display.drawRoundRect(424, 15, 40, 20, 5, TFT_RED);
+      display.fillRect(427, 18, 6, 14, TFT_RED);
       break;
     }
     case 2: {
-      display.fillRect(427, 18, 6, 14, TFT_BLACK);
-      display.fillRect(434, 18, 6, 14, TFT_BLACK);
+      display.fillRoundRect(464, 20, 2, 10, 2, TFT_MUSTARD);
+      display.drawRoundRect(424, 15, 40, 20, 5, TFT_MUSTARD);
+      display.fillRect(427, 18, 6, 14, TFT_MUSTARD);
+      display.fillRect(434, 18, 6, 14, TFT_MUSTARD);
       break;
     }
     case 3: {
-      display.fillRect(427, 18, 6, 14, TFT_BLACK);
-      display.fillRect(434, 18, 6, 14, TFT_BLACK);
-      display.fillRect(441, 18, 6, 14, TFT_BLACK);
+      display.fillRoundRect(464, 20, 2, 10, 2, TFT_MUSTARD);
+      display.drawRoundRect(424, 15, 40, 20, 5, TFT_MUSTARD);
+      display.fillRect(427, 18, 6, 14, TFT_MUSTARD);
+      display.fillRect(434, 18, 6, 14, TFT_MUSTARD);
+      display.fillRect(441, 18, 6, 14, TFT_MUSTARD);
       break;
     }
     case 4: {
-      display.fillRect(427, 18, 6, 14, TFT_BLACK);
-      display.fillRect(434, 18, 6, 14, TFT_BLACK);
-      display.fillRect(441, 18, 6, 14, TFT_BLACK);
-      display.fillRect(448, 18, 6, 14, TFT_BLACK);
+      display.fillRoundRect(464, 20, 2, 10, 2, TFT_TOSCA);
+      display.drawRoundRect(424, 15, 40, 20, 5, TFT_TOSCA);
+      display.fillRect(427, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(434, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(441, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(448, 18, 6, 14, TFT_TOSCA);
       break;
     }
     case 5: {
-      display.fillRect(427, 18, 6, 14, TFT_BLACK);
-      display.fillRect(434, 18, 6, 14, TFT_BLACK);
-      display.fillRect(441, 18, 6, 14, TFT_BLACK);
-      display.fillRect(448, 18, 6, 14, TFT_BLACK);
-      display.fillRect(455, 18, 6, 14, TFT_BLACK);
+      display.fillRoundRect(464, 20, 2, 10, 2, TFT_TOSCA);
+      display.drawRoundRect(424, 15, 40, 20, 5, TFT_TOSCA);
+      display.fillRect(427, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(434, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(441, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(448, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(455, 18, 6, 14, TFT_TOSCA);
       break;
     }
   }
