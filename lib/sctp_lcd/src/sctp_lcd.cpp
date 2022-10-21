@@ -133,28 +133,6 @@ void sctp_lcd_blank_waiting(uint8_t cursor)
 
 void sctp_lcd_blank_sampling(uint8_t cursor)
 {
-  display.fillRoundRect(120, 160, 120, 40, 10, TFT_WHITE);
-
-  switch(cursor) {
-    case 0: {
-      display.fillRoundRect(245, 160, 120, 40, 10, TFT_LIGHTGREY);
-      break;
-    }
-    case 1: {
-      display.fillRoundRect(120, 160, 120, 40, 10, TFT_LIGHTGREY);
-      break;
-    }
-  }
-
-  display.setTextColor(TFT_BLACK);
-  display.setTextSize(1);
-  display.setCursor(150, 175);
-  display.println("CANCEL");
-  display.drawRoundRect(120, 160, 120, 40, 10, TFT_BLACK);
-  display.setCursor(280, 175);
-  display.println("NEXT");
-  display.drawRoundRect(245, 160, 120, 40, 10, TFT_BLACK);
-
   display.setTextColor(TFT_MUSTARD);
   display.setCursor(90, 225);
   display.println("Measuring Absorbance Reference...");
@@ -343,6 +321,7 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
     x_px = (wavelength[i] - wl_min) / (wl_max-wl_min) * 300 + 39;
     x_next = (wavelength[i+1] - wl_min) / (wl_max-wl_min) * 300 + 39;
 
+    if(absorbance[i] < 1) absorbance[i] = 0;
     if(x_px == x_next) {
       y_px = 260 - ((absorbance[i] + absorbance[i+1]) / 2 - a_min) / (a_max-a_min) * 225;
     } else {
@@ -499,6 +478,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
     x_px = (wavelength[i] - wl_min) / (wl_max-wl_min) * 300 + 39;
     x_next = (wavelength[i+1] - wl_min) / (wl_max-wl_min) * 300 + 39;
 
+    if(absorbance[i] < 1) absorbance[i] = 0;
     if(x_px == x_next) {
       y_px = 260 - ((absorbance[i] + absorbance[i+1]) / 2 - a_min) / (a_max-a_min) * 225;
     } else {
@@ -563,10 +543,6 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   display.setCursor(404, 275);
   display.println("(nm)");
 }
-
-void sctp_lcd_spec_result_cursor(uint8_t cursor){}
-
-void sctp_lcd_conc_curves_opening(uint8_t cursor){}
 
 void sctp_lcd_conc_curves_loading_floats(uint8_t cursor){}
 
@@ -1005,7 +981,7 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   display.setTextSize(1);
   display.setCursor(75, 10);
   display.println("CONC VS. ABS");
-  display.drawRect(74, 34, 332, 222, TFT_BLACK);
+  display.drawRect(71, 31, 335, 225, TFT_BLACK);
 
   float* conc = curve.concentration;
   float* ab = curve.absorbance;
@@ -1045,7 +1021,6 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
     y_px = 255 - (y - a_min) / (a_max - a_min) * 220;
     display.fillRect(x_px-1, y_px-1, 3, 3, TFT_TOSCA);
   }
-
 
   //Scatter plot of points
   while(i < curve.points){
@@ -1096,9 +1071,6 @@ void sctp_lcd_conc_sample_clear(uint8_t cursor){
   sctp_lcd_sample_clear(cursor);
 }
 
-void sctp_lcd_history_list(uint8_t cursor, history_t * history_list, uint8_t history_list_length){}
-void sctp_lcd_history_list_clear(uint8_t cursor){}
-
 void sctp_lcd_settings_clear(uint8_t cursor)
 {
   display.setTextColor(TFT_BLACK);
@@ -1148,4 +1120,141 @@ void sctp_lcd_settings(uint8_t cursor)
   display.setCursor(190, 225);
   display.println("MAIN MENU");
   display.drawRoundRect(120, 210, 245, 40, 10, TFT_BLACK);
+}
+
+void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[60][25]){
+  display.setTextColor(TFT_TOSCA);
+  display.setTextSize(1.25);
+  display.setCursor(60, 20);
+  display.println("Filename");
+
+  switch(cursor) {
+    case 0: {
+      display.fillRoundRect(40, 52, 400, 30, 5, TFT_LIGHTGREY);
+      break;
+    }
+    case 1: {
+      display.fillRoundRect(40, 87, 400, 30, 5, TFT_LIGHTGREY);
+      break;
+    }
+    case 2: {
+      display.fillRoundRect(40, 122, 400, 30, 5, TFT_LIGHTGREY);
+      break;
+    }
+    case 3: {
+      display.fillRoundRect(40, 157, 400, 30, 5, TFT_LIGHTGREY);
+      break;
+    }
+    case 4: {
+      display.fillRoundRect(40, 192, 400, 30, 5, TFT_LIGHTGREY);
+      break;
+    }
+    case 5: {
+      display.fillRoundRect(40, 227, 400, 30, 5, TFT_LIGHTGREY);
+      break;
+    }
+    case 6: {
+      display.fillRoundRect(185, 270, 120, 30, 10, TFT_LIGHTGREY);  
+      break;
+    }
+  }
+  
+  display.setTextSize(1);
+  display.setTextColor(TFT_BLACK);
+
+  for(int i=0; i<6; i++) {
+   display.setCursor(60, 60 + 35*i);
+   display.println(filenames[i+row_offset]);
+  }
+   
+  display.setTextColor(TFT_BLACK);
+  display.setCursor(220, 278);
+  display.println("BACK");
+  display.drawRoundRect(185, 270, 120, 30, 10, TFT_BLACK);  
+}
+
+void sctp_lcd_history_list_clear(uint8_t cursor) {
+    switch(cursor) {
+    case 0: {
+      display.fillRoundRect(40, 52, 400, 30, 5, TFT_WHITE);
+      break;
+    }
+    case 1: {
+      display.fillRoundRect(40, 87, 400, 30, 5, TFT_WHITE);
+      break;
+    }
+    case 2: {
+      display.fillRoundRect(40, 122, 400, 30, 5, TFT_WHITE);
+      break;
+    }
+    case 3: {
+      display.fillRoundRect(40, 157, 400, 30, 5, TFT_WHITE);
+      break;
+    }
+    case 4: {
+      display.fillRoundRect(40, 192, 400, 30, 5, TFT_WHITE);
+      break;
+    }
+    case 5: {
+      display.fillRoundRect(40, 227, 400, 30, 5, TFT_WHITE);
+      break;
+    }
+    case 6: {
+      display.fillRoundRect(185, 270, 120, 30, 10, TFT_WHITE);  
+      break;
+    }
+  }
+}
+
+void sctp_lcd_battery(uint8_t batt_level) {
+  display.fillRoundRect(464, 20, 2, 10, 2, TFT_WHITE);
+  display.drawRoundRect(424, 15, 40, 20, 5, TFT_WHITE);
+  uint8_t bars = round(batt_level/20);
+  switch(bars) {
+    case 0: {
+      display.fillRoundRect(464, 20, 2, 10, 2, TFT_RED);
+      display.drawRoundRect(424, 15, 40, 20, 5, TFT_RED);
+      break;
+    }
+    case 1: {
+      display.fillRoundRect(464, 20, 2, 10, 2, TFT_RED);
+      display.drawRoundRect(424, 15, 40, 20, 5, TFT_RED);
+      display.fillRect(427, 18, 6, 14, TFT_RED);
+      break;
+    }
+    case 2: {
+      display.fillRoundRect(464, 20, 2, 10, 2, TFT_MUSTARD);
+      display.drawRoundRect(424, 15, 40, 20, 5, TFT_MUSTARD);
+      display.fillRect(427, 18, 6, 14, TFT_MUSTARD);
+      display.fillRect(434, 18, 6, 14, TFT_MUSTARD);
+      break;
+    }
+    case 3: {
+      display.fillRoundRect(464, 20, 2, 10, 2, TFT_MUSTARD);
+      display.drawRoundRect(424, 15, 40, 20, 5, TFT_MUSTARD);
+      display.fillRect(427, 18, 6, 14, TFT_MUSTARD);
+      display.fillRect(434, 18, 6, 14, TFT_MUSTARD);
+      display.fillRect(441, 18, 6, 14, TFT_MUSTARD);
+      break;
+    }
+    case 4: {
+      display.fillRoundRect(464, 20, 2, 10, 2, TFT_TOSCA);
+      display.drawRoundRect(424, 15, 40, 20, 5, TFT_TOSCA);
+      display.fillRect(427, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(434, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(441, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(448, 18, 6, 14, TFT_TOSCA);
+      break;
+    }
+    case 5: {
+      display.fillRoundRect(464, 20, 2, 10, 2, TFT_TOSCA);
+      display.drawRoundRect(424, 15, 40, 20, 5, TFT_TOSCA);
+      display.fillRect(427, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(434, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(441, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(448, 18, 6, 14, TFT_TOSCA);
+      display.fillRect(455, 18, 6, 14, TFT_TOSCA);
+      break;
+    }
+  }
 }

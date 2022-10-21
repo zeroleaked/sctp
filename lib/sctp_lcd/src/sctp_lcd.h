@@ -115,14 +115,14 @@ void sctp_lcd_spec_sample_clear(uint8_t cursor);
 
 void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance, uint16_t length);
 void sctp_lcd_spec_result_clear(uint8_t cursor);
-void sctp_lcd_spec_result_cursor(uint8_t cursor);
+// void sctp_lcd_spec_result_cursor(uint8_t cursor);
 void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t length);
 
 void sctp_lcd_spec_save_saving();
 void sctp_lcd_spec_save_finish(char saved_name[20]);
 void sctp_lcd_spec_save_finish_cursor(uint8_t cursor);
 
-void sctp_lcd_conc_curves_opening(uint8_t cursor);
+// void sctp_lcd_conc_curves_opening(uint8_t cursor);
 void sctp_lcd_conc_curves_list(uint8_t cursor, curve_t curves[6]);
 void sctp_lcd_conc_curves_list_cursor(uint8_t cursor);
 void sctp_lcd_conc_curves_list_clear(uint8_t cursor);
@@ -148,5 +148,7 @@ void sctp_lcd_conc_sample_clear(uint8_t cursor);
 void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterpolated, conc_regression_t * regress_line);
 void sctp_lcd_conc_regress_error(uint8_t cursor);
 
-void sctp_lcd_history_list(uint8_t cursor, history_t * history_list, uint8_t history_list_length);
+void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[60][25]);
 void sctp_lcd_history_list_clear(uint8_t cursor);
+
+void sctp_lcd_battery(uint8_t batt_level);
