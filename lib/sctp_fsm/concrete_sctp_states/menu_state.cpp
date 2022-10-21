@@ -62,14 +62,6 @@ void Menu::arrowDown(Sctp* sctp)
 	sctp_lcd_menu(this->cursor);
 }
 
-void Menu::refreshLcd(Sctp* sctp, command_t command)
-{
-	if (command == COMMAND_BAT_UPDATE) {
-		sctp_battery_sample(&sctp->battery_percentage);
-		sctp_lcd_battery(sctp->battery_percentage);
-	}
-}
-
 SctpState& Menu::getInstance()
 {
 	static Menu singleton;

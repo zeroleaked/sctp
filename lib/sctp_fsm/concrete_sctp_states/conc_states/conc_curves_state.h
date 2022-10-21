@@ -16,6 +16,7 @@ public:
 	void arrowLeft(Sctp* sctp);
 	void arrowRight(Sctp* sctp);
 	void refreshLcd(Sctp* sctp, command_t command);
+	bool batteryIndicator() {return true;};
 	void exit(Sctp* sctp);
 	int id(Sctp* sctp) { return 4; }
 	static SctpState& getInstance();

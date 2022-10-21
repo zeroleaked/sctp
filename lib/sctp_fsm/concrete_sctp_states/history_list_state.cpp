@@ -178,6 +178,8 @@ void HistoryList::arrowLeft(Sctp* sctp)
 	// sctp_lcd_history_list(cursor, &(sctp->history_list[page*10]), page_length);
 }
 
+
+
 void HistoryList::exit(Sctp* sctp)
 {
 	free(filenames);
