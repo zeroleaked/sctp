@@ -95,7 +95,7 @@ void SpecResult::arrowUp(Sctp* sctp)
 		sctp_lcd_spec_result_clear(this->cursor);
 		if (cursor == CURSOR_FULL) cursor = CURSOR_MENU;
 		else cursor--;
-		sctp_lcd_spec_result_cursor(cursor);
+		sctp_lcd_spec_result(cursor, sctp->spectrum_wavelength, sctp->absorbance, sctp->calibration.length);
 	}
 	else if (substate == SUBSTATE_FULL) {
 		substate = SUBSTATE_CURSOR;

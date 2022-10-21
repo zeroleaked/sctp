@@ -25,7 +25,7 @@ private:
 	HistoryList& operator=(const HistoryList& other);
 
     uint8_t cursor;
-    uint8_t page;
-	uint8_t page_length;
-	bool next_page;
+    uint8_t offset;
+
+	char (*filenames)[25];
 };

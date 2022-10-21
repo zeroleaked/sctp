@@ -7,14 +7,13 @@
 #include "concrete_sctp_states/concrete_sctp_states.h"
 #include "sctp_sensor.h"
 #include "sctp_flash.h"
+#include "sctp_battery.h"
 
 static const char TAG[] = "sctp";
 
 // Constructor
 Sctp::Sctp()
 {
-    i2cdev_init();
-
 	// todo load calibration
 	calibration.row = 481;
 	calibration.gain = -0.7698064209;
@@ -98,16 +97,23 @@ void Sctp::refreshLcd()
 	command_t command;
 	TickType_t xLastWakeTime = xTaskGetTickCount();
 	QueueHandle_t queue = lcd_refresh_queue; // copy handle as local variable, somehow task loop don't like member variables
+	uint8_t counter_battery = 0;
 	for (;;) {
-		vTaskDelayUntil( &xLastWakeTime, 300 / portTICK_RATE_MS );
+		vTaskDelayUntil( &xLastWakeTime, 500 / portTICK_RATE_MS );
 		if (xQueueReceive(queue, &command, 0) == pdTRUE) {
 			ESP_LOGI(TAG, "refreshLcd(), delegating");
+			currentState->refreshLcd(this, command);
+		}
+		else if (counter_battery == 1) {
+			counter_battery = 0;
+			command = COMMAND_BAT_UPDATE;
 			currentState->refreshLcd(this, command);
 		}
 		else {
 			command = COMMAND_NONE;
 			currentState->refreshLcd(this, command);
 		}
+		counter_battery++;
 	}
 }
 

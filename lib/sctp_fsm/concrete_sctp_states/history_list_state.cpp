@@ -38,27 +38,18 @@ void HistoryList::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
 	cursor = CURSOR_NULL;
-	page = 0;
-	page_length = 0;
-	next_page = false;
-	sctp_lcd_history_list(cursor, NULL, LOADING_HISTORY);
-	sctp_flash_history(sctp);
-}
+	offset = 0;
 
-// update lcd with loaded history list from flash
-void HistoryList::updateLcd(Sctp* sctp)
-{
-	sctp_lcd_clear();
-	page = 0;
-	if (sctp->history_list_length >= 10) page_length = 10;
-	else page_length = sctp->history_list_length;
-	sctp_lcd_history_list(cursor, sctp->history_list, page_length);
+	filenames = (char (*) [25]) malloc(60*25*sizeof(char));
+
+	sctp_flash_history(sctp);
+	sctp_lcd_history_list(cursor, offset, filenames);
 }
 
 void HistoryList::okay(Sctp* sctp)
 {
 	if ( cursor < CURSOR_BACK ) {
-		sctp->history_index = page*10 + cursor;
+		// sctp->history_index = page*10 + cursor;
 
 		// copy selected history
 		sctp->history = sctp->history_list[sctp->history_index];
@@ -95,14 +86,14 @@ void HistoryList::arrowUp(Sctp* sctp)
 			break;
 		}
 		case CURSOR_BACK: {
-			if (page_length > 0) {
-				cursor = page_length - 1;
-			}
+			// if (page_length > 0) {
+			// 	cursor = page_length - 1;
+			// }
 			break;
 		}
 	}
 
-	sctp_lcd_history_list(cursor, &(sctp->history_list[page*10]), page_length);
+	// sctp_lcd_history_list(cursor, &(sctp->history_list[page*10]), page_length);
 }
 
 void HistoryList::arrowDown(Sctp* sctp)
@@ -121,13 +112,13 @@ void HistoryList::arrowDown(Sctp* sctp)
 			break;
 		}
 		case CURSOR_BACK: {
-			if (page_length > 0) {
-				cursor = 0;
-			}
+			// if (page_length > 0) {
+			// 	cursor = 0;
+			// }
 			break;
 		}
 	}
-	sctp_lcd_history_list(cursor, &(sctp->history_list[page*10]), page_length);
+	// sctp_lcd_history_list(cursor, &(sctp->history_list[page*10]), page_length);
 }
 
 void HistoryList::arrowRight(Sctp* sctp)
@@ -137,11 +128,11 @@ void HistoryList::arrowRight(Sctp* sctp)
 	if (cursor < CURSOR_NULL) {
 		if (cursor > 4) {
 			// check if there is more page
-			if (sctp->history_list_length > page*10) {
-				page++;
-				cursor = cursor - 5;
-			}
-			else {} // do nothing
+			// if (sctp->history_list_length > page*10) {
+			// 	page++;
+			// 	cursor = cursor - 5;
+			// }
+			// else {} // do nothing
 		}
 		else cursor += 5;
 	}
@@ -156,7 +147,7 @@ void HistoryList::arrowRight(Sctp* sctp)
 		}
 	}
 
-	sctp_lcd_history_list(cursor, &(sctp->history_list[page*10]), page_length);
+	// sctp_lcd_history_list(cursor, &(sctp->history_list[page*10]), page_length);
 }
 
 void HistoryList::arrowLeft(Sctp* sctp)
@@ -165,11 +156,11 @@ void HistoryList::arrowLeft(Sctp* sctp)
 
 	if (cursor < CURSOR_NULL) {
 		if (cursor < 5) {
-			if (page != 0) {
-				page--;
-				cursor = cursor + 5;
-			}
-			else {} // do nothing
+			// if (page != 0) {
+			// 	page--;
+			// 	cursor = cursor + 5;
+			// }
+			// else {} // do nothing
 		}
 		else cursor = cursor - 5;
 	}
@@ -184,11 +175,12 @@ void HistoryList::arrowLeft(Sctp* sctp)
 		}
 	}
 
-	sctp_lcd_history_list(cursor, &(sctp->history_list[page*10]), page_length);
+	// sctp_lcd_history_list(cursor, &(sctp->history_list[page*10]), page_length);
 }
 
 void HistoryList::exit(Sctp* sctp)
 {
+	free(filenames);
 	free(sctp->history_list);
 	sctp->history_list = NULL;
 	sctp->history_list_length = 0;

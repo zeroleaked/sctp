@@ -6,6 +6,7 @@
 #include "history_list_state.h"
 #include "settings_state.h"
 #include "sctp_lcd.h"
+#include "sctp_battery.h"
 
 #define CURSOR_SPECTRUM 0
 #define CURSOR_QUANTIZATION 1
@@ -59,6 +60,14 @@ void Menu::arrowDown(Sctp* sctp)
 	if (this->cursor == 3) this->cursor = 0;
 	else this->cursor++;
 	sctp_lcd_menu(this->cursor);
+}
+
+void Menu::refreshLcd(Sctp* sctp, command_t command)
+{
+	if (command == COMMAND_BAT_UPDATE) {
+		sctp_battery_sample(&sctp->battery_percentage);
+		sctp_lcd_battery(sctp->battery_percentage);
+	}
 }
 
 SctpState& Menu::getInstance()

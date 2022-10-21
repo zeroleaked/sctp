@@ -68,8 +68,6 @@ void ConcCurves::enter(Sctp* sctp)
 	sctp_lcd_clear();
 	cursor = CURSOR_NULL;
 
-	sctp_lcd_conc_curves_opening(cursor);
-
 	curve_list = (curve_t *) malloc (CURVE_LIST_LENGTH * sizeof(curve_t));
 	assert(curve_list != NULL);
 	for (int i=0; i<CURVE_LIST_LENGTH; i++) {
