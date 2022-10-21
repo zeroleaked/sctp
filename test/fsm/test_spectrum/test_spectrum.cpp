@@ -33,6 +33,7 @@ void spectrum_mvp() {
     TEST_ASSERT_EQUAL(STATE_SPEC_RESULT, sctp0.getCurrentStateId());
 
     // test to SpecSave
+    sctp0.arrowDown();
     sctp0.okay();
     TEST_ASSERT_EQUAL(STATE_SPEC_SAVE, sctp0.getCurrentStateId());
 
@@ -41,6 +42,7 @@ void spectrum_mvp() {
     sctp0.arrowDown();
     sctp0.okay();
     TEST_ASSERT_EQUAL(STATE_SPEC_RESULT, sctp0.getCurrentStateId());
+    sctp0.arrowDown();
     sctp0.arrowDown();
     sctp0.arrowDown();
     sctp0.arrowDown();
