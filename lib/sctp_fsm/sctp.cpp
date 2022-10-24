@@ -8,6 +8,7 @@
 #include "sctp_sensor.h"
 #include "sctp_flash.h"
 #include "sctp_battery.h"
+#include "sctp_lcd.h"
 
 static const char TAG[] = "sctp";
 
@@ -89,6 +90,12 @@ int Sctp::getCurrentStateId()
 // 	((Sctp *) _this)->saveSpectrum();
 // }
 
+void Menu::refreshLcd(Sctp* sctp, command_t command)
+{
+	if (command == COMMAND_BAT_UPDATE) {
+	}
+}
+
 
 void Sctp::refreshLcd()
 {
@@ -106,8 +113,15 @@ void Sctp::refreshLcd()
 		}
 		else if (counter_battery == 1) {
 			counter_battery = 0;
-			command = COMMAND_BAT_UPDATE;
-			currentState->refreshLcd(this, command);
+			// command = COMMAND_BAT_UPDATE;
+			// currentState->refreshLcd(this, command);
+
+			if (currentState->batteryIndicator()) {
+				sctp_battery_sample(&this->battery_percentage);
+				// ESP_LOGI(TAG,"perc=%d", this->battery_percentage);
+				sctp_lcd_battery(this->battery_percentage);
+			}
+
 		}
 		else {
 			command = COMMAND_NONE;

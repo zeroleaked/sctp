@@ -74,6 +74,8 @@ esp_err_t sctp_battery_sample(uint8_t * percentage) {
 
     float volt_bat = (float) get_voltage()/2000;
 
+    ESP_LOGI(TAG, "volt_bat=%f", volt_bat);
+
     *percentage = 268.497 * pow(volt_bat,8) + -6879.270 * pow(volt_bat,7) + 76716.496 * pow(volt_bat,6) - 486365.673 * pow(volt_bat,5) + 1917287.171 * pow(volt_bat,4) - 4812471.066 * pow(volt_bat,3) + 7511312.301 * pow(volt_bat,2) - (6665390.783 * volt_bat) + 2574719.230;
     if (volt_bat <= 2.6) {
         *percentage = 0;
