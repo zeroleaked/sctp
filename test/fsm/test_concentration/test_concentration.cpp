@@ -72,6 +72,25 @@ void regress_test() {
     TEST_ASSERT_EQUAL(STATE_CONC_TABLE, sctp0.getCurrentStateId());
 }
 
+void curves_state () {
+
+    Sctp s;
+    Sctp * sctp = &s;
+
+    TEST_ASSERT_EQUAL(STATE_IDLE, sctp->getCurrentStateId());
+    sctp->okay();
+    TEST_ASSERT_EQUAL(STATE_MENU, sctp->getCurrentStateId());
+    sctp->arrowDown();
+    ESP_LOGI(TAG, "3");
+    sctp->okay();
+    ESP_LOGI(TAG, "4");
+    TEST_ASSERT_EQUAL(STATE_CONC_CURVES, sctp->getCurrentStateId());
+    ESP_LOGI(TAG, "5");
+
+    vTaskDelay(5000/ portTICK_PERIOD_MS);
+    ESP_LOGI(TAG, "6");
+
+}
 
 
 extern "C" {
@@ -83,8 +102,10 @@ void app_main();
 void app_main() {
     UNITY_BEGIN();
 
+
+    RUN_TEST(curves_state);
     // RUN_TEST(concentration_mvp);
-    RUN_TEST(regress_test);
+    // RUN_TEST(regress_test);
 
     UNITY_END();
 }

@@ -27,10 +27,10 @@ void sctp_flash_history(Sctp * sctp) {
 	for (int i=0; i<sctp->history_list_length; i++) {
 		sctp->history_list[i].id = i;
 		sctp->history_list[i].measurement_mode = MEASUREMENT_MODE_CONCENTRATION;
-		sctp->history_list[i].wavelength = 400 + i*10;
-		sctp->history_list[i].absorbance = 0.01 * (i+3);
-		sctp->history_list[i].concentration = 0.001 * (i+3);
-		sctp->history_list[i].curve_id = 0;
+		// sctp->history_list[i].wavelength = 400 + i*10;
+		// sctp->history_list[i].absorbance = 0.01 * (i+3);
+		// sctp->history_list[i].concentration = 0.001 * (i+3);
+		// sctp->history_list[i].curve_id = 0;
 	}	
 };
 

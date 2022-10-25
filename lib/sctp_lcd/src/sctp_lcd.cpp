@@ -671,7 +671,9 @@ void sctp_lcd_conc_curves_list(uint8_t cursor, curve_t curves[6]){
       display.setTextSize(1);
       display.drawRoundRect(x, y, 200, 35, 5, TFT_BLACK);
       display.setCursor(x_text, y_text);
-      display.println(curves[i].filename);
+      char curve_name[25];
+      sprintf(curve_name, "curve %d %dnm", curves[i].id+1, curves[i].wavelength);
+      display.println(curve_name);
 
       display.setTextColor(TFT_RED);
       display.setTextSize(1 );

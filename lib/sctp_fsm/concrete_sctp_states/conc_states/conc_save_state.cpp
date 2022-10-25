@@ -14,22 +14,6 @@
 
 static const char * TAG = "conc_save_state";
 
-static void saveSpectrum(void * pvParameters) {
-    float * absorbance = ((taskParam_t *) pvParameters)->absorbance;
-	assert(absorbance != NULL);
-    float * wavelength = ((taskParam_t *) pvParameters)->wavelength;
-	assert(wavelength != NULL);
-    calibration_t * calibration = ((taskParam_t *) pvParameters)->calibration;
-	assert(calibration != NULL);
-
-	esp_err_t report = (sctp_flash_save_spectrum(absorbance, wavelength, calibration->length));
-
-    QueueHandle_t report_queue = ((taskParam_t *) pvParameters)->report_queue;
-	assert(xQueueSend(report_queue, &report, 0) == pdTRUE);
-	ESP_LOGI(TAG, "saveSpectrum() sended to queue");
-	vTaskDelete( NULL );
-}
-
 void ConcSave::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();

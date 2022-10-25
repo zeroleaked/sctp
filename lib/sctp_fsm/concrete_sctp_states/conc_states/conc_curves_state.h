@@ -31,8 +31,4 @@ private:
 	uint8_t cursor;
 
 	curve_t * curve_list;
-	QueueHandle_t report_queue;
-
-	TaskHandle_t taskHandle;
-	void * taskParam; // necessary for freeing...
 };

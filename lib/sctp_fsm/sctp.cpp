@@ -15,6 +15,9 @@ static const char TAG[] = "sctp";
 // Constructor
 Sctp::Sctp()
 {
+    i2cdev_init();
+	sctp_battery_init();
+
 	// todo load calibration
 	calibration.row = 481;
 	calibration.gain = -0.7698064209;
