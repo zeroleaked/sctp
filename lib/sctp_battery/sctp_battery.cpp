@@ -24,10 +24,6 @@ uint16_t get_config() {
 void setCalibration_32V_2A() {
   uint32_t ina219_calValue = 4096;
 
-  // Set multipliers to convert raw current/power values
-  uint32_t ina219_currentDivider_mA = 10; // Current LSB = 100uA per bit (1000/100 = 10)
-  float ina219_powerMultiplier_mW = 2; // Power LSB = 1mW per bit (2/1)
-
   // Set Calibration register to 'Cal' calculated above
   uint8_t reg = 0x05;
   uint16_t byte_flip = ((ina219_calValue & 0x00FF) << 8) | ((ina219_calValue & 0xFF00) >> 8); 
@@ -41,7 +37,7 @@ void setCalibration_32V_2A() {
                     0x07;
 
   byte_flip = ((config & 0x00FF) << 8) | ((config & 0xFF00) >> 8);
-  esp_err_t ret = i2c_dev_write(&i2c_dev, &reg, 1, &byte_flip, 2);
+  i2c_dev_write(&i2c_dev, &reg, 1, &byte_flip, 2);
 
   get_config();
 }
@@ -76,7 +72,9 @@ esp_err_t sctp_battery_sample(uint8_t * percentage) {
 
     ESP_LOGI(TAG, "volt_bat=%f", volt_bat);
 
-    *percentage = 268.497 * pow(volt_bat,8) + -6879.270 * pow(volt_bat,7) + 76716.496 * pow(volt_bat,6) - 486365.673 * pow(volt_bat,5) + 1917287.171 * pow(volt_bat,4) - 4812471.066 * pow(volt_bat,3) + 7511312.301 * pow(volt_bat,2) - (6665390.783 * volt_bat) + 2574719.230;
+    *percentage = 268.497 * pow(volt_bat,8) + -6879.270 * pow(volt_bat,7) + 76716.496 * pow(volt_bat,6) -
+        486365.673 * pow(volt_bat,5) + 1917287.171 * pow(volt_bat,4) - 4812471.066 * pow(volt_bat,3) +
+        7511312.301 * pow(volt_bat,2) - (6665390.783 * volt_bat) + 2574719.230;
     if (volt_bat <= 2.6) {
         *percentage = 0;
     }
