@@ -26,15 +26,16 @@ typedef struct {
 typedef struct {
 	uint8_t id;
 	uint8_t measurement_mode;
+	char * filename;
 
-	// concentration mode
-	uint16_t wavelength;
-	float absorbance;
-	float concentration;
-	uint8_t curve_id;
+	// // concentration mode
+	// uint16_t wavelength;
+	// float absorbance;
+	// float concentration;
+	// uint8_t curve_id;
 
-	// spectrum mode
-	float * absorbance_buffer;
+	// // spectrum mode
+	// float * absorbance_buffer;
 	
 } history_t; // 20 bytes
 
