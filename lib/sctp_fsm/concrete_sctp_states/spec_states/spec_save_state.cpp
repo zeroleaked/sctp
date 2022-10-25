@@ -13,48 +13,18 @@
 #define SUBSTATE_SAVING 1
 #define SUBSTATE_WAITING 2
 
-typedef struct {
-	QueueHandle_t report_queue;
-	float * absorbance;
-	float * wavelength;
-	calibration_t * calibration;
-} taskParam_t;
-
-static const char * TAG = "spec_save_state";
-
-static void saveSpectrum(void * pvParameters) {
-    float * absorbance = ((taskParam_t *) pvParameters)->absorbance;
-	assert(absorbance != NULL);
-    float * wavelength = ((taskParam_t *) pvParameters)->wavelength;
-	assert(wavelength != NULL);
-    calibration_t * calibration = ((taskParam_t *) pvParameters)->calibration;
-	assert(calibration != NULL);
-
-	esp_err_t report = (sctp_flash_save_spectrum(absorbance, wavelength, calibration->length));
-
-    QueueHandle_t report_queue = ((taskParam_t *) pvParameters)->report_queue;
-	assert(xQueueSend(report_queue, &report, 0) == pdTRUE);
-	ESP_LOGI(TAG, "saveSpectrum() sended to queue");
-	vTaskDelete( NULL );
-}
-
 void SpecSave::enter(Sctp* sctp)
 {
-	substate = SUBSTATE_NULL;
 	sctp_lcd_clear();
 	cursor = CURSOR_NULL;
-	ESP_LOGI(TAG, "enter, saving...");
 
-	report_queue = xQueueCreate(1, sizeof(esp_err_t));
     substate = SUBSTATE_SAVING;
 	
-	taskParam = malloc (sizeof(taskParam_t));
-	((taskParam_t *) taskParam)->report_queue = report_queue;
-	((taskParam_t *) taskParam)->calibration = &sctp->calibration;
-	((taskParam_t *) taskParam)->absorbance = sctp->absorbance;
-	((taskParam_t *) taskParam)->wavelength = sctp->spectrum_wavelength;
-    xTaskCreatePinnedToCore(saveSpectrum, "spectrum save", 2048, taskParam, 4, &taskHandle, 1);
 	sctp_lcd_spec_save_saving();
+
+	sctp_flash_save_spectrum(sctp->absorbance, sctp->spectrum_wavelength, sctp->calibration.length);
+
+	sctp_lcd_spec_save_finish(sctp->saved_name);
 }
 
 void SpecSave::arrowDown(Sctp* sctp)
@@ -69,26 +39,6 @@ void SpecSave::okay(Sctp* sctp)
 {
 	if (cursor == CURSOR_OK) {
         sctp->setState(SpecResult::getInstance());
-	}
-}
-
-void SpecSave::refreshLcd(Sctp* sctp, command_t command)
-{
-    // if (command == SPECTRUM_SAVE) {
-	// 	substate = SUBSTATE_WAITING;
-	// 	sctp_lcd_spec_save_finish(sctp->saved_name);
-    // }
-	// else
-	if (substate == SUBSTATE_SAVING) {
-		esp_err_t report;
-		if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
-			free(taskParam);
-			taskParam = NULL;
-			vQueueDelete(report_queue);
-			report_queue = NULL;
-			substate = SUBSTATE_WAITING;
-			sctp_lcd_spec_save_finish(sctp->saved_name);
-		}	
 	}
 }
 
