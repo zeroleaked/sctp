@@ -22,7 +22,6 @@
 #include <dirent.h>
 
 #include "sctp_flash.h"
-#include "sctp_common_types.h"
 
 #define MOUNT_POINT "/sdcard"
 #define STORAGE_NAMESPACE "storage"
@@ -46,9 +45,9 @@ typedef struct
 void sctp_flash_nvs_init();
 
 static const char TAG[] = "sctp_flash";
-sdmmc_host_t host = SDSPI_HOST_DEFAULT();
 
-void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** card) {
+void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** card)
+{
     esp_err_t ret;
     ESP_LOGI(TAG, "HELLO WORLD :)");
     gpio_pullup_en(PIN_NUM_MOSI);
@@ -60,9 +59,8 @@ void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** ca
         .format_if_mount_failed = false,
 #endif // EXAMPLE_FORMAT_IF_MOUNT_FAILED
         .max_files = 5,
-        .allocation_unit_size = 16 * 1024
-    };
-    
+        .allocation_unit_size = 16 * 1024};
+
     ESP_LOGI(TAG, "Initializing SD card");
     ESP_LOGI(TAG, "Using SPI peripheral");
 
@@ -89,13 +87,18 @@ void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** ca
     const char mount_point[] = MOUNT_POINT;
     ret = esp_vfs_fat_sdspi_mount(mount_point, host, &slot_config, &mount_config, card);
 
-    if (ret != ESP_OK) {
-        if (ret == ESP_FAIL) {
+    if (ret != ESP_OK)
+    {
+        if (ret == ESP_FAIL)
+        {
             ESP_LOGE(TAG, "Failed to mount filesystem. "
-                     "If you want the card to be formatted, set the CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
-        } else {
+                          "If you want the card to be formatted, set the CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
+        }
+        else
+        {
             ESP_LOGE(TAG, "Failed to initialize the card (%s). "
-                     "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
+                          "Make sure SD card lines have pull-up resistors in place.",
+                     esp_err_to_name(ret));
         }
         return;
     }
@@ -105,9 +108,10 @@ void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** ca
     sdmmc_card_print_info(stdout, *card);
 }
 
-void sctp_flash_deinit(sdmmc_host_t * host, sdmmc_card_t * card) {
-    //sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    // All done, unmount partition and disable SPI peripheral
+void sctp_flash_deinit(sdmmc_host_t * host, sdmmc_card_t * card)
+{
+    // sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    //  All done, unmount partition and disable SPI peripheral
     const char mount_point[] = MOUNT_POINT;
     esp_vfs_fat_sdcard_unmount(mount_point, card);
     ESP_LOGI(TAG, "Card unmounted");
@@ -260,7 +264,7 @@ esp_err_t sctp_flash_nvs_save_curve(curve_t * curve)
     memcpy(flash_curve->absorbance, curve->absorbance, 10*sizeof(float));
     memcpy(flash_curve->concentration, curve->concentration, 10*sizeof(float));
 
-    sprintf(key, "curve_%d", curve->id + 1);
+    sprintf(key, "curve_%d", curve->id);
     err = nvs_set_blob(my_handle, key, flash_curve, sizeof(flash_curve_t));
 
     if (err != ESP_OK)
@@ -276,6 +280,43 @@ esp_err_t sctp_flash_nvs_save_curve(curve_t * curve)
     else
         ESP_LOGI(TAG, "Successfully saved curve values to nvs.");
 
+    // Close
+    nvs_close(my_handle);
+    return ESP_OK;
+}
+
+esp_err_t sctp_flash_nvs_load_curve(curve_t * curve)
+{
+    nvs_handle_t my_handle;
+    esp_err_t err;
+
+    sctp_flash_nvs_init();
+    // Open
+    err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
+    if (err != ESP_OK)
+        return err;
+
+    // Read run time blob
+    // obtain required memory space to store blob being read from NVS
+    char key[20];
+    sprintf(key, "curve_%d", curve->id);
+    const size_t required_size = sizeof(flash_curve_t); // value will default to 0, if not set yet in NVS
+
+    flash_curve_t fc;
+    flash_curve_t * flash_curve = &fc;
+    err = nvs_get_blob(my_handle, key, flash_curve, &required_size);
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
+        return err;
+    if (required_size == 0)
+    {
+        ESP_LOGI(TAG, "Nothing saved yet!\n");
+        return err;
+    }
+    else
+    {
+        memcpy(curve->absorbance, flash_curve->absorbance, sizeof(float) * 10);
+        memcpy(curve->concentration, flash_curve->concentration, sizeof(float) * 10);
+    }
     // Close
     nvs_close(my_handle);
     return ESP_OK;
@@ -356,52 +397,22 @@ esp_err_t sctp_flash_nvs_load_curve_list(curve_t curves[6])
         return err;
 
     // Read run time blob
-    size_t required_size = sizeof(flash_curve_t); // value will default to 0, if not set yet in NVS
+    const size_t required_size = sizeof(flash_curve_t); // value will default to 0, if not set yet in NVS
     // obtain required memory space to store blob being read from NVS
-    err = nvs_get_blob(my_handle, "flash_curve", NULL, &required_size);
-    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
-        return err;
-    if (required_size == 0)
-    {
-        ESP_LOGI(TAG, "Nothing saved yet!\n");
-    }
-    else
-    {
-        flash_curve_t fc;
-        flash_curve_t * flash_curve = &fc;
-        char key[20];
-        for (int i = 0; i < 6; i++)
-        {
-            if (curves[i].wavelength == 0)
-                continue;
-            sprintf(key, "curve_%d", i + 1);
-            err = nvs_get_blob(my_handle, key, flash_curve, &required_size);
-            curves[i].id = flash_curve->id;
+    flash_curve_t fc;
+    flash_curve_t * flash_curve = &fc;
+    char key[20];
+    for (int i = 0; i < 6; i++) {
+        curves[i].id = i;
+        sprintf(key, "curve_%d", i);
+        err = nvs_get_blob(my_handle, key, flash_curve, &required_size);
+        if (err == ESP_OK) {
             curves[i].points = flash_curve->points;
             curves[i].wavelength = flash_curve->wavelength;
-            strcpy(curves[i].filename, flash_curve->filename);
-            for (int j = 0; j < curves[i].points; j++)
-            {
-                (curves[i].concentration)[j] = flash_curve->concentration[j];
-                (curves[i].absorbance)[j] = flash_curve->absorbance[j];
-            }
-            if (err != ESP_OK)
-            {
-                free(flash_curve);
-                return err;
-            }
-            else
-                ESP_LOGI(TAG, "Successfully loaded slot no. %d from nvs.", i + 1);
-            ESP_LOGI(TAG, "id: %d", curves[i].id);
-            ESP_LOGI(TAG, "wavelength: %d", curves[i].wavelength);
-            ESP_LOGI(TAG, "points: %d", curves[i].points);
-            ESP_LOGI(TAG, "filename: %s", curves[i].filename);
-            for (int j = 0; j < curves[i].points; j++)
-            {
-                ESP_LOGI(TAG, "%.3f, %.3f", (double)(curves[i].concentration)[j], (double)(curves[i].absorbance)[j]);
-            }
         }
-        free(flash_curve);
+        else {
+            curves[i].wavelength = 0;
+        }
     }
     // Close
     nvs_close(my_handle);
@@ -474,10 +485,8 @@ esp_err_t sctp_flash_save_spectrum(float * absorbance, float * wavelength, uint1
 esp_err_t sctp_flash_save_curve(curve_t curve)
 {
     uint8_t check;
-    uint8_t count = 0;
     char *dir_name = "/sdcard/curves";
     struct stat sb;
-    struct dirent *de;
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t *card;
@@ -518,7 +527,6 @@ esp_err_t sctp_flash_save_curve(curve_t curve)
 esp_err_t sctp_flash_load_history_list(history_t list[FILE_LEN])
 {
     uint8_t count = 0;
-    struct stat sb;
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t *card;
@@ -593,6 +601,58 @@ esp_err_t sctp_flash_load_spectrum(char * filename, float * absorbance, float * 
         i++;
     }
     fclose(f);
+    sctp_flash_deinit(&host, card);
+    return ESP_OK;
+}
+
+esp_err_t sctp_flash_load_curve_floats(curve_t *curve)
+{
+    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    sdmmc_card_t *card;
+
+    sctp_flash_init(PIN_NUM_CS, &host, &card);
+
+    char line[2 * NAME_LEN];
+    char file_curves[] = "/sdcard/curves/";
+    char *temp;
+    strcat(file_curves, curve->filename);
+
+    // Open file for reading
+    ESP_LOGI(TAG, "Reading file %s", file_curves);
+    FILE *f = fopen(file_curves, "r");
+    if (f == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to open file for reading");
+        return ESP_FAIL;
+    }
+    int i = 0;
+    while (fgets(line, sizeof(line), f))
+    {
+        if (i == 0)
+        {
+            temp = strtok(line, ", ");
+            curve->id = atoi(strtok(NULL, ", "));
+        }
+        else if (i == 1)
+        {
+            temp = strtok(line, ", ");
+            curve->wavelength = atoi(strtok(NULL, ", "));
+        }
+        else if (i == 2)
+        {
+        }
+        else
+        {
+            temp = strtok(line, ", ");
+            int idx = atoi(temp);
+            curve->concentration[idx - 1] = (float)atof(strtok(NULL, ", "));
+            curve->absorbance[idx - 1] = (float)atof(strtok(NULL, ", "));
+        }
+        i++;
+    }
+    fclose(f);
+    curve->points = i - 3;
+
     sctp_flash_deinit(&host, card);
     return ESP_OK;
 }

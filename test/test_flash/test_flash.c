@@ -111,20 +111,50 @@ void nvs_curve_save() {
     curve_t curve;
     curve.absorbance = malloc(sizeof(float) * 10);
     curve.concentration = malloc(sizeof(float) * 10);
-    ESP_LOGI(TAG, "malloc ok");
-    curve.id = 0;
-    curve.points = 10;
+    curve.id = 4;
+    curve.points = 6;
     curve.wavelength = 554;
 
-    ESP_LOGI(TAG, "loading floats");
-    for (int i=0; i< 10; i++) {
+    for (int i=0; i< curve.points; i++) {
         curve.absorbance[i] = (i+1);
         curve.concentration[i] = (i+1)*0.1;
     }
-    ESP_LOGI(TAG, "loading floats");
 
-    ESP_LOGI(TAG, "saving");
-    sctp_flash_nvs_save_curve(&curve);
+    esp_err_t ret = sctp_flash_nvs_save_curve(&curve);
+    TEST_ASSERT_EQUAL(ESP_OK, ret);
+
+    free(curve.absorbance);
+    free(curve.concentration);
+}
+
+void nvs_curve_list() {
+    curve_t curves[6];
+
+    esp_err_t ret = sctp_flash_nvs_load_curve_list(curves);
+    TEST_ASSERT_EQUAL(ESP_OK, ret);
+
+    for (int i=0; i<6; i++) {
+        if (curves[i].wavelength != 0) {
+            ESP_LOGI(TAG, "curve_%d: %d %d %d", i, curves[i].id, curves[i].wavelength, curves[i].points);
+        }
+        else ESP_LOGI(TAG, "no curve_%d", i);
+    }
+}
+
+void nvs_curve_load() {
+    curve_t curve;
+    curve.absorbance = malloc(sizeof(float) * 10);
+    curve.concentration = malloc(sizeof(float) * 10);
+    curve.id = 4;
+    curve.points = 10;
+    curve.wavelength = 554;
+
+    esp_err_t ret = sctp_flash_nvs_load_curve(&curve);
+    TEST_ASSERT_EQUAL(ESP_OK, ret);
+
+    for (int i=0; i<10; i++) {
+        ESP_LOGI(TAG, "A[%d]=%f; C[%d]=%f", i, curve.absorbance[i], i, curve.concentration[i]);
+    }
 
     free(curve.absorbance);
     free(curve.concentration);
@@ -136,5 +166,8 @@ void app_main(void)
     // RUN_TEST(test1);
 
     RUN_TEST(nvs_curve_save);
+    RUN_TEST(nvs_curve_list);
+    RUN_TEST(nvs_curve_load);
+
     UNITY_END();
 }
