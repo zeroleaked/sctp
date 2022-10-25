@@ -22,7 +22,6 @@
 #include <dirent.h>
 
 #include "sctp_flash.h"
-#include "sctp_common_types.h"
 
 #define MOUNT_POINT "/sdcard"
 #define STORAGE_NAMESPACE "storage"
@@ -30,8 +29,7 @@
 #define PIN_NUM_MISO    GPIO_NUM_4
 #define PIN_NUM_MOSI    GPIO_NUM_5
 #define PIN_NUM_CLK     GPIO_NUM_6
-#define PIN_NUM_CS_EXT  GPIO_NUM_7
-#define PIN_NUM_CS_INT  GPIO_NUM_15
+#define PIN_NUM_CS  GPIO_NUM_7
 
 typedef struct
 {
@@ -44,14 +42,14 @@ typedef struct
     float concentration[10];
 } flash_curve_t;
 
-void sctp_flash_init(sdmmc_card_t * card, gpio_num_t cs_gpio);
-void sctp_flash_deinit(sdmmc_card_t * card);
+void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t *host, sdmmc_card_t **card);
+void sctp_flash_deinit(sdmmc_host_t *host, sdmmc_card_t *card);
 void sctp_flash_nvs_init();
 
 static const char TAG[] = "sctp_flash";
-sdmmc_host_t host = SDSPI_HOST_DEFAULT();
 
-void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** card) {
+void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t *host, sdmmc_card_t **card)
+{
     esp_err_t ret;
     ESP_LOGI(TAG, "HELLO WORLD :)");
     gpio_pullup_en(PIN_NUM_MOSI);
@@ -63,9 +61,8 @@ void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** ca
         .format_if_mount_failed = false,
 #endif // EXAMPLE_FORMAT_IF_MOUNT_FAILED
         .max_files = 5,
-        .allocation_unit_size = 16 * 1024
-    };
-    
+        .allocation_unit_size = 16 * 1024};
+
     ESP_LOGI(TAG, "Initializing SD card");
     ESP_LOGI(TAG, "Using SPI peripheral");
 
@@ -77,8 +74,10 @@ void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** ca
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
     };
+
     ret = spi_bus_initialize(host->slot, &bus_cfg, SPI_DMA_CH_AUTO);
-    if (ret != ESP_OK) {
+    if (ret != ESP_OK)
+    {
         ESP_LOGE(TAG, "Failed to initialize bus.");
         return;
     }
@@ -92,13 +91,18 @@ void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** ca
     const char mount_point[] = MOUNT_POINT;
     ret = esp_vfs_fat_sdspi_mount(mount_point, host, &slot_config, &mount_config, card);
 
-    if (ret != ESP_OK) {
-        if (ret == ESP_FAIL) {
+    if (ret != ESP_OK)
+    {
+        if (ret == ESP_FAIL)
+        {
             ESP_LOGE(TAG, "Failed to mount filesystem. "
-                     "If you want the card to be formatted, set the CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
-        } else {
+                          "If you want the card to be formatted, set the CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
+        }
+        else
+        {
             ESP_LOGE(TAG, "Failed to initialize the card (%s). "
-                     "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
+                          "Make sure SD card lines have pull-up resistors in place.",
+                     esp_err_to_name(ret));
         }
         return;
     }
@@ -108,14 +112,15 @@ void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** ca
     sdmmc_card_print_info(stdout, *card);
 }
 
-void sctp_flash_deinit(sdmmc_host_t * host, sdmmc_card_t * card) {
-    //sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    // All done, unmount partition and disable SPI peripheral
+void sctp_flash_deinit(sdmmc_host_t *host, sdmmc_card_t *card)
+{
+    // sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    //  All done, unmount partition and disable SPI peripheral
     const char mount_point[] = MOUNT_POINT;
     esp_vfs_fat_sdcard_unmount(mount_point, card);
     ESP_LOGI(TAG, "Card unmounted");
 
-    //deinitialize the bus after all devices are removed
+    // deinitialize the bus after all devices are removed
     spi_bus_free(host->slot);
 }
 
@@ -377,7 +382,7 @@ esp_err_t sctp_flash_save_spectrum(float * absorbance, float * wavelength, uint1
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t *card;
 
-    sctp_flash_init(PIN_NUM_CS_EXT, &host, &card);
+    sctp_flash_init(PIN_NUM_CS, &host, &card);
     if (stat(dir_name, &sb) == 0 && S_ISDIR(sb.st_mode))
     {
     } else {
@@ -423,15 +428,13 @@ esp_err_t sctp_flash_save_spectrum(float * absorbance, float * wavelength, uint1
 esp_err_t sctp_flash_save_curve(curve_t curve)
 {
     uint8_t check;
-    uint8_t count = 0;
     char *dir_name = "/sdcard/curves";
     struct stat sb;
-    struct dirent *de;
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t *card;
 
-    sctp_flash_init(PIN_NUM_CS_EXT, &host, &card);
+    sctp_flash_init(PIN_NUM_CS, &host, &card);
     if (stat(dir_name, &sb) == 0 && S_ISDIR(sb.st_mode))
     {
     } else {
@@ -441,6 +444,7 @@ esp_err_t sctp_flash_save_curve(curve_t curve)
     // Create a file.
     char file_curve[] = "/sdcard/curves/XX_XXXXXXnm.csv";
     sprintf(file_curve, "/sdcard/curves/%d_%dnm.csv", curve.id, curve.wavelength);
+    
 
     ESP_LOGI(TAG, "Opening file %s", file_curve);
     FILE *f = fopen(file_curve, "w");
@@ -466,7 +470,6 @@ esp_err_t sctp_flash_save_curve(curve_t curve)
 esp_err_t sctp_flash_load_history_list(history_t list[FILE_LEN])
 {
     uint8_t count = 0;
-    struct stat sb;
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t *card;
@@ -515,11 +518,11 @@ esp_err_t sctp_flash_load_history_list(history_t list[FILE_LEN])
     return ESP_OK;
 }
 
-esp_err_t sctp_flash_load_spectrum(char * filename, float * absorbance, float * wavelength, uint16_t length) {
+esp_err_t sctp_flash_load_spectrum(char * filename, float * absorbance, float * wavelength, uint16_t * length) {
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t * card;
 
-    sctp_flash_init(PIN_NUM_CS_EXT, &host, &card);
+    sctp_flash_init(PIN_NUM_CS, &host, &card);
     char line[NAME_LEN];
     char file_spec[] = "/sdcard/spectrum/";
     strcat(file_spec, filename);
@@ -529,7 +532,7 @@ esp_err_t sctp_flash_load_spectrum(char * filename, float * absorbance, float * 
     FILE *f = fopen(file_spec, "r");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open file for reading");
-        return;
+        return ESP_FAIL;
     }
     int i = 0;
     while(fgets(line, sizeof(line), f)) {
@@ -551,7 +554,7 @@ esp_err_t sctp_flash_load_curve_floats(curve_t *curve)
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t *card;
 
-    sctp_flash_init(PIN_NUM_CS_INT, &host, &card);
+    sctp_flash_init(PIN_NUM_CS, &host, &card);
 
     char line[2 * NAME_LEN];
     char file_curves[] = "/sdcard/curves/";
@@ -564,7 +567,7 @@ esp_err_t sctp_flash_load_curve_floats(curve_t *curve)
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for reading");
-        return;
+        return ESP_FAIL;
     }
     int i = 0;
     while (fgets(line, sizeof(line), f))
