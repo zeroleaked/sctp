@@ -1,5 +1,7 @@
 #pragma once
 
+#include "sctp_common_types.h"
+
 #define FILE_LEN        60
 #define NAME_LEN        25
 

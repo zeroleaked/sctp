@@ -77,7 +77,7 @@ void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** ca
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
     };
-    ret = spi_bus_initialize(host->slot, &bus_cfg, SPI_DMA_CH_AUTO);
+    ret = spi_bus_initialize((spi_host_device_t) host->slot, &bus_cfg, SPI_DMA_CH_AUTO);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize bus.");
         return;
@@ -86,7 +86,7 @@ void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** ca
     // This initializes the slot without card detect (CD) and write protect (WP) signals.
     sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
     slot_config.gpio_cs = cs_gpio;
-    slot_config.host_id = host->slot;
+    slot_config.host_id = (spi_host_device_t) host->slot;
 
     ESP_LOGI(TAG, "Mounting filesystem");
     const char mount_point[] = MOUNT_POINT;
@@ -116,7 +116,7 @@ void sctp_flash_deinit(sdmmc_host_t * host, sdmmc_card_t * card) {
     ESP_LOGI(TAG, "Card unmounted");
 
     //deinitialize the bus after all devices are removed
-    spi_bus_free(host->slot);
+    spi_bus_free((spi_host_device_t) host->slot);
 }
 
 void sctp_flash_nvs_init()
