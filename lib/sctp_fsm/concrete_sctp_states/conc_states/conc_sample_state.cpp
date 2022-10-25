@@ -5,6 +5,7 @@
 #include "conc_table_state.h"
 #include "sctp_lcd.h"
 #include "sctp_sensor.h"
+#include "sctp_flash.h"
 
 #define CURSOR_NEXT 0
 #define CURSOR_CANCEL 1
@@ -139,6 +140,7 @@ void ConcSample::refreshLcd(Sctp* sctp, command_t command) {
         if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
             if (report == ESP_OK) {
 				sctp->curve.absorbance[sctp->point_sel] = absorbance;
+                sctp_flash_nvs_save_curve(&sctp->curve);
                 sctp->setState(ConcTable::getInstance());
             }
 	    }

@@ -243,7 +243,6 @@ esp_err_t sctp_flash_nvs_load_calibration(calibration_t *calibration)
 
 esp_err_t sctp_flash_nvs_save_curve(curve_t * curve)
 {
-    ESP_LOGI(TAG, "sctp_flash_nvs_save_curve()");
     nvs_handle_t my_handle;
     esp_err_t err;
     char key[20];

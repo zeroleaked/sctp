@@ -165,9 +165,9 @@ void app_main(void)
     UNITY_BEGIN();
     // RUN_TEST(test1);
 
-    RUN_TEST(nvs_curve_save);
+    // RUN_TEST(nvs_curve_save);
     RUN_TEST(nvs_curve_list);
-    RUN_TEST(nvs_curve_load);
+    // RUN_TEST(nvs_curve_load);
 
     UNITY_END();
 }

@@ -16,7 +16,6 @@ esp_err_t sctp_flash_nvs_load_calibration(calibration_t *calibration);
 
 esp_err_t sctp_flash_nvs_save_curve(curve_t * curve);
 esp_err_t sctp_flash_nvs_load_curve(curve_t * curve);
-esp_err_t sctp_flash_nvs_load_curve_l(curve_t curves[6]);
 esp_err_t sctp_flash_nvs_load_curve_list(curve_t curves[6]);
 
 void sctp_flash_nvs_erase_all();

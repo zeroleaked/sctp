@@ -81,15 +81,25 @@ void curves_state () {
     sctp->okay();
     TEST_ASSERT_EQUAL(STATE_MENU, sctp->getCurrentStateId());
     sctp->arrowDown();
-    ESP_LOGI(TAG, "3");
     sctp->okay();
-    ESP_LOGI(TAG, "4");
     TEST_ASSERT_EQUAL(STATE_CONC_CURVES, sctp->getCurrentStateId());
-    ESP_LOGI(TAG, "5");
 
     vTaskDelay(5000/ portTICK_PERIOD_MS);
-    ESP_LOGI(TAG, "6");
+}
 
+void table_state () {
+    Sctp s;
+    Sctp * sctp = &s;
+
+    TEST_ASSERT_EQUAL(STATE_IDLE, sctp->getCurrentStateId());
+    sctp->okay();
+    TEST_ASSERT_EQUAL(STATE_MENU, sctp->getCurrentStateId());
+    sctp->arrowDown();
+    sctp->okay();
+    TEST_ASSERT_EQUAL(STATE_CONC_CURVES, sctp->getCurrentStateId());
+    sctp->okay();
+    TEST_ASSERT_EQUAL(STATE_CONC_TABLE, sctp->getCurrentStateId());
+    // TEST_ASSERT_EQUAL(STATE_CONC_TABLE, sctp->getCurrentStateId());
 }
 
 
@@ -102,8 +112,8 @@ void app_main();
 void app_main() {
     UNITY_BEGIN();
 
-
-    RUN_TEST(curves_state);
+    // RUN_TEST(curves_state);
+    RUN_TEST(table_state);
     // RUN_TEST(concentration_mvp);
     // RUN_TEST(regress_test);
 

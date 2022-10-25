@@ -66,7 +66,7 @@ void ConcCurves::okay(Sctp* sctp)
 		curve_list[curve_id].wavelength = 0;
 		curve_list[curve_id].points = 0;
 
-		sctp_flash_save_curve(curve_list[curve_id]);
+		sctp_flash_nvs_save_curve(&curve_list[curve_id]);
 		sctp_lcd_conc_curves_list(cursor, curve_list);
 	}
 	else if (cursor == CURSOR_BACK) {
