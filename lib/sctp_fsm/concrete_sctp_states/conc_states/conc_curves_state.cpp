@@ -35,56 +35,15 @@
 
 static const char TAG[] = "conc_curves_state";
 
-typedef struct {
-	QueueHandle_t report_queue;
-	curve_t * curve_ptr;
-} taskParam_t;
-
-static void loadConcCurveList(void * pvParameters) {
-	// unpack param
-	taskParam_t * task_param = (taskParam_t *) pvParameters;
-
-	esp_err_t report = sctp_flash_load_curve_list(task_param->curve_ptr);
-
-	assert(xQueueSend(task_param->report_queue, &report, 0) == pdTRUE);
-	ESP_LOGI(TAG, "loadConcCurves() sended to queue");
-	vTaskDelete( NULL );
-}
-
-static void loadConcFloats(void * pvParameters) {
-	curve_t * curve = ((taskParam_t *) pvParameters)->curve_ptr;
-	QueueHandle_t report_queue = ((taskParam_t *) pvParameters)->report_queue;
-
-	esp_err_t report = sctp_flash_load_curve_floats(curve);
-	
-	assert(xQueueSend(report_queue, &report, 0) == pdTRUE);
-	ESP_LOGI(TAG, "loadConcFloats() sended to queue");
-	vTaskDelete( NULL );
-}
-
 void ConcCurves::enter(Sctp* sctp)
 {
-	substate = SUBSTATE_NULL;
+	substate = SUBSTATE_LOADING_CURVE_LIST;
 	sctp_lcd_clear();
 	cursor = CURSOR_NULL;
 
 	curve_list = (curve_t *) malloc (CURVE_LIST_LENGTH * sizeof(curve_t));
 	assert(curve_list != NULL);
-	for (int i=0; i<CURVE_LIST_LENGTH; i++) {
-		curve_list[i].filename = (char *) malloc ( FILENAME_LENGTH * sizeof(char));
-		assert(curve_list[i].filename != NULL);
-	}
-
-	report_queue = xQueueCreate(1, sizeof(esp_err_t));
-	// queue check for loadConcCurveList starts
-	substate = SUBSTATE_LOADING_CURVE_LIST;
-
-	// packing param
-	taskParam = (taskParam_t *) malloc (sizeof(taskParam_t));
-	((taskParam_t *) taskParam)->curve_ptr = curve_list;
-	((taskParam_t *) taskParam)->report_queue = report_queue;
-
-    xTaskCreatePinnedToCore(loadConcCurveList, "loadConcCurveList", 2048, taskParam, 4, &taskHandle, 1);
+	sctp_flash_nvs_load_curve
 }
 
 void ConcCurves::okay(Sctp* sctp)
@@ -259,41 +218,6 @@ void ConcCurves::arrowLeft(Sctp* sctp)
 			}
 			sctp_lcd_conc_curves_list(cursor, curve_list);
 			break;
-		}
-	}
-}
-
-void ConcCurves::refreshLcd(Sctp* sctp, command_t command) {
-	// if (command == CURVES_LOAD) {
-	// 	substate = SUBSTATE_WAITING;
-	// 	sctp_lcd_conc_curves_list(cursor, curves);
-	// }
-	// else
-	if (substate == SUBSTATE_LOADING_CURVE_LIST) {
-		esp_err_t report;
-		if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
-			if (report == ESP_OK) {
-
-				substate = SUBSTATE_WAITING;
-				sctp_lcd_conc_curves_list(cursor, curve_list);
-
-			}
-		}
-	}
-	else if (substate == SUBSTATE_LOADING_CURVE) {
-		esp_err_t report;
-		if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
-			substate = SUBSTATE_NULL;
-			if (report == ESP_OK) {
-
-				if (sctp->curve.wavelength == 0) {
-					sctp->setState(ConcWavelength::getInstance());
-				} 
-				else {
-					sctp->setState(ConcTable::getInstance());
-				}
-
-			}
 		}
 	}
 }

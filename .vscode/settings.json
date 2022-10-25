@@ -8,6 +8,7 @@
         "cmath": "cpp",
         "array": "cpp",
         "string": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "sctp_flash.h": "c"
     }
 }
