@@ -12,6 +12,8 @@ static LGFX_Sprite sprite(&display);
 
 void sctp_lcd_clear() {
     display.fillScreen(TFT_WHITE);
+    display.drawFastVLine(479, 1, 315, TFT_BLUE);
+    display.drawFastHLine(0, 319, 480, TFT_RED);
 };
 
 void sctp_lcd_start() {
@@ -95,91 +97,158 @@ void sctp_lcd_menu(uint8_t cursor)
 
 void sctp_lcd_blank_clear(uint8_t cursor)
 {
-  switch(cursor) {
-    case 0: {
-      display.fillRoundRect(245, 160, 120, 40, 10, TFT_WHITE);
+  switch (cursor)
+  {
+    case 0:
+    {
+      display.fillRoundRect(340, 270, 120, 40, 10, TFT_WHITE);
       break;
     }
-    case 1: {
-      display.fillRoundRect(120, 160, 120, 40, 10, TFT_WHITE);
+    case 1:
+    {
+      display.fillRoundRect(180, 270, 120, 40, 10, TFT_WHITE);
+      break;
+    }
+    case 2:
+    {
+      display.fillRoundRect(20, 270, 120, 40, 10, TFT_WHITE);
       break;
     }
   }
 }
 
-void sctp_lcd_blank_waiting(uint8_t cursor)
+void sctp_lcd_blank_waiting(uint8_t cursor, uint16_t result)
 {
   display.setTextColor(TFT_BLACK);
   display.setTextSize(1);
-  switch(cursor) {
-    case 0: {
-      display.fillRoundRect(245, 160, 120, 40, 10, TFT_LIGHTGREY);
+  switch (cursor)
+  {
+    case 0:
+    {
+      display.fillRoundRect(340, 270, 120, 40, 10, TFT_LIGHTGREY);
       break;
     }
-    case 1: {
-      display.fillRoundRect(120, 160, 120, 40, 10, TFT_LIGHTGREY);
+    case 1:
+    {
+      display.fillRoundRect(180, 270, 120, 40, 10, TFT_LIGHTGREY);
+      break;
+    }
+    case 2:
+    {
+      display.fillRoundRect(20, 270, 120, 40, 10, TFT_LIGHTGREY);
       break;
     }
   }
-  display.setCursor(120, 125);
-  display.println("Put the blank sample");
-  display.setCursor(155, 175);
+  display.setTextSize(1);
+  display.setCursor(85, 75);
+  display.println("Put the blank");
+
+  if (result != 0)
+  {
+    display.setTextColor(TFT_MUSTARD);
+    display.drawRect(170, 170, 150, 100, TFT_WHITE);
+    display.setCursor(175, 175);
+    char text[20];
+    sprintf(text, "Intensity: %d", result);
+    display.println(text);
+  }
+
+  display.setTextColor(TFT_BLACK);
+  display.setTextSize(1);
+  display.setCursor(55, 282);
   display.println("BACK");
-  display.drawRoundRect(120, 160, 120, 40, 10, TFT_BLACK);
-  display.setCursor(280, 175);
+  display.drawRoundRect(20, 270, 120, 40, 10, TFT_BLACK);
+  display.setCursor(228, 282);
+  display.println("CHECK");
+  display.drawRoundRect(180, 270, 120, 40, 10, TFT_BLACK);
+  display.setCursor(375, 282);
   display.println("NEXT");
-  display.drawRoundRect(245, 160, 120, 40, 10, TFT_BLACK);
+  display.drawRoundRect(340, 270, 120, 40, 10, TFT_BLACK);
 }
 
 void sctp_lcd_blank_sampling(uint8_t cursor)
 {
+  display.drawRect(85, 170, 350, 100, TFT_WHITE);
   display.setTextColor(TFT_MUSTARD);
-  display.setCursor(90, 225);
+  display.setCursor(90, 175);
   display.println("Measuring Absorbance Reference...");
 }
 
 void sctp_lcd_sample_clear(uint8_t cursor)
 {
-  switch(cursor) {
-    case 0: {
-      display.fillRoundRect(245, 160, 120, 40, 10, TFT_WHITE);
+  switch (cursor)
+  {
+    case 0:
+    {
+      display.fillRoundRect(340, 270, 120, 40, 10, TFT_WHITE);
       break;
     }
-    case 1: {
-      display.fillRoundRect(120, 160, 120, 40, 10, TFT_WHITE);
+    case 1:
+    {
+      display.fillRoundRect(180, 270, 120, 40, 10, TFT_WHITE);
+      break;
+    }
+    case 2:
+    {
+      display.fillRoundRect(20, 270, 120, 40, 10, TFT_WHITE);
       break;
     }
   }
 }
 
-void sctp_lcd_sample_waiting(uint8_t cursor)
+void sctp_lcd_sample_waiting(uint8_t cursor, uint16_t result)
 {
   display.setTextColor(TFT_BLACK);
   display.setTextSize(1);
-  switch(cursor) {
-    case 0: {
-      display.fillRoundRect(245, 160, 120, 40, 10, TFT_LIGHTGREY);
+  switch (cursor)
+  {
+    case 0:
+    {
+      display.fillRoundRect(340, 270, 120, 40, 10, TFT_LIGHTGREY);
       break;
     }
-    case 1: {
-      display.fillRoundRect(120, 160, 120, 40, 10, TFT_LIGHTGREY);
+    case 1:
+    {
+      display.fillRoundRect(180, 270, 120, 40, 10, TFT_LIGHTGREY);
+      break;
+    }
+    case 2:
+    {
+      display.fillRoundRect(20, 270, 120, 40, 10, TFT_LIGHTGREY);
       break;
     }
   }
-  display.setCursor(120, 125);
+  display.setTextSize(1);
+  display.setCursor(85, 75);
   display.println("Put the sample");
-  display.setCursor(155, 175);
+
+  if(result != 0) {
+    display.setTextColor(TFT_MUSTARD);
+    display.drawRect(170, 170, 150, 100, TFT_WHITE);
+    display.setCursor(175, 175);
+    char text[20];
+    sprintf(text, "Intensity: %d", result);
+    display.println(text);
+  }
+
+  display.setTextColor(TFT_BLACK);
+  display.setTextSize(1);
+  display.setCursor(55, 282);
   display.println("BACK");
-  display.drawRoundRect(120, 160, 120, 40, 10, TFT_BLACK);
-  display.setCursor(280, 175);
+  display.drawRoundRect(20, 270, 120, 40, 10, TFT_BLACK);
+  display.setCursor(228, 282);
+  display.println("CHECK");
+  display.drawRoundRect(180, 270, 120, 40, 10, TFT_BLACK);
+  display.setCursor(375, 282);
   display.println("NEXT");
-  display.drawRoundRect(245, 160, 120, 40, 10, TFT_BLACK);
+  display.drawRoundRect(340, 270, 120, 40, 10, TFT_BLACK);
 }
 
 void sctp_lcd_sample_sampling(uint8_t cursor)
 {
+  display.drawRect(95, 170, 350, 100, TFT_WHITE);
   display.setTextColor(TFT_MUSTARD);
-  display.setCursor(100, 225);
+  display.setCursor(100, 175);
   display.println("Measuring Sample Absorbance...");
 }
 
@@ -230,8 +299,9 @@ void sctp_lcd_spec_blank_sampling(uint8_t cursor){
   sctp_lcd_blank_sampling(cursor);
 }
 
-void sctp_lcd_spec_blank_waiting(uint8_t cursor){
-  sctp_lcd_blank_waiting(cursor);
+void sctp_lcd_spec_blank_waiting(uint8_t cursor, uint16_t result)
+{
+  sctp_lcd_blank_waiting(cursor, result);
 }
 
 void sctp_lcd_spec_blank_clear(uint8_t cursor){
@@ -242,8 +312,9 @@ void sctp_lcd_spec_sample_sampling(uint8_t cursor){
   sctp_lcd_sample_sampling(cursor);
 }
 
-void sctp_lcd_spec_sample_waiting(uint8_t cursor){
-  sctp_lcd_sample_waiting(cursor);
+void sctp_lcd_spec_sample_waiting(uint8_t cursor, uint16_t result)
+{
+  sctp_lcd_sample_waiting(cursor, result);
 }
 
 void sctp_lcd_spec_sample_clear(uint8_t cursor){
@@ -1047,8 +1118,9 @@ void sctp_lcd_conc_blank_sampling(uint8_t cursor){
   sctp_lcd_blank_sampling(cursor);
 }
 
-void sctp_lcd_conc_blank_waiting(uint8_t cursor){
-  sctp_lcd_blank_waiting(cursor);
+void sctp_lcd_conc_blank_waiting(uint8_t cursor, uint16_t result)
+{
+  sctp_lcd_blank_waiting(cursor, result);
 }
 
 void sctp_lcd_conc_blank_clear(uint8_t cursor){
@@ -1059,8 +1131,9 @@ void sctp_lcd_conc_sample_sampling(uint8_t cursor){
   sctp_lcd_sample_sampling(cursor);
 }
 
-void sctp_lcd_conc_sample_waiting(uint8_t cursor){
-  sctp_lcd_sample_waiting(cursor);
+void sctp_lcd_conc_sample_waiting(uint8_t cursor, uint16_t result)
+{
+  sctp_lcd_sample_waiting(cursor, result);
 }
 
 void sctp_lcd_conc_sample_clear(uint8_t cursor){
