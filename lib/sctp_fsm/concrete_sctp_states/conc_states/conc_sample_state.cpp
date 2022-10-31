@@ -72,7 +72,7 @@ void ConcSample::okay(Sctp* sctp)
                 	((taskParam_t *) taskParam)->blank_take = sctp->blank_take;
                 	((taskParam_t *) taskParam)->absorbance = &absorbance;
                     
-                    xTaskCreatePinnedToCore(takeConcentrationSample, "takeConcentrationSample", 2048, taskParam, 4, &taskHandle, 1);
+                    xTaskCreatePinnedToCore(takeConcentrationSample, "takeConcentrationSample", 8192, taskParam, 4, &taskHandle, 1);
                     break;
                 }
                 case CURSOR_CANCEL: {

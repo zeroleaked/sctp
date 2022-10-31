@@ -62,7 +62,11 @@ void regress_test() {
     sctp0.arrowDown(); // to third point
     sctp0.arrowDown(); // to fourth point
     sctp0.arrowDown(); // to fifth point
-    sctp0.arrowDown(); // to new point
+    sctp0.arrowDown(); // to 6th point
+    sctp0.arrowDown(); // to 7th point
+    sctp0.arrowDown(); // to 8th point
+    sctp0.arrowDown(); // to 9th point
+    sctp0.arrowDown(); // to 10th point
     sctp0.arrowDown(); // to save
     sctp0.arrowRight(); // to regress
     sctp0.okay();
@@ -97,6 +101,7 @@ void table_state () {
     sctp->arrowDown();
     sctp->okay();
     TEST_ASSERT_EQUAL(STATE_CONC_CURVES, sctp->getCurrentStateId());
+    sctp->arrowDown();
     sctp->okay();
     TEST_ASSERT_EQUAL(STATE_CONC_TABLE, sctp->getCurrentStateId());
     // TEST_ASSERT_EQUAL(STATE_CONC_TABLE, sctp->getCurrentStateId());
@@ -113,8 +118,8 @@ void app_main() {
     UNITY_BEGIN();
 
     // RUN_TEST(curves_state);
-    RUN_TEST(table_state);
-    // RUN_TEST(concentration_mvp);
+    // RUN_TEST(table_state);
+    RUN_TEST(concentration_mvp);
     // RUN_TEST(regress_test);
 
     UNITY_END();

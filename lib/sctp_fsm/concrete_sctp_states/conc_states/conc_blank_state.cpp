@@ -73,7 +73,7 @@ void ConcBlank::okay(Sctp* sctp)
                 	((taskParam_t *) taskParam)->wavelength = sctp->curve.wavelength;
                 	((taskParam_t *) taskParam)->blank_take = sctp->blank_take;
                     
-                    xTaskCreatePinnedToCore(takeConcentrationBlank, "takeConcentrationBlank", 2048, taskParam, 4, &taskHandle, 1);
+                    xTaskCreatePinnedToCore(takeConcentrationBlank, "takeConcentrationBlank", 8192, taskParam, 4, &taskHandle, 1);
                     break;
                 }
                 case CURSOR_CANCEL: {
