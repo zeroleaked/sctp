@@ -548,12 +548,6 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   float peak_abs = absorbance[0];
   float peak_wl= wavelength[0];
   
-  for(i=0;i<length;i++){
-    if(absorbance[i] < 0)
-      absorbance[i] = 0;
-    x_px = (wavelength[i] - wl_min) / (wl_max-wl_min) * 300 + 39;
-    x_next = (wavelength[i+1] - wl_min) / (wl_max-wl_min) * 300 + 39;
-
   if (length >= 360)
   {
     for (i = 1; i < length; i++)

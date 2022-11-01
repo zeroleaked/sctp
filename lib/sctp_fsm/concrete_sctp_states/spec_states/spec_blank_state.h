@@ -16,12 +16,13 @@ public:
 	void arrowRight(Sctp* sctp) { arrowLeft(sctp); };
 	void refreshLcd(Sctp* sctp, command_t command);
 	bool batteryIndicator() {return false;};
-	void exit(Sctp* sctp) {}
+	void exit(Sctp* sctp);
 	int id(Sctp* sctp) { return 3; }
 	static SctpState& getInstance();
 
 	uint8_t substate;
 	uint8_t cursor;
+	uint16_t * check_result;
 private:
 	SpecBlank() {}
 	SpecBlank(const SpecBlank& other);

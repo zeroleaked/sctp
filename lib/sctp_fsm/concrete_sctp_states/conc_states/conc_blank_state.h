@@ -20,6 +20,7 @@ public:
 
 	uint8_t substate;
 	uint8_t cursor;
+	uint16_t * check_result;
 private:
 	ConcBlank() {}
 	ConcBlank(const ConcBlank& other);

@@ -8,8 +8,9 @@
 #include "sctp_sensor.h"
 
 #define CURSOR_NEXT 0
-#define CURSOR_CANCEL 1
-#define CURSOR_NULL 2
+#define CURSOR_CHECK 1
+#define CURSOR_CANCEL 2
+#define CURSOR_NULL 3
 
 #define SUBSTATE_WAITING 0
 #define SUBSTATE_SAMPLING 1
@@ -29,7 +30,9 @@ void SpecSample::enter(Sctp* sctp)
 	sctp_lcd_clear();
     substate = SUBSTATE_WAITING;
 	cursor = CURSOR_NEXT;
-	sctp_lcd_spec_sample_waiting(cursor);
+    check_result = (uint16_t *)malloc(sizeof(uint16_t));
+    *check_result = 0;
+    sctp_lcd_spec_sample_waiting(cursor, *check_result);
 }
 
 static void takeSpectrumSample(void * pvParameters) {
@@ -81,6 +84,12 @@ void SpecSample::okay(Sctp* sctp)
                     xTaskCreatePinnedToCore(takeSpectrumSample, "takeSpectrumSample", 4096, taskParam, 4, &taskHandle, 1);
                     break;
                 }
+                case CURSOR_CHECK:
+                {
+                    sctp_sensor_check(&sctp->calibration, check_result);
+                    sctp_lcd_spec_sample_waiting(cursor, *check_result);
+                    break;
+                }
                 case CURSOR_CANCEL: {
                     sctp->setState(SpecBlank::getInstance());
                     break;
@@ -104,7 +113,7 @@ void SpecSample::okay(Sctp* sctp)
                     taskParam = NULL;
 
                     substate = SUBSTATE_WAITING;
-	                sctp_lcd_spec_sample_waiting(cursor);
+                    sctp_lcd_spec_sample_waiting(cursor, *check_result);
                     break;
                 }
             }
@@ -127,7 +136,7 @@ void SpecSample::arrowLeft(Sctp* sctp)
                     break;
                 }
             }
-	        sctp_lcd_spec_sample_waiting(cursor);
+            sctp_lcd_spec_sample_waiting(cursor, *check_result);
             break;
         }
         case SUBSTATE_SAMPLING: {
@@ -159,6 +168,11 @@ void SpecSample::refreshLcd(Sctp* sctp, command_t command) {
             }
         }
     }
+}
+
+void SpecSample::exit(Sctp *sctp)
+{
+    free(check_result);
 }
 
 SctpState& SpecSample::getInstance()
