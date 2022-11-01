@@ -518,8 +518,8 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
 
   float a_max = absorbance[0];
   float a_min = 0;
-  float wl_max = wavelength[0];
-  float wl_min = wavelength[length-1];
+  float wl_min = wavelength[0];
+  float wl_max = wavelength[length-1];
   for(int i=1;i<length;i++) {
     if (absorbance[i] >= a_max) a_max = absorbance[i];
   }
@@ -612,7 +612,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
       } else {
         y_px = 297 - (absorbance[i] - a_min) / (a_max - a_min) * 270;
       }
-      ESP_LOGI(TAG, "i=%d, x=%d, y=%d", i, x_px, y_px);
+      // ESP_LOGI(TAG, "i=%d, x=%d, y=%d", i, x_px, y_px);
       display.fillRect(x_px - 1, y_px - 1, 3, 3, TFT_TOSCA);
       int dy = abs(y_px - y_prev);
       if (dy > 3 && dy < 6)
