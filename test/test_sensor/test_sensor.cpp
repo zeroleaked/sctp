@@ -95,7 +95,7 @@ void row_search () {
 
 void row_print() {
     i2cdev_init();
-    uint16_t row = 492;
+    uint16_t row = 472;
     uint8_t samples = 30;
     float * arr = ( float *) malloc (sizeof (float) * 1280 * samples);
     memset(arr, 0, sizeof(float) * 1280 * samples);
@@ -173,7 +173,7 @@ void test_spectrum_blank() {
 	calibration.bias = 1013.975014;
 	calibration.start = 409;
 	calibration.length = 393;
-    calibration.row = 489;
+    calibration.row = 472;
 
     blank_take_t blank_take;
     blank_take.exposure = (uint16_t *) malloc (sizeof(uint16_t) * calibration.length);
@@ -195,6 +195,8 @@ void test_spectrum_blank() {
     free(blank_take.exposure);
 }
 
+uint16_t exp_dummy[] = {5000,5000,5000,5000,4568,4568,4568,4568,4568,4096,4096,4096,4096,4096,3656,3656,3656,3152,3152,3152,3152,3152,3152,3152,3152,3152,3152,3152,3152,3152,2624,2624,2624,2624,2624,2624,2624,2624,2624,2624,2329,2329,2329,2329,2329,2329,2329,2329,2329,2329,2329,2329,2329,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1994,1739,1739,1739,1739,1739,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2059,2364,2364,2364,2364,2364,2364,2364,2364,2364,2364,2364,2364,2364,2364,2364,2364,2364,2364,2364,2364,2364,2619,2619,2619,2619,2619,2619,2619,2994,2994,2994,2994,2994,2994,2994,2994,2994,2994,2994,2994,2994,2994,2994,2994,2994,2994,3259,3259,3259,3259,3259,3259,3763,3763,3763,3763,3763,3763,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,4267,3843,3843,3843,3843,3843,3843,3843,3843,3843,3843,3843,3843,3843,3843,3323,3323,3323,3323,3323,3323,3323,3323,3323,3323,3323,3323,3323,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2747,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2392,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,2107,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1802,1547,1547,1547,1547,1547,1547,1547,1837,1837,1837,1837,1837,1837,1582,1582,1582,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1842,1587,1587,1927,1927,1927,1927};
+
 void test_spectrum() {
     i2cdev_init();
     sctp_sensor_init();
@@ -204,7 +206,7 @@ void test_spectrum() {
 	calibration.bias = 1013.975014;
 	calibration.start = 409;
 	calibration.length = 393;
-    calibration.row = 489;
+    calibration.row = 472;
 
     blank_take_t blank_take;
     blank_take.exposure = (uint16_t *) malloc (sizeof(uint16_t) * calibration.length);
@@ -212,7 +214,19 @@ void test_spectrum() {
     blank_take.gain = 1;
     blank_take.readout = (float *) malloc (sizeof(float) * calibration.length);
 
-    esp_err_t err = sctp_sensor_spectrum_blank(&calibration, &blank_take);
+    for (int i=0; i<calibration.length; i++) {
+        blank_take.exposure[i] = exp_dummy[i];
+    }
+
+    // esp_err_t err = sctp_sensor_spectrum_blank(&calibration, &blank_take);
+
+
+
+    esp_err_t err = ESP_OK;
+
+    for (int i=0; i< calibration.length; i++) {
+        blank_take.readout[i] = 1024;
+    }
 
     TEST_ASSERT_EQUAL(ESP_OK, err);
 
@@ -223,7 +237,7 @@ void test_spectrum() {
     }
 
     ESP_LOGI(TAG, "blank taken! Taking sample soon....");
-    vTaskDelay(300000/ portTICK_PERIOD_MS);
+    // vTaskDelay(300000/ portTICK_PERIOD_MS);
     ESP_LOGI(TAG, "Taking now!");
     float * sample_take = (float *) malloc (sizeof(float) * calibration.length);
     err = sctp_sensor_spectrum_sample(&calibration, &blank_take, sample_take);
@@ -381,7 +395,7 @@ void test_exposure() {
 
 void test_lamp() {
     i2cdev_init();
-    uint16_t row = 486;
+    uint16_t row = 472;
     uint16_t samples = 200;
     uint32_t * arr = ( uint32_t *) malloc (sizeof (uint32_t) * samples);
     timeval * time = ( timeval *) malloc (sizeof (timeval) * samples);
@@ -416,12 +430,13 @@ void test_lamp() {
     ESP_LOGI(TAG, "lamp config done. turning on");
 
 
-    uint16_t pixel = 488;
+    uint16_t pixel = 472;
     gpio_set_level( PIN_LAMP_SWITCH, 1);
     for (int j=0; j<samples; j++) {
-        ESP_LOGI(TAG, "j=%d", j);
+        // ESP_LOGI(TAG, "j=%d", j);
         camera_fb_t * camera_fb = sctp_camera_fb_get(); 
         arr[j] = (camera_fb->buf[pixel*2] << 8) | camera_fb->buf[1 + pixel*2];
+        ESP_LOGI(TAG, "%d:%d", j, arr[j]);
         time[j]= camera_fb->timestamp;
         sctp_camera_fb_return(camera_fb);
         vTaskDelay(750 / portTICK_PERIOD_MS);
@@ -509,11 +524,11 @@ void app_main() {
     // RUN_TEST(test_spectrum_blank);
     // RUN_TEST(test_spectrum);
     // RUN_TEST(test_quant_blank);
-    RUN_TEST(test_quant_sample);
+    // RUN_TEST(test_quant_sample);
     // RUN_TEST(test_quant);
 
 
-    // RUN_TEST(test_lamp);
+    RUN_TEST(test_lamp);
     // RUN_TEST(test_exposure);
     // RUN_TEST(test_linearity);
 
