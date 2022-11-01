@@ -106,11 +106,11 @@ void sctp_lcd_menu(uint8_t cursor);
 void sctp_lcd_menu_clear(uint8_t cursor);
 
 void sctp_lcd_spec_blank_sampling(uint8_t cursor);
-void sctp_lcd_spec_blank_waiting(uint8_t cursor);
+void sctp_lcd_spec_blank_waiting(uint8_t cursor, uint16_t result);
 void sctp_lcd_spec_blank_clear(uint8_t cursor);
 
 void sctp_lcd_spec_sample_sampling(uint8_t cursor);
-void sctp_lcd_spec_sample_waiting(uint8_t cursor);
+void sctp_lcd_spec_sample_waiting(uint8_t cursor, uint16_t result);
 void sctp_lcd_spec_sample_clear(uint8_t cursor);
 
 void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance, uint16_t length);
@@ -137,12 +137,12 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
 void sctp_lcd_conc_table_clear(uint8_t cursor, uint8_t row_offset, curve_t curve);
 void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration);
 
-void sctp_lcd_conc_blank_waiting(uint8_t cursor);
+void sctp_lcd_conc_blank_waiting(uint8_t cursor, uint16_t result);
 void sctp_lcd_conc_blank_sampling(uint8_t cursor);
 void sctp_lcd_conc_blank_clear(uint8_t cursor);
 
 void sctp_lcd_conc_sample_sampling(uint8_t cursor);
-void sctp_lcd_conc_sample_waiting(uint8_t cursor);
+void sctp_lcd_conc_sample_waiting(uint8_t cursor, uint16_t result);
 void sctp_lcd_conc_sample_clear(uint8_t cursor);
 
 void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterpolated, conc_regression_t * regress_line);
