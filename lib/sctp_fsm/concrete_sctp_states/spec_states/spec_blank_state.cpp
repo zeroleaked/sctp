@@ -7,8 +7,9 @@
 #include "sctp_sensor.h"
 
 #define CURSOR_NEXT 0
-#define CURSOR_CANCEL 1
-#define CURSOR_NULL 2
+#define CURSOR_CHECK 1
+#define CURSOR_CANCEL 2
+#define CURSOR_NULL 3
 
 #define SUBSTATE_WAITING 0
 #define SUBSTATE_SAMPLING 1
@@ -26,7 +27,9 @@ void SpecBlank::enter(Sctp* sctp)
 	sctp_lcd_clear();
     substate = SUBSTATE_WAITING;
 	cursor = CURSOR_NEXT;
-	sctp_lcd_spec_blank_waiting(cursor);
+    check_result = (uint16_t*)malloc(sizeof(uint16_t));
+    *check_result = 0;
+	sctp_lcd_spec_blank_waiting(cursor, *check_result);
 }
 
 static void takeSpectrumBlank(void * pvParameters) {
@@ -67,6 +70,12 @@ void SpecBlank::okay(Sctp* sctp)
                 	((taskParam_t *) taskParam)->blank_take = sctp->blank_take;
                     
                     xTaskCreatePinnedToCore(takeSpectrumBlank, "takeSpectrumBlank", 8192, taskParam, 4, &taskHandle, 1);
+                    break;
+                }
+                case CURSOR_CHECK:
+                {
+                    sctp_sensor_check(&sctp->calibration, check_result);
+                    sctp_lcd_spec_blank_waiting(cursor, *check_result);
                     break;
                 }
                 case CURSOR_CANCEL: {
@@ -115,7 +124,7 @@ void SpecBlank::arrowLeft(Sctp* sctp)
                     break;
                 }
             }
-	        sctp_lcd_spec_blank_waiting(cursor);
+            sctp_lcd_spec_blank_waiting(cursor, *check_result);
             break;
         }
         case SUBSTATE_SAMPLING: {
@@ -151,6 +160,11 @@ void SpecBlank::refreshLcd(Sctp* sctp, command_t command) {
             }
 	    }
     }
+}
+
+void SpecBlank::exit(Sctp *sctp)
+{
+    free(check_result);
 }
 
 SctpState& SpecBlank::getInstance()

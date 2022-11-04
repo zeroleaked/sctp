@@ -145,7 +145,7 @@ void nvs_curve_load() {
     curve_t curve;
     curve.absorbance = malloc(sizeof(float) * 10);
     curve.concentration = malloc(sizeof(float) * 10);
-    curve.id = 4;
+    curve.id = 1;
     curve.points = 10;
     curve.wavelength = 554;
 
@@ -166,8 +166,8 @@ void app_main(void)
     // RUN_TEST(test1);
 
     // RUN_TEST(nvs_curve_save);
-    RUN_TEST(nvs_curve_list);
-    // RUN_TEST(nvs_curve_load);
+    // RUN_TEST(nvs_curve_list);
+    RUN_TEST(nvs_curve_load);
 
     UNITY_END();
 }

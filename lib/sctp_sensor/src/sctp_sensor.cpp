@@ -22,7 +22,7 @@ void buffer_flush() {
     sctp_camera_fb_return(take);
 }
 
-#define LAMP_CHECK_BUFFER_SIZE 20
+#define LAMP_CHECK_BUFFER_SIZE 10
 
 esp_err_t halogen_wait(uint16_t pixel, int tolerance) {
     ESP_LOGI(TAG, "lamp heating... ref=%d", pixel);
@@ -47,7 +47,7 @@ esp_err_t halogen_wait(uint16_t pixel, int tolerance) {
         // buffer[17], buffer[18], buffer[19]);
 
         if (i >= LAMP_CHECK_BUFFER_SIZE) {
-            uint8_t cursor = (i+1)%20;
+            uint8_t cursor = (i+1)%10;
             if (buffer[cursor] <= last_check + LAMP_CHECK_BUFFER_SIZE * tolerance) {
                 ESP_LOGI(TAG, "%d <= %d +%d", buffer[cursor], last_check, LAMP_CHECK_BUFFER_SIZE * tolerance);
                 isbreak = true;
@@ -55,7 +55,7 @@ esp_err_t halogen_wait(uint16_t pixel, int tolerance) {
             }
         }
         if (i >= LAMP_CHECK_BUFFER_SIZE -1) {
-            uint8_t cursor = (i+1)%20;
+            uint8_t cursor = (i+1)%10;
             last_check = buffer[cursor];
             buffer[cursor] = 0;
             ESP_LOGI(TAG, "steadying:%d:%d", i, last_check);
@@ -108,6 +108,39 @@ void standby_end() {
     gpio_set_level((gpio_num_t) camera_config.pin_stnby, 0 );
 }
 
+esp_err_t sctp_sensor_check(calibration_t * calibration, uint16_t * result) {
+    standby_end();
+
+    sctp_camera_init(&camera_config);
+    sensor_t *camera_sensor = sctp_camera_sensor_get();
+
+    camera_sensor->set_row_start(camera_sensor, calibration->row);
+    ESP_LOGI(TAG, "row set to %d", calibration->row);
+
+    ESP_LOGI(TAG, "setting to %d exposure", 100);
+    camera_sensor->set_shutter_width(camera_sensor, 100);
+
+    uint16_t pixel = calibration->start;
+    gpio_set_level( PIN_LAMP_SWITCH, 1);
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+
+    buffer_flush();
+
+    camera_fb_t * take = sctp_camera_fb_get();
+
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
+
+    *result = (take->buf[pixel * 2] << 8) | (take->buf[pixel*2 + 1]);
+
+    sctp_camera_fb_return(take);
+
+    sctp_camera_deinit();
+
+    standby_start();
+
+    return ESP_OK;
+}
+
 esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t * blank_take) {
     standby_end();
 
@@ -125,7 +158,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
 
     ESP_LOGI(TAG, "setting to %d exposure", 100);
     camera_sensor->set_shutter_width(camera_sensor, 100);
-    // halogen_wait(calibration->start, 5);
+    halogen_wait(calibration->start, 0);
     // ESP_LOGI(TAG, "lamp heating done");
 
     ESP_LOGI(TAG, "setting to %d exposure", exposure);
@@ -151,13 +184,13 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
             // ESP_LOGI(TAG, "pixel %d retake", pixel);
             sctp_camera_fb_return(take);
 
-            if (exposure > 6000) exposure = exposure + 30 * error;
-            else if (exposure > 5000) exposure = exposure + 20 * error;
-            else if (exposure > 3000) exposure = exposure + 10 * error;
+            if (exposure > 6000) exposure = exposure + 20 * error;
+            else if (exposure > 5000) exposure = exposure + 8 * error;
+            else if (exposure > 3000) exposure = exposure + 8 * error;
             else if (exposure > 1500) exposure = exposure + 5 * error;
             else if (exposure > 1000) exposure = exposure + 1 * error;
-            else if (exposure > 100) exposure = exposure + 0.6 * error;
-            else exposure = exposure + 0.2 * error;
+            else if (exposure > 100) exposure = exposure + 0.1 * error;
+            else exposure = exposure + 0.05 * error;
             if (exposure <= 3) {
                 islast = true;
                 exposure = 3;
@@ -213,7 +246,7 @@ esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t 
 
 
     gpio_set_level( PIN_LAMP_SWITCH, 1);
-    // halogen_wait(calibration->start, 5);
+    halogen_wait(calibration->start, 0);
     
     camera_fb_t * take = NULL;
     uint16_t last_exp = 0;
@@ -277,13 +310,13 @@ esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t 
         // ESP_LOGI(TAG, "pixel %d retake", pixel);
         sctp_camera_fb_return(take);
 
-        if (exposure > 6000) exposure = exposure + 30 * error;
-        else if (exposure > 5000) exposure = exposure + 20 * error;
-        else if (exposure > 3000) exposure = exposure + 10 * error;
-        else if (exposure > 1500) exposure = exposure + 5 * error;
-        else if (exposure > 1000) exposure = exposure + 1 * error;
-        else if (exposure > 100) exposure = exposure + 0.6 * error;
-        else exposure = exposure + 0.2 * error;
+        if (exposure > 6000) exposure = exposure + 20 * error;
+        else if (exposure > 5000) exposure = exposure + 10 * error;
+        else if (exposure > 3000) exposure = exposure + 5 * error;
+        else if (exposure > 1500) exposure = exposure + 1 * error;
+        else if (exposure > 1000) exposure = exposure + 0.6 * error;
+        else if (exposure > 100) exposure = exposure + 0.3 * error;
+        else exposure = exposure + 0.1 * error;
         if (exposure <= 3) {
             islast = true;
             exposure = 3;
