@@ -26,10 +26,10 @@
 #define MOUNT_POINT "/sdcard"
 #define STORAGE_NAMESPACE "storage"
 
-#define PIN_NUM_MISO    GPIO_NUM_4
-#define PIN_NUM_MOSI    GPIO_NUM_5
-#define PIN_NUM_CLK     GPIO_NUM_6
-#define PIN_NUM_CS      GPIO_NUM_7
+#define PIN_NUM_MISO GPIO_NUM_4
+#define PIN_NUM_MOSI GPIO_NUM_5
+#define PIN_NUM_CLK GPIO_NUM_6
+#define PIN_NUM_CS     GPIO_NUM_7
 
 typedef struct
 {
@@ -72,8 +72,9 @@ void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** ca
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
     };
-    ret = spi_bus_initialize((spi_host_device_t) host->slot, &bus_cfg, SPI_DMA_CH_AUTO);
-    if (ret != ESP_OK) {
+    ret = spi_bus_initialize((spi_host_device_t)host->slot, &bus_cfg, SPI_DMA_CH_AUTO);
+    if (ret != ESP_OK)
+    {
         ESP_LOGE(TAG, "Failed to initialize bus.");
         return;
     }
@@ -81,7 +82,7 @@ void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** ca
     // This initializes the slot without card detect (CD) and write protect (WP) signals.
     sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
     slot_config.gpio_cs = cs_gpio;
-    slot_config.host_id = (spi_host_device_t) host->slot;
+    slot_config.host_id = (spi_host_device_t) (spi_host_device_t)host->slot;
 
     ESP_LOGI(TAG, "Mounting filesystem");
     const char mount_point[] = MOUNT_POINT;
@@ -117,7 +118,7 @@ void sctp_flash_deinit(sdmmc_host_t * host, sdmmc_card_t * card)
     ESP_LOGI(TAG, "Card unmounted");
 
     //deinitialize the bus after all devices are removed
-    spi_bus_free((spi_host_device_t) host->slot);
+    spi_bus_free((spi_host_device_t) (spi_host_device_t)host->slot);
 }
 
 void sctp_flash_nvs_init()
@@ -134,7 +135,8 @@ void sctp_flash_nvs_init()
     ESP_ERROR_CHECK(err);
 }
 
-void sctp_flash_nvs_erase_all() {
+void sctp_flash_nvs_erase_all()
+{
     esp_err_t err = nvs_flash_init();
     nvs_handle_t my_handle;
 
@@ -160,7 +162,7 @@ esp_err_t sctp_flash_nvs_save_calibration(calibration_t calibration)
     // Initialize the size of memory space required for blob
     calibration_t *flash_calibration;
     size_t required_size = sizeof(calibration_t);
-    flash_calibration = (calibration_t *) malloc(required_size);
+    flash_calibration = (calibration_t *) (calibration_t *)malloc(required_size);
 
     flash_calibration->gain = calibration.gain;
     flash_calibration->bias = calibration.bias;
@@ -241,7 +243,7 @@ esp_err_t sctp_flash_nvs_load_calibration(calibration_t *calibration)
     return ESP_OK;
 }
 
-esp_err_t sctp_flash_nvs_save_curve(curve_t * curve)
+esp_err_t sctp_flash_nvs_save_curve(curve_t *curve)
 {
     nvs_handle_t my_handle;
     esp_err_t err;
@@ -255,13 +257,13 @@ esp_err_t sctp_flash_nvs_save_curve(curve_t * curve)
 
     // Initialize the size of memory space required for blob
     flash_curve_t fc;
-    flash_curve_t * flash_curve = &fc;
+    flash_curve_t *flash_curve = &fc;
 
     flash_curve->id = curve->id;
     flash_curve->points = curve->points;
     flash_curve->wavelength = curve->wavelength;
-    memcpy(flash_curve->absorbance, curve->absorbance, 10*sizeof(float));
-    memcpy(flash_curve->concentration, curve->concentration, 10*sizeof(float));
+    memcpy(flash_curve->absorbance, curve->absorbance, 10 * sizeof(float));
+    memcpy(flash_curve->concentration, curve->concentration, 10 * sizeof(float));
 
     sprintf(key, "curve_%d", curve->id);
     err = nvs_set_blob(my_handle, key, flash_curve, sizeof(flash_curve_t));
@@ -284,7 +286,7 @@ esp_err_t sctp_flash_nvs_save_curve(curve_t * curve)
     return ESP_OK;
 }
 
-esp_err_t sctp_flash_nvs_load_curve(curve_t * curve)
+esp_err_t sctp_flash_nvs_load_curve(curve_t *curve)
 {
     nvs_handle_t my_handle;
     esp_err_t err;
@@ -302,7 +304,7 @@ esp_err_t sctp_flash_nvs_load_curve(curve_t * curve)
     const size_t required_size = sizeof(flash_curve_t); // value will default to 0, if not set yet in NVS
 
     flash_curve_t fc;
-    flash_curve_t * flash_curve = &fc;
+    flash_curve_t *flash_curve = &fc;
     err = nvs_get_blob(my_handle, key, flash_curve, &required_size);
     if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
         return err;
@@ -344,7 +346,7 @@ esp_err_t sctp_flash_nvs_load_curve_l(curve_t curves[6])
     }
     else
     {
-        flash_curve_t *flash_curve = (flash_curve_t *) malloc(required_size);
+        flash_curve_t *flash_curve = (flash_curve_t *) (flash_curve_t *)malloc(required_size);
         char key[20];
         for (int i = 0; i < 6; i++)
         {
@@ -399,17 +401,20 @@ esp_err_t sctp_flash_nvs_load_curve_list(curve_t curves[6])
     const size_t required_size = sizeof(flash_curve_t); // value will default to 0, if not set yet in NVS
     // obtain required memory space to store blob being read from NVS
     flash_curve_t fc;
-    flash_curve_t * flash_curve = &fc;
+    flash_curve_t *flash_curve = &fc;
     char key[20];
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
+    {
         curves[i].id = i;
         sprintf(key, "curve_%d", i);
         err = nvs_get_blob(my_handle, key, flash_curve, &required_size);
-        if (err == ESP_OK) {
+        if (err == ESP_OK)
+        {
             curves[i].points = flash_curve->points;
             curves[i].wavelength = flash_curve->wavelength;
         }
-        else {
+        else
+        {
             curves[i].wavelength = 0;
         }
     }
@@ -424,10 +429,9 @@ const char mockup_curves_filename[][20] = {
     "curve3_500nm.csv",
     "curve3_500nm.csv",
     "curve4_700nm.csv",
-    "NaN"
-};
+    "NaN"};
 
-esp_err_t sctp_flash_save_spectrum(float * absorbance, float * wavelength, uint16_t length)
+esp_err_t sctp_flash_save_spectrum(float *absorbance, float *wavelength, uint16_t length)
 {
     uint8_t check;
     uint8_t count = 0;
@@ -441,7 +445,9 @@ esp_err_t sctp_flash_save_spectrum(float * absorbance, float * wavelength, uint1
     sctp_flash_init(PIN_NUM_CS, &host, &card);
     if (stat(dir_name, &sb) == 0 && S_ISDIR(sb.st_mode))
     {
-    } else {
+    }
+    else
+    {
         check = mkdir(dir_name, 0777);
     }
     DIR *dir = opendir(dir_name);
@@ -493,7 +499,9 @@ esp_err_t sctp_flash_save_curve(curve_t curve)
     sctp_flash_init(PIN_NUM_CS, &host, &card);
     if (stat(dir_name, &sb) == 0 && S_ISDIR(sb.st_mode))
     {
-    } else {
+    }
+    else
+    {
         check = mkdir(dir_name, 0777);
     }
 
@@ -514,7 +522,7 @@ esp_err_t sctp_flash_save_curve(curve_t curve)
     fprintf(f, "index, concentration, absorbance\n");
     for (int i = 0; i < curve.points; i++)
     {
-        fprintf(f, "%d, %.3f, %.3f\n", i+1, curve.concentration[i], curve.absorbance[i]);
+        fprintf(f, "%d, %.3f, %.3f\n", i + 1, curve.concentration[i], curve.absorbance[i]);
     }
     fclose(f);
     ESP_LOGI(TAG, "File written");
@@ -574,11 +582,13 @@ esp_err_t sctp_flash_load_history_list(history_t list[FILE_LEN])
     return ESP_OK;
 }
 
-esp_err_t sctp_flash_load_spectrum(char * filename, float * absorbance, float * wavelength) {
+esp_err_t sctp_flash_load_spectrum(char *filename, float *absorbance, float *wavelength, uint16_t *length)
+{
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    sdmmc_card_t * card;
+    sdmmc_card_t *card;
 
     sctp_flash_init(PIN_NUM_CS, &host, &card);
+    *length = 0;
     char line[NAME_LEN];
     char file_spec[] = "/sdcard/spectrum/";
     strcat(file_spec, filename);
@@ -586,19 +596,23 @@ esp_err_t sctp_flash_load_spectrum(char * filename, float * absorbance, float * 
     // Open file for reading
     ESP_LOGI(TAG, "Reading file %s", file_spec);
     FILE *f = fopen(file_spec, "r");
-    if (f == NULL) {
+    if (f == NULL)
+    {
         ESP_LOGE(TAG, "Failed to open file for reading");
         return ESP_FAIL;
     }
     int i = 0;
-    while(fgets(line, sizeof(line), f)) {
-        if(i != 0) {
-            wavelength[i-1] = (float) atof(strtok(line, ", "));
-            absorbance[i-1] = (float) atof(strtok(NULL, ", "));
-            ESP_LOGI(TAG, "%d, %.3f, %.3f", i, (double)wavelength[i-1], (double)absorbance[i-1]);
+    while (fgets(line, sizeof(line), f))
+    {
+        if (i != 0)
+        {
+            wavelength[i - 1] = (float)atof(strtok(line, ", "));
+            absorbance[i - 1] = (float)atof(strtok(NULL, ", "));
+            ESP_LOGI(TAG, "%d, %.3f, %.3f", i, (double)wavelength[i - 1], (double)absorbance[i - 1]);
         }
         i++;
     }
+    *length = i + 1;
     fclose(f);
     sctp_flash_deinit(&host, card);
     return ESP_OK;

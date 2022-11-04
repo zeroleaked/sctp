@@ -24,7 +24,7 @@ esp_err_t sctp_flash_save_spectrum(float * absorbance, float * wavelength, uint1
 esp_err_t sctp_flash_save_curve(curve_t curve);
 
 esp_err_t sctp_flash_load_history_list(history_t list[FILE_LEN]);
-esp_err_t sctp_flash_load_spectrum(char * filename, float * absorbance, float * wavelength);
+esp_err_t sctp_flash_load_spectrum(char *filename, float *absorbance, float *wavelength, uint16_t *length);
 esp_err_t sctp_flash_load_curve_floats(curve_t *curve);
 
 #ifdef __cplusplus
