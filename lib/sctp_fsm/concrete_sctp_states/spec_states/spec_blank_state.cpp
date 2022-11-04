@@ -152,15 +152,15 @@ void SpecBlank::arrowRight(Sctp* sctp)
     if(substate == SUBSTATE_WAITING) {
         switch (cursor) {
             case CURSOR_NEXT: {
-                cursor = CURSOR_CHECK;
-                break;
-            }
-            case CURSOR_CHECK: {
                 cursor = CURSOR_CANCEL;
                 break;
             }
-            case CURSOR_CANCEL: {
+            case CURSOR_CHECK: {
                 cursor = CURSOR_NEXT;
+                break;
+            }
+            case CURSOR_CANCEL: {
+                cursor = CURSOR_CHECK;
                 break;
             }
         }
