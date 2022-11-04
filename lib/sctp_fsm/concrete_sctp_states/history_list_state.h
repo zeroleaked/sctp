@@ -27,6 +27,14 @@ private:
 
     uint8_t cursor;
     uint8_t offset;
+	uint8_t substate;
 
+	uint8_t file_count;
 	char (*filenames)[25];
+	curve_t * history_curve;
+	conc_regression_t * regress_line;
+	bool interpolate = false;
+	float * history_wavelength;
+	float * history_absorbance;
+	uint16_t * spectrum_length;
 };
