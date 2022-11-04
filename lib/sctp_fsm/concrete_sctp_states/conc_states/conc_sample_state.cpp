@@ -94,15 +94,15 @@ void ConcSample::okay(Sctp* sctp)
             break;
         }
         case SUBSTATE_SAMPLING: {
-            switch (cursor) {
-                case CURSOR_CANCEL: {
-                    vTaskDelete(taskHandle);
-                    taskHandle = NULL;
+            // switch (cursor) {
+            //     case CURSOR_CANCEL: {
+            //         vTaskDelete(taskHandle);
+            //         taskHandle = NULL;
 
-                    substate = SUBSTATE_WAITING;
-                    sctp_lcd_conc_sample_waiting(cursor, *check_result);
-                    break;
-                }
+            //         substate = SUBSTATE_WAITING;
+            //         sctp_lcd_conc_sample_waiting(cursor, *check_result);
+            //         break;
+            //     }
             }
 			break;
         }
