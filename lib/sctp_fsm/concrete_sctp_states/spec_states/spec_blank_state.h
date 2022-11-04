@@ -10,10 +10,10 @@ class SpecBlank : public SctpState
 public:
 	void enter(Sctp* sctp);
 	void okay(Sctp* sctp);
-	void arrowUp(Sctp* sctp) { arrowLeft(sctp); };
-	void arrowDown(Sctp* sctp) { arrowLeft(sctp); };
+	void arrowUp(Sctp* sctp) {};
+	void arrowDown(Sctp* sctp) {};
 	void arrowLeft(Sctp* sctp);
-	void arrowRight(Sctp* sctp) { arrowLeft(sctp); };
+	void arrowRight(Sctp* sctp);
 	void refreshLcd(Sctp* sctp, command_t command);
 	bool batteryIndicator() {return false;};
 	void exit(Sctp* sctp);

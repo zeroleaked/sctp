@@ -29,7 +29,7 @@ void SpecSample::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
     substate = SUBSTATE_WAITING;
-	cursor = CURSOR_NEXT;
+	cursor = CURSOR_CHECK;
     check_result = (uint16_t *)malloc(sizeof(uint16_t));
     *check_result = 0;
     sctp_lcd_spec_sample_waiting(cursor, *check_result);
@@ -128,6 +128,10 @@ void SpecSample::arrowLeft(Sctp* sctp)
         case SUBSTATE_WAITING: {
             switch (cursor) {
                 case CURSOR_NEXT: {
+                    cursor = CURSOR_CHECK;
+                    break;
+                }
+                case CURSOR_CHECK: {
                     cursor = CURSOR_CANCEL;
                     break;
                 }
@@ -148,6 +152,28 @@ void SpecSample::arrowLeft(Sctp* sctp)
                 }
             }
         }
+    }
+}
+
+void SpecSample::arrowRight(Sctp* sctp)
+{
+    sctp_lcd_spec_sample_clear(cursor);
+    if(substate == SUBSTATE_WAITING) {
+        switch (cursor) {
+            case CURSOR_NEXT: {
+                cursor = CURSOR_CHECK;
+                break;
+            }
+            case CURSOR_CHECK: {
+                cursor = CURSOR_CANCEL;
+                break;
+            }
+            case CURSOR_CANCEL: {
+                cursor = CURSOR_NEXT;
+                break;
+            }
+        }
+    sctp_lcd_spec_sample_waiting(cursor, *check_result);
     }
 }
 

@@ -27,7 +27,7 @@ void ConcBlank::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
     substate = SUBSTATE_WAITING;
-	cursor = CURSOR_NEXT;
+	cursor = CURSOR_CHECK;
     
 	// state buffers
 	taskParam = malloc (sizeof(taskParam_t));
@@ -120,6 +120,10 @@ void ConcBlank::arrowLeft(Sctp* sctp)
         case SUBSTATE_WAITING: {
             switch (cursor) {
                 case CURSOR_NEXT: {
+                    cursor = CURSOR_CHECK;
+                    break;
+                }
+                case CURSOR_CHECK: {
                     cursor = CURSOR_CANCEL;
                     break;
                 }
@@ -141,6 +145,28 @@ void ConcBlank::arrowLeft(Sctp* sctp)
 	        sctp_lcd_conc_blank_sampling(cursor);
 			break;
         }
+    }
+}
+
+void ConcBlank::arrowRight(Sctp* sctp)
+{
+    sctp_lcd_conc_blank_clear(cursor);
+    if(substate == SUBSTATE_WAITING) {
+        switch (cursor) {
+            case CURSOR_NEXT: {
+                cursor = CURSOR_CHECK;
+                break;
+            }
+            case CURSOR_CHECK: {
+                cursor = CURSOR_CANCEL;
+                break;
+            }
+            case CURSOR_CANCEL: {
+                cursor = CURSOR_NEXT;
+                break;
+            }
+        }
+    sctp_lcd_conc_blank_waiting(cursor, *check_result);
     }
 }
 

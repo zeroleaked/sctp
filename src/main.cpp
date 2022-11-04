@@ -20,38 +20,39 @@ Sctp * sctp;
 // QueueHandle_t button_events;
 
 void buttons_task(void * param) {
+    ESP_LOGI(TAG, "button task started");
     i2c_dev_t pcf;
     uint8_t pcf_val = 0xFF;
     pcf8574_init(&pcf, &pcf_val);
     for (;;) {
         pcf_val = 0xFF;
         pcf8574_port_read(&pcf, &pcf_val);
-        // if ((pcf_val&1)==0) {
-        //     ESP_LOGI(TAG, "button LEFT pressed");
-        //     sctp.arrowLeft();
-        //     vTaskDelay(200/portTICK_PERIOD_MS);
-        // }
-        // if (((pcf_val>>1)&1)==0) {
-        //     ESP_LOGI(TAG, "button RIGHT pressed");
-        //     sctp.arrowRight();
-        //     vTaskDelay(200/portTICK_PERIOD_MS);
-        // }
-        // if (((pcf_val>>2)&1)==0) {
-        //     ESP_LOGI(TAG, "button DOWN pressed");
-        //     sctp.arrowDown();
-        //     vTaskDelay(200/portTICK_PERIOD_MS);
-        // }
-        // if (((pcf_val>>3)&1)==0) {
-        //     ESP_LOGI(TAG, "button OK pressed");
-        //     sctp.okay();
-        //     vTaskDelay(200/portTICK_PERIOD_MS);
-        // }
-        // if (((pcf_val>>4)&1)==0) {
-        //     ESP_LOGI(TAG, "button UP pressed");
-        //     sctp.arrowUp();
-        //     vTaskDelay(200/portTICK_PERIOD_MS);
-        // }
-        vTaskDelay(1000/portTICK_PERIOD_MS);
+        if ((pcf_val&1)==0) {
+            ESP_LOGI(TAG, "button LEFT pressed");
+            sctp->arrowLeft();
+            vTaskDelay(200/portTICK_PERIOD_MS);
+        }
+        if (((pcf_val>>1)&1)==0) {
+            ESP_LOGI(TAG, "button RIGHT pressed");
+            sctp->arrowRight();
+            vTaskDelay(200/portTICK_PERIOD_MS);
+        }
+        if (((pcf_val>>2)&1)==0) {
+            ESP_LOGI(TAG, "button DOWN pressed");
+            sctp->arrowDown();
+            vTaskDelay(200/portTICK_PERIOD_MS);
+        }
+        if (((pcf_val>>3)&1)==0) {
+            ESP_LOGI(TAG, "button OK pressed");
+            sctp->okay();
+            vTaskDelay(200/portTICK_PERIOD_MS);
+        }
+        if (((pcf_val>>4)&1)==0) {
+            ESP_LOGI(TAG, "button UP pressed");
+            sctp->arrowUp();
+            vTaskDelay(200/portTICK_PERIOD_MS);
+        }
+        vTaskDelay(400/portTICK_PERIOD_MS);
         ESP_LOGI(TAG, "state=%d", sctp->getCurrentStateId());
     }
 }
@@ -84,4 +85,5 @@ void app_main() {
     xTaskCreate(buttons_task, "button_handler", CONFIG_ESP32_BUTTON_TASK_STACK_SIZE, NULL, 10, NULL);
     //xTaskCreatePinnedToCore( lcdTask, "lcdTask", 8192, NULL, 1, NULL, 1 );
 
+    while (1){vTaskDelay(10000/portTICK_PERIOD_MS);}
 }
