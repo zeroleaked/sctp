@@ -520,8 +520,16 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   float a_min = 0;
   float wl_min = wavelength[0];
   float wl_max = wavelength[length-1];
+  if (absorbance[0] == 0)
+  {
+    absorbance[0] = 0;
+  }
   for(int i=1;i<length;i++) {
     if (absorbance[i] >= a_max) a_max = absorbance[i];
+    if (absorbance[i] < 0)
+    {
+      absorbance[i] = 0;
+    }
   }
   if(a_max <= 0.8)
     a_max = 0.8;
