@@ -1,0 +1,5 @@
+␛[0;31mE (90776) cam_hal: FB-SIZE: 0 != 7680␛[0m
+␛[0;32mI (92546) main: button RIGHT pressed␛[0m
+␛[0;32mI (93316) main: button OK pressed␛[0m
+
+assert failed: virtual void SpecBlank::okay(Sctp*) spec_blank_state.cpp:64 (sctp->blank_take == NULL)

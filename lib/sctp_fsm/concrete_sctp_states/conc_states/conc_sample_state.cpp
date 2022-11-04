@@ -64,6 +64,8 @@ void ConcSample::okay(Sctp* sctp)
         case SUBSTATE_WAITING: {
             switch (cursor) {
                 case CURSOR_NEXT: {
+                    sctp_lcd_spec_blank_clear(cursor);
+                    sctp_lcd_spec_blank_waiting(cursor, *check_result);
                     cursor = CURSOR_NULL;
                     sctp_lcd_conc_sample_sampling(cursor);
 

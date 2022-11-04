@@ -114,7 +114,7 @@ void Sctp::refreshLcd()
 			ESP_LOGI(TAG, "refreshLcd(), delegating");
 			currentState->refreshLcd(this, command);
 		}
-		else if (counter_battery == 1) {
+		else if (counter_battery == 2) {
 			counter_battery = 0;
 			// command = COMMAND_BAT_UPDATE;
 			// currentState->refreshLcd(this, command);
@@ -126,10 +126,8 @@ void Sctp::refreshLcd()
 			}
 
 		}
-		else {
 			command = COMMAND_NONE;
 			currentState->refreshLcd(this, command);
-		}
 		counter_battery++;
 	}
 }

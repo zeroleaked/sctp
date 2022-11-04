@@ -54,6 +54,7 @@ void SpecBlank::okay(Sctp* sctp)
             switch (cursor) {
                 case CURSOR_NEXT: {
                     sctp_lcd_spec_blank_clear(cursor);
+                    sctp_lcd_spec_blank_waiting(cursor, *check_result);
                     cursor = CURSOR_NULL;
                     sctp_lcd_spec_blank_sampling(cursor);
 
