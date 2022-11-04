@@ -19,11 +19,11 @@ Sctp::Sctp()
 	sctp_battery_init();
 
 	// todo load calibration
-	calibration.row = 481;
-	calibration.gain = -0.7698064209;
-	calibration.bias = 1025.924915;
-	calibration.start = 423;
-	calibration.length = 392;
+	calibration.row = 493;
+	calibration.gain = -1.051282051;
+	calibration.bias = 1175.012821;
+	calibration.start = 451;
+	calibration.length = 287;
 
 	lcd_refresh_queue = xQueueCreate(1, sizeof(command_t));
 	assert(lcd_refresh_queue != NULL);
