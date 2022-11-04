@@ -52,7 +52,7 @@ void buttons_task(void * param) {
             sctp->arrowUp();
             vTaskDelay(200/portTICK_PERIOD_MS);
         }
-        vTaskDelay(400/portTICK_PERIOD_MS);
+        vTaskDelay(50/portTICK_PERIOD_MS);
         ESP_LOGI(TAG, "state=%d", sctp->getCurrentStateId());
     }
 }
