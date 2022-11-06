@@ -38,20 +38,20 @@ void task1(void *pvParameters)
     sctp_lcd_start();
     vTaskDelay(3000 / portTICK_PERIOD_MS);
     sctp_lcd_clear();
-    // sctp_lcd_spec_blank_waiting(0, 500);
-    // vTaskDelay(3000 / portTICK_PERIOD_MS);
-    // sctp_lcd_spec_blank_sampling(0);
-    // vTaskDelay(3000 / portTICK_PERIOD_MS);
-    // sctp_lcd_clear();
-    // sctp_lcd_spec_sample_waiting(0, 100);
-    // vTaskDelay(3000 / portTICK_PERIOD_MS);
-    // sctp_lcd_spec_blank_sampling(0);
+    sctp_lcd_spec_blank_waiting(0, 500);
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
+    sctp_lcd_spec_blank_sampling(0);
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
+    sctp_lcd_clear();
+    sctp_lcd_conc_sample_waiting(0, 100);
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
+    sctp_lcd_conc_sample_sampling(0);
     // vTaskDelay(3000 / portTICK_PERIOD_MS);
     // sctp_lcd_clear();
     // sctp_lcd_spec_result(0, wl, a, length);
     // vTaskDelay(3000 / portTICK_PERIOD_MS);
     // sctp_lcd_clear();
-    sctp_lcd_spec_result_full(wl, a, length);
+    // sctp_lcd_spec_result_full(wl, a, length);
     vTaskDelete(NULL);
 }
 
