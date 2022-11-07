@@ -93,6 +93,8 @@ void SpecSample::okay(Sctp* sctp)
                     break;
                 }
                 case CURSOR_CANCEL: {
+                    free(sctp->blank_take);
+                    sctp->blank_take = NULL;
                     sctp->setState(SpecBlank::getInstance());
                     break;
                 }
