@@ -472,6 +472,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   }
 
   int i = 0;
+  int i_prev;
   int x_px;
   int y_px;
   int x_next;
@@ -481,14 +482,14 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
 
   if (length >= 360)
   {
-    for (i = 1; i < length; i++)
+    for (i = 0; i < length; i++)
     {
       x_px = (wavelength[i] - wl_min) / (wl_max - wl_min) * 360 + 36;
       x_next = (wavelength[i+1] - wl_min) / (wl_max - wl_min) * 360 + 36;
       y_px = 297 - (absorbance[i] - a_min) / (a_max - a_min) * 270;
       display.fillRect(x_px - 1, y_px - 1, 3, 3, TFT_TOSCA);
-      if (i == 1)
-        y_prev = 297 - (absorbance[i-1] - a_min) / (a_max - a_min) * 270;
+      if (i == 0)
+        y_prev = y_px;
       int dy = abs(y_px - y_prev);
       if (dy > 3 && dy < 6)
       {
@@ -532,10 +533,11 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   else
   {
     y_prev = 297 - (absorbance[0] - a_min) / (a_max - a_min) * 270;
-    for (int j = 1; j < 360; j++)
+    for (int j = 0; j < 360; j++)
     {
       i = round(j * length / 360);
-      int i_prev = round((j-1) / length * 360);
+      i_prev = round((j-1) / length * 360);
+      if(i == 0) i_prev = i;
       x_px = (wavelength[i] - wl_min) / (wl_max - wl_min) * 360 + 36;
       // x_next = (wavelength[i + 1] - wl_min) / (wl_max - wl_min) * 360 + 36;
       if(i == i_prev) {
