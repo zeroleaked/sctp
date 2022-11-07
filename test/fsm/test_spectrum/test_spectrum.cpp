@@ -61,36 +61,23 @@ void power_test()
     xLastWakeTime = xTaskGetTickCount();
     sctp0.okay();
     for(;;) {
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
         // test to SpecSample
         sctp0.okay();
         TEST_ASSERT_EQUAL(STATE_SPEC_BLANK, sctp0.getCurrentStateId());
-        sctp0.arrowLeft();
-        sctp0.arrowUp();
+        sctp0.arrowRight();
         sctp0.okay();
         ESP_LOGI(TAG, "substate sampling");
         // TaskHandle_t task;
-        vTaskDelay(6000 / portTICK_RATE_MS);
+        vTaskDelay(120000 / portTICK_RATE_MS);
         ESP_LOGI(TAG, "idle fin");
         TEST_ASSERT_EQUAL(STATE_SPEC_SAMPLE, sctp0.getCurrentStateId());
 
         // test to SpecResult
-        sctp0.arrowLeft();
-        sctp0.arrowUp();
+        sctp0.arrowRight();
         sctp0.okay();
-        vTaskDelay(7000 / portTICK_RATE_MS);
+        vTaskDelay(60000 / portTICK_RATE_MS);
         TEST_ASSERT_EQUAL(STATE_SPEC_RESULT, sctp0.getCurrentStateId());
 
-        // test to SpecSave
-        sctp0.arrowDown();
-        sctp0.okay();
-        TEST_ASSERT_EQUAL(STATE_SPEC_SAVE, sctp0.getCurrentStateId());
-
-        // back to SpecResult
-        vTaskDelay(3000 / portTICK_RATE_MS);
-        sctp0.arrowDown();
-        sctp0.okay();
-        TEST_ASSERT_EQUAL(STATE_SPEC_RESULT, sctp0.getCurrentStateId());
         sctp0.arrowDown();
         sctp0.arrowDown();
         sctp0.arrowDown();
@@ -100,6 +87,7 @@ void power_test()
         TEST_ASSERT_EQUAL(NULL, sctp0.sample_take);
         TEST_ASSERT_EQUAL(NULL, sctp0.absorbance);
         TEST_ASSERT_EQUAL(NULL, sctp0.blank_take);
+        vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
 }
 
@@ -112,7 +100,7 @@ void app_main();
 void app_main() {
     UNITY_BEGIN();
 
-    RUN_TEST(spectrum_mvp);
+    RUN_TEST(power_test);
 
     UNITY_END();
 }

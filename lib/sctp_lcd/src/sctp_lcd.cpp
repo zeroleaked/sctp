@@ -325,24 +325,29 @@ void sctp_lcd_spec_sample_clear(uint8_t cursor){
 void sctp_lcd_spec_result_clear(uint8_t cursor)
 {
   switch(cursor){
-    case 0:{
-      display.fillRoundRect(365, 95, 100, 35, 5, TFT_WHITE);
+    case 0:
+    {
+      display.fillRoundRect(365, 45, 100, 35, 5, TFT_WHITE);
       break;
     }
     case 1:{
-      display.fillRoundRect(365, 145, 100, 35, 5, TFT_WHITE);
+      display.fillRoundRect(365, 95, 100, 35, 5, TFT_WHITE);
       break;
     }
     case 2:{
-      display.fillRoundRect(365, 195, 100, 35, 5, TFT_WHITE);
+      display.fillRoundRect(365, 145, 100, 35, 5, TFT_WHITE);
       break;
     }
     case 3:{
+      display.fillRoundRect(365, 195, 100, 35, 5, TFT_WHITE);
+      break;
+    }
+    case 4:{
       display.fillRoundRect(365, 245, 100, 35, 5, TFT_WHITE);
       break;
     }
     default:{
-      display.fillRoundRect(365, 95, 100, 35, 5, TFT_WHITE);
+      display.fillRoundRect(365, 45, 100, 35, 5, TFT_WHITE);
       break;
     }
   }
