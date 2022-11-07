@@ -103,7 +103,6 @@ void ConcSample::okay(Sctp* sctp)
             //         sctp_lcd_conc_sample_waiting(cursor, *check_result);
             //         break;
             //     }
-            }
 			break;
         }
     }
