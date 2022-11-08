@@ -971,12 +971,12 @@ void sctp_lcd_conc_table_clear(uint8_t cursor, uint8_t row_offset, curve_t curve
 
 void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration){
   display.setTextColor(TFT_BLACK);
-  display.setTextSize(1.25);
+  display.setTextSize(1.5);
 
   switch(cursor) {
     case 0: {
       display.fillRect(195, 75, 75, 35, TFT_LIGHTGREY);
-      display.setCursor(180, 60);
+      display.setCursor(200, 80);
       char c[] = "X.XXX";
       sprintf(c, "%.3f", (double)concentration);
       display.println(c);
@@ -984,7 +984,7 @@ void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration){
     }
     case 1: {
       display.fillRect(195, 115, 75, 35, TFT_LIGHTGREY);
-      display.setCursor(180, 100);
+      display.setCursor(200, 120);
       char c[] = "X.XXX";
       sprintf(c, "%.3f", (double)concentration);
       display.println(c);
@@ -992,7 +992,7 @@ void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration){
     }
     case 2: {
       display.fillRect(195, 155, 75, 35, TFT_LIGHTGREY);
-      display.setCursor(180, 140);
+      display.setCursor(200, 160);
       char c[] = "X.XXX";
       sprintf(c, "%.3f", (double)concentration);
       display.println(c);
@@ -1000,7 +1000,7 @@ void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration){
     }
     case 3: {
       display.fillRect(195, 195, 75, 35, TFT_LIGHTGREY);
-      display.setCursor(180, 180);
+      display.setCursor(200, 200);
       char c[] = "X.XXX";
       sprintf(c, "%.3f", (double)concentration);
       display.println(c);
