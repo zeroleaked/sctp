@@ -225,7 +225,8 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     sctp_camera_deinit();
 
     for (int i=0; i<calibration->length; i++) {
-        ESP_LOGI(TAG, "exposure[%d] = %d", i, blank_take->exposure[i]);
+        ESP_LOGI(TAG, "%d:%f:%d", i, blank_take->readout[i], blank_take->exposure[i]);
+        vTaskDelay(10 /portTICK_PERIOD_MS);
     }
     blank_take->gain = 1;
     
@@ -274,6 +275,12 @@ esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t 
     sctp_camera_deinit();
 
     standby_start();
+
+
+    for (int i=0; i<calibration->length; i++) {
+        ESP_LOGI(TAG, "%d:%f:%f:%d", i, blank_take->readout[i], sample_take[i], blank_take->exposure[i]);
+        vTaskDelay(10 /portTICK_PERIOD_MS);
+    }
 
     return ESP_OK;
 };
