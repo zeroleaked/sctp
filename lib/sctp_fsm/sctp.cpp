@@ -16,14 +16,14 @@ static const char TAG[] = "sctp";
 Sctp::Sctp()
 {
     i2cdev_init();
-	// sctp_battery_init();
+	sctp_battery_init();
 
 	// todo load calibration
-	calibration.row = 493;
-	calibration.gain = -1.051282051;
-	calibration.bias = 1175.012821;
-	calibration.start = 451;
-	calibration.length = 287;
+	calibration.row = 490;
+	calibration.gain = -0.7666855524;
+	calibration.bias = 1013.975014;
+	calibration.start = 409;
+	calibration.length = 393;
 
 	lcd_refresh_queue = xQueueCreate(1, sizeof(command_t));
 	assert(lcd_refresh_queue != NULL);
@@ -119,15 +119,15 @@ void Sctp::refreshLcd()
 			// command = COMMAND_BAT_UPDATE;
 			// currentState->refreshLcd(this, command);
 
-			// if (currentState->batteryIndicator()) {
-			// 	sctp_battery_sample(&this->battery_percentage);
-			// 	// ESP_LOGI(TAG,"perc=%d", this->battery_percentage);
-			// 	sctp_lcd_battery(this->battery_percentage);
-			// }
+			if (currentState->batteryIndicator()) {
+				sctp_battery_sample(&this->battery_percentage);
+				// ESP_LOGI(TAG,"perc=%d", this->battery_percentage);
+				sctp_lcd_battery(this->battery_percentage);
+			}
 
 		}
-			command = COMMAND_NONE;
-			currentState->refreshLcd(this, command);
+		command = COMMAND_NONE;
+		currentState->refreshLcd(this, command);
 		counter_battery++;
 	}
 }
