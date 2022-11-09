@@ -477,8 +477,6 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   int y_px;
   int x_next;
   int y_prev;
-  float peak_abs = absorbance[0];
-  float peak_wl= wavelength[0];
 
   if (length >= 360)
   {
@@ -511,7 +509,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
           display.fillRect(x_px - 1, (y_prev - dy * 2 / 3) - 1, 3, 3, TFT_TOSCA);
         }
       }
-      else if (dy >= 12)
+      else if (dy >= 12 && dy <21)
       {
         if (y_prev < y_px)
         {
@@ -524,6 +522,23 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
           display.fillRect(x_px - 2, (y_prev - dy * 3 / 4) - 1, 3, 3, TFT_TOSCA);
           display.fillRect(x_px - 1, (y_prev - dy * 2 / 4) - 1, 3, 3, TFT_TOSCA);
           display.fillRect(x_px - 1, (y_prev - dy / 4) - 1, 3, 3, TFT_TOSCA);
+        }
+      }
+      else if (dy >= 21)
+      {
+        if (y_prev < y_px)
+        {
+          display.fillRect(x_px - 2, (y_prev + dy / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev + dy * 2 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev + dy * 3 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev + dy * 4 / 5) - 1, 3, 3, TFT_TOSCA);
+        }
+        else
+        {
+          display.fillRect(x_px - 2, (y_prev - dy * 4 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 2, (y_prev - dy * 3 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev - dy * 2 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev - dy / 5) - 1, 3, 3, TFT_TOSCA);
         }
       }
       y_prev = y_px;
@@ -568,7 +583,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
           display.fillRect(x_px - 1, (y_prev - dy * 2 / 3) - 1, 3, 3, TFT_TOSCA);
         }
       }
-      else if (dy >= 12)
+      else if (dy >= 12 && dy < 21)
       {
         if (y_prev < y_px)
         {
@@ -581,6 +596,23 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
           display.fillRect(x_px - 2, (y_prev - dy * 3 / 4) - 1, 3, 3, TFT_TOSCA);
           display.fillRect(x_px - 1, (y_prev - dy * 2 / 4) - 1, 3, 3, TFT_TOSCA);
           display.fillRect(x_px - 1, (y_prev - dy / 4) - 1, 3, 3, TFT_TOSCA);
+        }
+      }
+      else if (dy >= 21)
+      {
+        if (y_prev < y_px)
+        {
+          display.fillRect(x_px - 2, (y_prev + dy / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev + dy * 2 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev + dy * 3 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev + dy * 4 / 5) - 1, 3, 3, TFT_TOSCA);
+        }
+        else
+        {
+          display.fillRect(x_px - 2, (y_prev - dy * 4 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 2, (y_prev - dy * 3 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev - dy * 2 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev - dy / 5) - 1, 3, 3, TFT_TOSCA);
         }
       }
       y_prev = y_px;
