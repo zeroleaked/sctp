@@ -34,8 +34,8 @@ static const char *TAG = "example";
 
 // Pin assignments can be set in menuconfig, see "SD SPI Example Configuration" menu.
 // You can also change the pin assignments here by changing the following 4 lines.
-#define PIN_NUM_MISO  GPIO_NUM_4
-#define PIN_NUM_MOSI  GPIO_NUM_5
+#define PIN_NUM_MISO  GPIO_NUM_5
+#define PIN_NUM_MOSI  GPIO_NUM_4
 #define PIN_NUM_CLK   GPIO_NUM_6
 #define PIN_NUM_CS    GPIO_NUM_7
 
@@ -105,6 +105,8 @@ void sctp_flash_init(gpio_num_t cs_gpio, sdmmc_host_t * host, sdmmc_card_t ** ca
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
     };
+
+    // host->max_freq_khz = 5000;
 
     ret = spi_bus_initialize(host->slot, &bus_cfg, SPI_DMA_CH_AUTO);
     if (ret != ESP_OK) {

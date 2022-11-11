@@ -26,8 +26,8 @@
 #define MOUNT_POINT "/sdcard"
 #define STORAGE_NAMESPACE "storage"
 
-#define PIN_NUM_MISO GPIO_NUM_4
-#define PIN_NUM_MOSI GPIO_NUM_5
+#define PIN_NUM_MISO GPIO_NUM_5
+#define PIN_NUM_MOSI GPIO_NUM_4
 #define PIN_NUM_CLK GPIO_NUM_6
 #define PIN_NUM_CS GPIO_NUM_7
 
