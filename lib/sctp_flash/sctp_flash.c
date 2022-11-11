@@ -243,6 +243,66 @@ esp_err_t sctp_flash_nvs_load_calibration(calibration_t *calibration)
     return ESP_OK;
 }
 
+esp_err_t sctp_flash_load_calibration(calibration_t *data)
+{
+    char line[NAME_LEN];
+    char file_cal[] = "/sdcard/calib.csv";
+
+    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    sdmmc_card_t *card;
+    sctp_flash_init(PIN_NUM_CS, &host, &card);
+
+    // Open file for reading
+    ESP_LOGI(TAG, "Reading file %s", file_cal);
+    FILE *f = fopen(file_cal, "r");
+    if (f == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to open file for reading");
+        return ESP_FAIL;
+    }
+    int i = 0;
+    while (fgets(line, sizeof(line), f))
+    {
+        switch (i)
+        {
+        case 0:
+        {
+            temp = strtok(line, ", ");
+            data->gain = (float)atof(strtok(NULL, ", "));
+            break;
+        }
+        case 1:
+        {
+            temp = strtok(line, ", ");
+            data->bias = (float)atof(strtok(NULL, ", "));
+            break;
+        }
+        case 2:
+        {
+            temp = strtok(line, ", ");
+            data->row = atoi(strtok(NULL, ", "));
+            break;
+        }
+        case 3:
+        {
+            temp = strtok(line, ", ");
+            data->start = atoi(strtok(NULL, ", "));
+            break;
+        }
+        case 4:
+        {
+            temp = strtok(line, ", ");
+            data->length = atoi(strtok(NULL, ", "));
+            break;
+        }
+        }
+        i++;
+    }
+    fclose(f);
+    sctp_flash_deinit(&host, card);
+    return ESP_OK;
+}
+
 esp_err_t sctp_flash_nvs_save_curve(curve_t *curve)
 {
     nvs_handle_t my_handle;
