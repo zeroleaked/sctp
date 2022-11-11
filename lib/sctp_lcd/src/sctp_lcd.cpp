@@ -56,7 +56,7 @@ void sctp_lcd_menu_clear(uint8_t cursor)
       display.fillRoundRect(120, 210, 245, 40, 10, TFT_WHITE);
       break;
     }
-    }
+  }
 }
 
 void sctp_lcd_menu(uint8_t cursor)
@@ -482,9 +482,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   int y_px;
   int x_next;
   int y_prev;
-  float peak_abs = absorbance[0];
-  float peak_wl= wavelength[0];
-  
+
   if (length >= 360)
   {
     for (i = 0; i < length; i++)
@@ -516,7 +514,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
           display.fillRect(x_px - 1, (y_prev - dy * 2 / 3) - 1, 3, 3, TFT_TOSCA);
         }
       }
-      else if (dy >= 12)
+      else if (dy >= 12 && dy <21)
       {
         if (y_prev < y_px)
         {
@@ -529,6 +527,23 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
           display.fillRect(x_px - 2, (y_prev - dy * 3 / 4) - 1, 3, 3, TFT_TOSCA);
           display.fillRect(x_px - 1, (y_prev - dy * 2 / 4) - 1, 3, 3, TFT_TOSCA);
           display.fillRect(x_px - 1, (y_prev - dy / 4) - 1, 3, 3, TFT_TOSCA);
+        }
+      }
+      else if (dy >= 21)
+      {
+        if (y_prev < y_px)
+        {
+          display.fillRect(x_px - 2, (y_prev + dy / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev + dy * 2 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev + dy * 3 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev + dy * 4 / 5) - 1, 3, 3, TFT_TOSCA);
+        }
+        else
+        {
+          display.fillRect(x_px - 2, (y_prev - dy * 4 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 2, (y_prev - dy * 3 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev - dy * 2 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev - dy / 5) - 1, 3, 3, TFT_TOSCA);
         }
       }
       y_prev = y_px;
@@ -573,7 +588,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
           display.fillRect(x_px - 1, (y_prev - dy * 2 / 3) - 1, 3, 3, TFT_TOSCA);
         }
       }
-      else if (dy >= 12)
+      else if (dy >= 12 && dy < 21)
       {
         if (y_prev < y_px)
         {
@@ -586,6 +601,23 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
           display.fillRect(x_px - 2, (y_prev - dy * 3 / 4) - 1, 3, 3, TFT_TOSCA);
           display.fillRect(x_px - 1, (y_prev - dy * 2 / 4) - 1, 3, 3, TFT_TOSCA);
           display.fillRect(x_px - 1, (y_prev - dy / 4) - 1, 3, 3, TFT_TOSCA);
+        }
+      }
+      else if (dy >= 21)
+      {
+        if (y_prev < y_px)
+        {
+          display.fillRect(x_px - 2, (y_prev + dy / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev + dy * 2 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev + dy * 3 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev + dy * 4 / 5) - 1, 3, 3, TFT_TOSCA);
+        }
+        else
+        {
+          display.fillRect(x_px - 2, (y_prev - dy * 4 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 2, (y_prev - dy * 3 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev - dy * 2 / 5) - 1, 3, 3, TFT_TOSCA);
+          display.fillRect(x_px - 1, (y_prev - dy / 5) - 1, 3, 3, TFT_TOSCA);
         }
       }
       y_prev = y_px;
@@ -1144,10 +1176,6 @@ void sctp_lcd_settings_clear(uint8_t cursor)
       display.fillRoundRect(120, 160, 245, 40, 10, TFT_LIGHTGREY);
       break;
     }
-    case 2: {
-      display.fillRoundRect(120, 210, 245, 40, 10, TFT_LIGHTGREY);
-      break;
-    }
   }
 }
 
@@ -1164,22 +1192,13 @@ void sctp_lcd_settings(uint8_t cursor)
       display.fillRoundRect(120, 160, 245, 40, 10, TFT_LIGHTGREY);
       break;
     }
-    case 2: {
-      display.fillRoundRect(120, 210, 245, 40, 10, TFT_LIGHTGREY);
-      break;
-    }
   }
-  display.setCursor(165, 75);
-  display.println("Change language:");
-  display.setCursor(200, 125);
-  display.println("ENGLISH");
+  display.setCursor(150, 125);
+  display.println("LOAD CALIBRATION");
   display.drawRoundRect(120, 110, 245, 40, 10, TFT_BLACK);
-  display.setCursor(205, 175);
-  display.println("BAHASA");
+  display.setCursor(215, 175);
+  display.println("BACK");
   display.drawRoundRect(120, 160, 245, 40, 10, TFT_BLACK);
-  display.setCursor(190, 225);
-  display.println("MAIN MENU");
-  display.drawRoundRect(120, 210, 245, 40, 10, TFT_BLACK);
 }
 
 void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[60][25]){

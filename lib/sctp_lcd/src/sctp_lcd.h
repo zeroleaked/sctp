@@ -151,4 +151,5 @@ void sctp_lcd_conc_regress_error(uint8_t cursor);
 void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[60][25]);
 void sctp_lcd_history_list_clear(uint8_t cursor);
 
+void sctp_lcd_settings(uint8_t cursor);
 void sctp_lcd_battery(uint8_t batt_level);
