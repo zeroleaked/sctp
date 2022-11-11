@@ -7,6 +7,7 @@
 
 esp_err_t sctp_flash_nvs_save_calibration(calibration_t calibration);
 esp_err_t sctp_flash_nvs_load_calibration(calibration_t *calibration);
+esp_err_t sctp_flash_load_calibration(calibration_t *data);
 
 esp_err_t sctp_flash_nvs_save_curve(curve_t curves[6]);
 esp_err_t sctp_flash_nvs_load_curve(curve_t curves[6]);
