@@ -615,7 +615,7 @@ esp_err_t sctp_flash_load_history_list(history_t list[FILE_LEN])
         {
             strcpy(list[count].filename, temp);
             list[count].id = count + 1;
-            list[count].measurement_mode = 1;
+            list[count].measurement_mode = 0;
             ESP_LOGI(TAG, "%d, %s", list[count].id, temp);
             count++;
         }

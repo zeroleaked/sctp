@@ -464,6 +464,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   else
     a_max = 1.2;
 
+  ESP_LOGI(TAG, "LCD check 1");
   display.setTextColor(TFT_TOSCA);
   display.setTextSize(1);
 
@@ -475,7 +476,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
     display.setCursor(22 + 90*i, 302);
     display.println((int)round(wl_min + (wl_max-wl_min)/4*i));
   }
-
+  ESP_LOGI(TAG, "LCD check 2");
   int i = 0;
   int i_prev;
   int x_px;
@@ -553,8 +554,10 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   else
   {
     y_prev = 297 - (absorbance[0] - a_min) / (a_max - a_min) * 270;
+    ESP_LOGI(TAG, "LCD check 3");
     for (int j = 0; j < 360; j++)
     {
+      ESP_LOGI(TAG, "j=%d", j);
       i = round(j * length / 360);
       i_prev = round((j-1) / length * 360);
       if(i == 0) i_prev = i;
