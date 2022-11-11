@@ -95,7 +95,7 @@ void row_search () {
 
 void row_print() {
     i2cdev_init();
-    uint16_t row = 493;
+    uint16_t row = 490;
     uint8_t samples = 30;
     float * arr = ( float *) malloc (sizeof (float) * 1280 * samples);
     memset(arr, 0, sizeof(float) * 1280 * samples);
@@ -540,10 +540,10 @@ void app_main() {
     UNITY_BEGIN();
 
     // RUN_TEST(row_search);
-    // RUN_TEST(row_print);
+    RUN_TEST(row_print);
 
     // RUN_TEST(test_spectrum_blank);
-    RUN_TEST(test_spectrum);
+    // RUN_TEST(test_spectrum);
     // RUN_TEST(test_quant_blank);
     // RUN_TEST(test_quant_sample);
     // RUN_TEST(test_quant);
