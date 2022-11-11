@@ -153,5 +153,5 @@ void sctp_lcd_history_list_clear(uint8_t cursor);
 
 void sctp_lcd_settings(uint8_t cursor);
 void sctp_lcd_settings_clear(uint8_t cursor);
-
+void sctp_lcd_settings_check(calibration_t calibration);
 void sctp_lcd_battery(uint8_t batt_level);

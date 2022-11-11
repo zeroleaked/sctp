@@ -1168,11 +1168,16 @@ void sctp_lcd_settings_clear(uint8_t cursor)
   display.setTextColor(TFT_BLACK);
   display.setTextSize(1);
   switch(cursor) {
-    case 0: {
-      display.fillRoundRect(120, 110, 245, 40, 10, TFT_WHITE);
+    case 0:
+    {
+      display.fillRoundRect(120, 60, 245, 40, 10, TFT_WHITE);
       break;
     }
     case 1: {
+      display.fillRoundRect(120, 110, 245, 40, 10, TFT_WHITE);
+      break;
+    }
+    case 2: {
       display.fillRoundRect(120, 160, 245, 40, 10, TFT_WHITE);
       break;
     }
@@ -1184,21 +1189,39 @@ void sctp_lcd_settings(uint8_t cursor)
   display.setTextColor(TFT_BLACK);
   display.setTextSize(1);
   switch(cursor) {
-    case 0: {
-      display.fillRoundRect(120, 110, 245, 40, 10, TFT_LIGHTGREY);
+    case 0:
+    {
+      display.fillRoundRect(120, 60, 245, 40, 10, TFT_LIGHTGREY);
       break;
     }
     case 1: {
+      display.fillRoundRect(120, 110, 245, 40, 10, TFT_LIGHTGREY);
+      break;
+    }
+    case 2: {
       display.fillRoundRect(120, 160, 245, 40, 10, TFT_LIGHTGREY);
       break;
     }
   }
-  display.setCursor(153, 125);
+  display.setCursor(145, 75);
+  display.println("CHECK CALIBRATION");
+  display.drawRoundRect(120, 60, 245, 40, 10, TFT_BLACK);
+  display.setCursor(150, 125);
   display.println("LOAD CALIBRATION");
   display.drawRoundRect(120, 110, 245, 40, 10, TFT_BLACK);
   display.setCursor(218, 175);
   display.println("BACK");
   display.drawRoundRect(120, 160, 245, 40, 10, TFT_BLACK);
+}
+
+void sctp_lcd_settings_check(calibration_t calibration)
+{
+  display.setTextColor(TFT_MUSTARD);
+  display.setTextSize(0.75);
+  char text[100];
+  sprintf(text, "Gain: %.3f, Bias: %.3f, Row: %d, Start: %d, Length: %d", (double)calibration.gain, (double)calibration.bias, calibration.row, calibration.start, calibration.length);
+  display.setCursor(25, 225);
+  display.println(text);
 }
 
 void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[60][25]){
