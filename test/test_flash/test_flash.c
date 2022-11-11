@@ -177,11 +177,10 @@ esp_err_t sctp_flash_save_calibration(calibration_t data, char * filename) {
     return ESP_OK;
 }
 
-esp_err_t sctp_flash_load_calibration(calibration_t * data, char * filename) {
+esp_err_t sctp_flash_load_calibration(calibration_t * data) {
     char line[NAME_LEN];
     char file_cal[NAME_LEN];
-    strcpy(file_cal, "/sdcard/");
-    strcat(file_cal, filename);
+    strcpy(file_cal, "/sdcard/calib.csv");
     char *temp;
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
@@ -575,17 +574,17 @@ esp_err_t sctp_flash_nvs_load_curve(curve_t curves[6]) {
         // }
 
         // calibration_t calibration;
-        // calibration_t calibration_load;
-        // double gain = 0;
-        // double bias = 0;
-        // uint16_t row = 0;
-        // uint16_t start = 0;  // pixel column index
-        // uint16_t length = 0; // length of full spectrum
-        // calibration_load.gain = gain;
-        // calibration_load.bias = bias;
-        // calibration_load.row = row;
-        // calibration_load.start = start;
-        // calibration_load.length = length;
+        calibration_t calibration_load;
+        double gain = 0;
+        double bias = 0;
+        uint16_t row = 0;
+        uint16_t start = 0;  // pixel column index
+        uint16_t length = 0; // length of full spectrum
+        calibration_load.gain = gain;
+        calibration_load.bias = bias;
+        calibration_load.row = row;
+        calibration_load.start = start;
+        calibration_load.length = length;
         // char *calibration_file;
         // calibration_file = malloc(sizeof(char) * NAME_LEN);
         // calibration.row = 496;
@@ -594,12 +593,6 @@ esp_err_t sctp_flash_nvs_load_curve(curve_t curves[6]) {
         // calibration.start = 423;
         // calibration.length = 392;
 
-        // ESP_LOGI(TAG, "%.10f", calibration.gain);
-        // ESP_LOGI(TAG, "%.10f", calibration.bias);
-        // ESP_LOGI(TAG, "%d", calibration.row);
-        // ESP_LOGI(TAG, "%d", calibration.start);
-        // ESP_LOGI(TAG, "%d", calibration.length);
-
         // sctp_flash_nvs_init();
         // ESP_LOGI(TAG, "Initialized nvs handle.");
         // sctp_flash_nvs_save_curve(curves);
@@ -607,11 +600,11 @@ esp_err_t sctp_flash_nvs_load_curve(curve_t curves[6]) {
         // sctp_flash_nvs_save_calibration(calibration);
         // sctp_flash_nvs_load_calibration(&calibration_load);
 
-        history_t loaded[FILE_LEN];
-        for(int i=0; i<FILE_LEN; i++) {
-            loaded[i].filename = malloc(NAME_LEN);
-        }
-        sctp_flash_load_history_list(loaded);
+        // history_t loaded[FILE_LEN];
+        // for(int i=0; i<FILE_LEN; i++) {
+        //     loaded[i].filename = malloc(NAME_LEN);
+        // }
+        // sctp_flash_load_history_list(loaded);
 
         // curve_t loaded[6];
         // sctp_flash_load_curve_list(loaded);
@@ -624,7 +617,12 @@ esp_err_t sctp_flash_nvs_load_curve(curve_t curves[6]) {
         // gpio_pullup_en(PIN_NUM_CLK);
 
         // sctp_flash_save_calibration(calibration, calibration_file);
-        // sctp_flash_load_calibration(&calibration_load, calibration_file);
+        sctp_flash_load_calibration(&calibration_load);
+        ESP_LOGI(TAG, "%.10f", calibration_load.gain);
+        ESP_LOGI(TAG, "%.10f", calibration_load.bias);
+        ESP_LOGI(TAG, "%d", calibration_load.row);
+        ESP_LOGI(TAG, "%d", calibration_load.start);
+        ESP_LOGI(TAG, "%d", calibration_load.length);
     }
 
 void app_main(void)
