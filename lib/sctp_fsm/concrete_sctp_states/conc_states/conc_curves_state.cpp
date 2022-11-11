@@ -37,6 +37,11 @@ void ConcCurves::enter(Sctp* sctp)
 	curve_list = (curve_t *) malloc (CURVE_LIST_LENGTH * sizeof(curve_t));
 	assert(curve_list != NULL);
 	sctp_flash_nvs_load_curve_list(curve_list);
+	for(int i=0; i < CURVE_LIST_LENGTH; i++) {
+		if(curve_list[i].wavelength == 0) {
+			curve_list[i].points = 0;
+		}
+	}
 
 	sctp_lcd_conc_curves_list(cursor, curve_list);
 }
