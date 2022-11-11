@@ -1234,6 +1234,7 @@ void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[6
   display.setTextSize(1.25);
   display.setCursor(60, 20);
   display.println("Filename");
+  display.fillRect(40, 50, 420, 210, TFT_WHITE);
 
   switch(cursor) {
     case 0: {

@@ -26,8 +26,10 @@
 static const char TAG[] = "history_list_state";
 
 void sctp_flash_history(Sctp * sctp) {
-	sctp->history_list_length = 60;
-	sctp->history_list = (history_t *) malloc(sctp->history_list_length * sizeof(history_t));
+	sctp->history_list = (history_t *) malloc(MAX_FILES * sizeof(history_t));
+	for(int i=0; i<MAX_FILES; i++) {
+		sctp->history_list[i].filename = (char*) malloc(20 * sizeof(char));
+	}
 	if (sctp->history_list != NULL) {
 		ESP_LOGI(TAG, "history list allocated");
 	}
@@ -80,13 +82,14 @@ void HistoryList::enter(Sctp* sctp)
 {
 	substate = SUBSTATE_LIST;
 	sctp_lcd_clear();
-	cursor = CURSOR_NULL;
+	cursor = 0;
 	offset = 0;
 
 	filenames = (char (*) [25]) malloc(60*25*sizeof(char));
 	file_count = 0;
 
-	for (int i = 0; i < sctp->history_list_length; i++)
+	sctp_flash_history(sctp);
+	for (int i = 0; i < MAX_FILES; i++)
 	{
 		if (sctp->history_list[i].filename[0] != '\0') {
 			strcpy(filenames[i], sctp->history_list[i].filename);
@@ -94,7 +97,6 @@ void HistoryList::enter(Sctp* sctp)
 		}
 	}
 
-	sctp_flash_history(sctp);
 	sctp_lcd_history_list(cursor, offset, filenames);
 }
 
@@ -267,6 +269,9 @@ void HistoryList::arrowLeft(Sctp *sctp)
 void HistoryList::exit(Sctp* sctp)
 {
 	free(filenames);
+	for(int i=0; i<MAX_FILES; i++) {
+		free(sctp->history_list[i].filename);
+	}
 	free(sctp->history_list);
 	sctp->history_list = NULL;
 	sctp->history_list_length = 0;
