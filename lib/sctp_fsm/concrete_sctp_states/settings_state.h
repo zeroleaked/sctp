@@ -22,4 +22,6 @@ private:
 	Settings() {}
 	Settings(const Settings& other);
 	Settings& operator=(const Settings& other);
+
+	uint8_t cursor;
 };
