@@ -1169,11 +1169,11 @@ void sctp_lcd_settings_clear(uint8_t cursor)
   display.setTextSize(1);
   switch(cursor) {
     case 0: {
-      display.fillRoundRect(120, 110, 245, 40, 10, TFT_LIGHTGREY);
+      display.fillRoundRect(120, 110, 245, 40, 10, TFT_WHITE);
       break;
     }
     case 1: {
-      display.fillRoundRect(120, 160, 245, 40, 10, TFT_LIGHTGREY);
+      display.fillRoundRect(120, 160, 245, 40, 10, TFT_WHITE);
       break;
     }
   }
@@ -1193,10 +1193,10 @@ void sctp_lcd_settings(uint8_t cursor)
       break;
     }
   }
-  display.setCursor(150, 125);
+  display.setCursor(153, 125);
   display.println("LOAD CALIBRATION");
   display.drawRoundRect(120, 110, 245, 40, 10, TFT_BLACK);
-  display.setCursor(215, 175);
+  display.setCursor(218, 175);
   display.println("BACK");
   display.drawRoundRect(120, 160, 245, 40, 10, TFT_BLACK);
 }

@@ -247,6 +247,7 @@ esp_err_t sctp_flash_load_calibration(calibration_t *data)
 {
     char line[NAME_LEN];
     char file_cal[] = "/sdcard/calib.csv";
+    char *temp;
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t *card;
