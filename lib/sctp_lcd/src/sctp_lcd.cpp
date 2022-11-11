@@ -56,7 +56,7 @@ void sctp_lcd_menu_clear(uint8_t cursor)
       display.fillRoundRect(120, 210, 245, 40, 10, TFT_WHITE);
       break;
     }
-    }
+  }
 }
 
 void sctp_lcd_menu(uint8_t cursor)
@@ -1169,10 +1169,6 @@ void sctp_lcd_settings_clear(uint8_t cursor)
       display.fillRoundRect(120, 160, 245, 40, 10, TFT_LIGHTGREY);
       break;
     }
-    case 2: {
-      display.fillRoundRect(120, 210, 245, 40, 10, TFT_LIGHTGREY);
-      break;
-    }
   }
 }
 
@@ -1189,22 +1185,13 @@ void sctp_lcd_settings(uint8_t cursor)
       display.fillRoundRect(120, 160, 245, 40, 10, TFT_LIGHTGREY);
       break;
     }
-    case 2: {
-      display.fillRoundRect(120, 210, 245, 40, 10, TFT_LIGHTGREY);
-      break;
-    }
   }
-  display.setCursor(165, 75);
-  display.println("Change language:");
-  display.setCursor(200, 125);
-  display.println("ENGLISH");
+  display.setCursor(150, 125);
+  display.println("LOAD CALIBRATION");
   display.drawRoundRect(120, 110, 245, 40, 10, TFT_BLACK);
-  display.setCursor(205, 175);
-  display.println("BAHASA");
+  display.setCursor(215, 175);
+  display.println("BACK");
   display.drawRoundRect(120, 160, 245, 40, 10, TFT_BLACK);
-  display.setCursor(190, 225);
-  display.println("MAIN MENU");
-  display.drawRoundRect(120, 210, 245, 40, 10, TFT_BLACK);
 }
 
 void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[60][25]){
