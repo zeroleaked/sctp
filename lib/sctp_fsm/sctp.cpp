@@ -18,13 +18,14 @@ Sctp::Sctp()
     i2cdev_init();
 	sctp_battery_init();
 
-	// sctp_flash_nvs_load_calibration(&calibration);
+	sctp_flash_nvs_load_calibration(&calibration);
+	ESP_LOGI(TAG, "nvs loading passed");
 	// todo load calibration
-	calibration.row = 490;
-	calibration.gain = -0.7666855524;
-	calibration.bias = 1013.975014;
-	calibration.start = 409;
-	calibration.length = 393;
+	// calibration.row = 490;
+	// calibration.gain = -0.7666855524;
+	// calibration.bias = 1013.975014;
+	// calibration.start = 409;
+	// calibration.length = 393;
 
 	lcd_refresh_queue = xQueueCreate(1, sizeof(command_t));
 	assert(lcd_refresh_queue != NULL);

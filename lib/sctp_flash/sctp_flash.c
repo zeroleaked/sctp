@@ -222,7 +222,7 @@ esp_err_t sctp_flash_nvs_load_calibration(calibration_t *calibration)
         err = nvs_get_blob(my_handle, "calibration", calibration, &required_size);
         if (err != ESP_OK)
         {
-            free(calibration);
+            // free(calibration);
             return err;
         }
         else
@@ -236,7 +236,7 @@ esp_err_t sctp_flash_nvs_load_calibration(calibration_t *calibration)
         ESP_LOGI(TAG, "start: %d", calibration->start);
         ESP_LOGI(TAG, "length: %d", calibration->length);
 
-        free(calibration);
+        // free(calibration);
     }
     // Close
     nvs_close(my_handle);

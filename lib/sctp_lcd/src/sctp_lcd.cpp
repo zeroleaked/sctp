@@ -1206,7 +1206,7 @@ void sctp_lcd_settings(uint8_t cursor)
   display.setCursor(145, 75);
   display.println("CHECK CALIBRATION");
   display.drawRoundRect(120, 60, 245, 40, 10, TFT_BLACK);
-  display.setCursor(150, 125);
+  display.setCursor(152, 125);
   display.println("LOAD CALIBRATION");
   display.drawRoundRect(120, 110, 245, 40, 10, TFT_BLACK);
   display.setCursor(218, 175);
@@ -1216,12 +1216,17 @@ void sctp_lcd_settings(uint8_t cursor)
 
 void sctp_lcd_settings_check(calibration_t calibration)
 {
+  display.fillRect(100, 200, 275, 75, TFT_WHITE);
   display.setTextColor(TFT_MUSTARD);
-  display.setTextSize(0.75);
-  char text[100];
-  sprintf(text, "Gain: %.3f, Bias: %.3f, Row: %d, Start: %d, Length: %d", (double)calibration.gain, (double)calibration.bias, calibration.row, calibration.start, calibration.length);
-  display.setCursor(25, 225);
-  display.println(text);
+  display.setTextSize(1);
+  char text1[60];
+  char text2[60];
+  sprintf(text1, "Gain: %.3f, Bias: %.3f,", (double)calibration.gain, (double)calibration.bias);
+  sprintf(text2, "Row: %d, Start: %d, Length: %d", calibration.row, calibration.start, calibration.length);
+  display.setCursor(128, 225);
+  display.println(text1);
+  display.setCursor(107, 250);
+  display.println(text2);
 }
 
 void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[60][25]){
