@@ -44,7 +44,7 @@ static void takeConcentrationBlank(void * pvParameters) {
     calibration_t * calibration = ((taskParam_t *) pvParameters)->calibration;
 
 	assert(blank_take->readout != NULL);
-	*blank_take->exposure = 10;
+	*blank_take->exposure = 7800;
 	blank_take->gain = 1;
 	esp_err_t report = sctp_sensor_concentration_blank(calibration, wavelength, blank_take);
 	

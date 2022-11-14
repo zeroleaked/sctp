@@ -17,7 +17,7 @@ static const char TAG[] = "conc_regress_state";
 void ConcRegress::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
-	cursor = CURSOR_NULL;
+	cursor = CURSOR_OK;
 
 	assert(sctp->curve.absorbance != NULL);
 	assert(sctp->curve.concentration != NULL);
@@ -77,8 +77,19 @@ void ConcRegress::enter(Sctp* sctp)
 
 void ConcRegress::okay(Sctp* sctp)
 {
-	if (cursor == CURSOR_OK) {
-		sctp->setState(ConcTable::getInstance());
+	switch (substate) {
+		case SUBSTATE_FAIL: {
+			if (cursor == CURSOR_OK) {
+				sctp->setState(ConcTable::getInstance());
+			}
+			break;
+		}
+		case SUBSTATE_SUCCESS: {
+			if (cursor == CURSOR_OK) {
+				sctp->setState(ConcTable::getInstance());
+			}
+			break;
+		}
 	}
 }
 

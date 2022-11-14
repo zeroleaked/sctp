@@ -551,7 +551,7 @@ void app_main() {
 
     // RUN_TEST(test_lamp);
     // RUN_TEST(test_exposure);
-    // RUN_TEST(test_linearity);
+    RUN_TEST(test_linearity);
 
     // RUN_TEST(test_check);
 

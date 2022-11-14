@@ -936,12 +936,14 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
   float* conc = curve.concentration;
 
   for(int i=0;i<4;i++){
-    display.setCursor(x0, (y + 40*i));
-    display.println(i + row_offset + 1);
-    if(curve.points != 0) {
-      display.setCursor(x2, (y + 40*i));
-      sprintf(a, "%.2f", (double)ab[i + row_offset]);
-      display.println(a);
+    if(curve.points != 0 && i < curve.points) {
+      display.setCursor(x0, (y + 40*i));
+      display.println(i + row_offset + 1); 
+      if(ab[i+row_offset] != -1) {
+        display.setCursor(x2, (y + 40*i));
+        sprintf(a, "%.2f", (double)ab[i + row_offset]);
+        display.println(a);
+      }
       display.setCursor(x1, (y + 40*i));
       sprintf(c, "%.3f", (double)conc[i + row_offset]);
       display.println(c);
@@ -981,19 +983,19 @@ void sctp_lcd_conc_table_clear(uint8_t cursor, uint8_t row_offset, curve_t curve
       break;
     }
     case 4: {
-      display.fillRect(335, 75, 75, 35, TFT_WHITE);
+      display.fillRect(335, 75, 100, 35, TFT_WHITE);
       break;
     }
     case 5: {
-      display.fillRect(335, 115, 75, 35, TFT_WHITE);
+      display.fillRect(335, 115, 100, 35, TFT_WHITE);
       break;
     }
      case 6: {
-      display.fillRect(335, 155, 75, 35, TFT_WHITE);
+      display.fillRect(335, 155, 100, 35, TFT_WHITE);
       break;
     }
     case 7: {
-      display.fillRect(335, 195, 75, 35, TFT_WHITE);
+      display.fillRect(335, 195, 100, 35, TFT_WHITE);
       break;
     }
     case 8: {
@@ -1074,7 +1076,7 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   display.setTextSize(1);
   display.setCursor(75, 10);
   display.println("CONC VS. ABS");
-  display.drawRect(71, 31, 335, 225, TFT_BLACK);
+  display.drawRect(75, 31, 335, 225, TFT_BLACK);
 
   float* conc = curve.concentration;
   float* ab = curve.absorbance;
@@ -1093,7 +1095,7 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   ESP_LOGI(TAG, "c_max=%.3f", (double)c_max);
 
   for(int i=0; i<5; i++) {
-    display.setCursor(37, 30 + 53*i);
+    display.setCursor(27, 30 + 53*i);
     display.println(a_max - a_max/4*i);
     char c[] = "X.XXX";
     sprintf(c, "%.3f", (double)(c_min + c_max/4*i));

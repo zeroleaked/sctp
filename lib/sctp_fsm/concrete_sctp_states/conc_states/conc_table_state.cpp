@@ -79,13 +79,26 @@ void ConcTable::okay(Sctp* sctp) {
 		}
 		case SUBSTATE_CONCENTRATION: {
 			substate = SUBSTATE_CURSOR;
-			if ( (sctp->curve.concentration[row_offset + cursor] != 0) && (sctp->curve.absorbance[row_offset + cursor] != 0) ) {
-				sctp->curve.points++;
+			ESP_LOGI(TAG, "point %d changed to %f", row_offset + cursor, sctp->curve.concentration[row_offset+cursor]);
+			if ( (sctp->curve.concentration[row_offset + cursor] >= 0.001) ) {
+				ESP_LOGI(TAG, "%f != 0", sctp->curve.concentration[row_offset + cursor]);
+				if (row_offset+cursor == sctp->curve.points)
+					sctp->curve.points++;
+				sctp->curve.absorbance[row_offset + cursor] = -1;
 			}
-			else if ((sctp->curve.concentration[row_offset + cursor] == 0) && (sctp->curve.absorbance[row_offset + cursor] == 0)) {
-				sctp->curve.points--;
+			else if ((sctp->curve.concentration[row_offset + cursor] < 0.001) && (sctp->curve.absorbance[row_offset + cursor] < 0)) {
+				ESP_LOGI(TAG, "points decr");
+				if (row_offset+cursor != sctp->curve.points)
+					sctp->curve.points--;
+				sctp->curve.absorbance[row_offset + cursor] = -1;
+				sctp->curve.concentration[row_offset + cursor] = 0;
 			}
+			sctp_lcd_clear();
+			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
 			sctp_flash_nvs_save_curve(&sctp->curve);
+			for (int i=0; i< sctp->curve.points; i++) {
+				ESP_LOGI(TAG, "%d, %f, %f", i, sctp->curve.concentration[i], sctp->curve.absorbance[i]);
+			}
 			break;
 		}
 	}
@@ -94,6 +107,7 @@ void ConcTable::okay(Sctp* sctp) {
 void ConcTable::arrowDown(Sctp* sctp) {
 	switch (substate) {
 		case SUBSTATE_CURSOR: {
+			
 			sctp_lcd_conc_table_clear(cursor, row_offset, sctp->curve);
 			if (cursor < CURSOR_CONC_3) {
 				if ( cursor + row_offset == sctp->curve.points ) { // cursor at add new
@@ -146,10 +160,17 @@ void ConcTable::arrowDown(Sctp* sctp) {
 				row_offset = 0;
 			}
 			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
+
+			ESP_LOGI(TAG, "point %d of %d points", cursor+row_offset, sctp->curve.points);
+
 			break;
 		}
 		case SUBSTATE_CONCENTRATION: {
-			sctp->curve.concentration[row_offset + cursor] = sctp->curve.concentration[row_offset + cursor] - 0.001;
+			if (sctp->curve.concentration[row_offset + cursor] >= 0.001) {
+				sctp->curve.concentration[row_offset + cursor] = sctp->curve.concentration[row_offset + cursor] - 0.001;
+			} else {
+				sctp->curve.concentration[row_offset + cursor] = 0;
+			}
 			sctp_lcd_conc_table_concentration(cursor, sctp->curve.concentration[row_offset + cursor]);
 			break;
 		}
@@ -207,6 +228,9 @@ void ConcTable::arrowUp(Sctp* sctp) {
 				}
 			}
 			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
+
+			ESP_LOGI(TAG, "point %d of %d points", cursor+row_offset, sctp->curve.points);
+
 			break;
 		}
 		case SUBSTATE_CONCENTRATION: {

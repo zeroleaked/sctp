@@ -48,7 +48,7 @@ static void takeConcentrationSample(void * pvParameters) {
 
 	float sample_take;
 	esp_err_t report = sctp_sensor_concentration_sample(calibration, wavelength, blank_take, &sample_take);
-	float transmission = (*absorbance) / (*(blank_take->readout));
+	float transmission = (sample_take) / (*(blank_take->readout));
 	*absorbance = -log10(transmission);
 
     QueueHandle_t report_queue = ((taskParam_t *) pvParameters)->report_queue;
