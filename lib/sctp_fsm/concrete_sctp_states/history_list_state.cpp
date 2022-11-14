@@ -112,7 +112,7 @@ void HistoryList::okay(Sctp* sctp)
 
 				if ( sctp->history.measurement_mode == MEASUREMENT_MODE_CONCENTRATION ) {
 					history_curve = (curve_t*) malloc (sizeof(curve_t));
-					history_curve->filename = (char*) malloc (25*sizeof(char));
+					history_curve->filename = (char*) malloc (40*sizeof(char));
 					strcpy(history_curve->filename, sctp->history.filename);
 					sctp_flash_load_curve_floats(history_curve);
 

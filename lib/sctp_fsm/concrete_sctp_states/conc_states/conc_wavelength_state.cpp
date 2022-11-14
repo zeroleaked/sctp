@@ -56,7 +56,7 @@ void ConcWavelength::okay(Sctp* sctp)
 void ConcWavelength::arrowUp(Sctp* sctp)
 {
     if (substate == SUBSTATE_WL) {
-        wavelength = wavelength + 2;
+        wavelength = wavelength + 1;
         if (wavelength > 700) wavelength = 400;
         sctp_lcd_conc_wavelength_number(wavelength);
     }
@@ -71,7 +71,7 @@ void ConcWavelength::arrowUp(Sctp* sctp)
 void ConcWavelength::arrowDown(Sctp* sctp)
 {
     if (substate == SUBSTATE_WL) {
-        wavelength = wavelength - 2;
+        wavelength = wavelength - 1;
         if (wavelength < 400) wavelength = 700;
         sctp_lcd_conc_wavelength_number(wavelength);
     }

@@ -41,6 +41,8 @@ void ConcCurves::enter(Sctp* sctp)
 		if(curve_list[i].wavelength == 0) {
 			curve_list[i].points = 0;
 			for(int j=0; j < MAX_POINTS; j++) {
+				curve_list[i].concentration = (float*) malloc(MAX_POINTS * sizeof(float));
+				curve_list[i].absorbance = (float*) malloc(MAX_POINTS * sizeof(float));
 				curve_list[i].concentration[j] = 0;
 				curve_list[i].absorbance[j] = 0;
 			}
@@ -74,8 +76,20 @@ void ConcCurves::okay(Sctp* sctp)
 
 		curve_list[curve_id].wavelength = 0;
 		curve_list[curve_id].points = 0;
+		curve_list[curve_id].absorbance = (float *) malloc( MAX_POINTS * sizeof(float) );
+		curve_list[curve_id].concentration = (float *) malloc( MAX_POINTS * sizeof(float) );
+		for (int i=0; i < MAX_POINTS; i++) {
+			curve_list[curve_id].absorbance[i] = -1;
+			curve_list[curve_id].concentration[i] = 0;
+		}
 
 		sctp_flash_nvs_save_curve(&curve_list[curve_id]);
+		free(curve_list[curve_id].absorbance);
+		free(curve_list[curve_id].concentration);
+
+		sctp_lcd_conc_curves_list_clear(cursor);
+		cursor = cursor - 6;
+		sctp_lcd_conc_curves_list_clear(cursor);
 		sctp_lcd_conc_curves_list(cursor, curve_list);
 	}
 	else if (cursor == CURSOR_BACK) {

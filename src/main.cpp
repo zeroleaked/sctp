@@ -30,27 +30,27 @@ void buttons_task(void * param) {
         if ((pcf_val&1)==0) {
             ESP_LOGI(TAG, "button LEFT pressed");
             sctp->arrowLeft();
-            vTaskDelay(200/portTICK_PERIOD_MS);
+            vTaskDelay(100/portTICK_PERIOD_MS);
         }
         if (((pcf_val>>1)&1)==0) {
             ESP_LOGI(TAG, "button RIGHT pressed");
             sctp->arrowRight();
-            vTaskDelay(200/portTICK_PERIOD_MS);
+            vTaskDelay(100/portTICK_PERIOD_MS);
         }
         if (((pcf_val>>2)&1)==0) {
             ESP_LOGI(TAG, "button DOWN pressed");
             sctp->arrowDown();
-            vTaskDelay(200/portTICK_PERIOD_MS);
+            vTaskDelay(100/portTICK_PERIOD_MS);
         }
         if (((pcf_val>>3)&1)==0) {
             ESP_LOGI(TAG, "button OK pressed");
             sctp->okay();
-            vTaskDelay(200/portTICK_PERIOD_MS);
+            vTaskDelay(100/portTICK_PERIOD_MS);
         }
         if (((pcf_val>>4)&1)==0) {
             ESP_LOGI(TAG, "button UP pressed");
             sctp->arrowUp();
-            vTaskDelay(200/portTICK_PERIOD_MS);
+            vTaskDelay(100/portTICK_PERIOD_MS);
         }
         vTaskDelay(50/portTICK_PERIOD_MS);
         // ESP_LOGI(TAG, "state=%d", sctp->getCurrentStateId());
