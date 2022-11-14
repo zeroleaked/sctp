@@ -6,7 +6,9 @@
 #include "conc_regress_state.h"
 #include "conc_save_state.h"
 #include "conc_curves_state.h"
+
 #include "sctp_lcd.h"
+#include "sctp_flash.h"
 
 #define SUBSTATE_CURSOR 0
 #define SUBSTATE_CONCENTRATION 1
@@ -66,9 +68,6 @@ void ConcTable::okay(Sctp* sctp) {
 					sctp->blank_take = NULL;
 				}
 
-                // free sctp->curve buffers
-                free(sctp->curve.filename);
-                sctp->curve.filename = NULL;
                 free(sctp->curve.absorbance);
                 sctp->curve.absorbance = NULL;
                 free(sctp->curve.concentration);
@@ -86,6 +85,7 @@ void ConcTable::okay(Sctp* sctp) {
 			else if ((sctp->curve.concentration[row_offset + cursor] == 0) && (sctp->curve.absorbance[row_offset + cursor] == 0)) {
 				sctp->curve.points--;
 			}
+			sctp_flash_nvs_save_curve(&sctp->curve);
 			break;
 		}
 	}

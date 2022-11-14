@@ -36,8 +36,9 @@ public:
 	// This will get called by the current state
 	void setState(SctpState& newState);
 
-
     int getCurrentStateId();
+
+	uint8_t battery_percentage = 0;
 
 	static void refreshLcdWrapper(void * pvParameter);
 

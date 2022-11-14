@@ -9,6 +9,7 @@ static const char TAG[] = "idle_state";
 
 void Idle::enter(Sctp* sctp)
 {
+	ESP_LOGI(TAG, "Init LCD");
 	sctp_lcd_start();
 	ESP_LOGI(TAG, "Init sensor");
 	sctp_sensor_init();

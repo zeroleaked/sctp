@@ -4,6 +4,11 @@
         "freertos.h": "c",
         "stdint.h": "c",
         "*.ipp": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "cmath": "cpp",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "sctp_flash.h": "c"
     }
 }

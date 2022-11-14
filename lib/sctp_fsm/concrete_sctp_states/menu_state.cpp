@@ -6,6 +6,7 @@
 #include "history_list_state.h"
 #include "settings_state.h"
 #include "sctp_lcd.h"
+#include "sctp_battery.h"
 
 #define CURSOR_SPECTRUM 0
 #define CURSOR_QUANTIZATION 1

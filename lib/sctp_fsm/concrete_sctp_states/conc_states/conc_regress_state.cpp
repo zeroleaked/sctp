@@ -10,6 +10,8 @@
 #define SUBSTATE_FAIL 0
 #define SUBSTATE_SUCCESS 1
 
+#define MAX_POINTS 10
+
 static const char TAG[] = "conc_regress_state";
 
 void ConcRegress::enter(Sctp* sctp)
@@ -34,10 +36,11 @@ void ConcRegress::enter(Sctp* sctp)
 	else {
 		uint8_t standards_length = sctp->curve.points;
 		ESP_LOGI(TAG, "detected %d standard sample points", standards_length);
-		assert(standards_length <= 15); // MAX_POINTS is 15
-		assert(sctp->curve.points <= 15); // MAX_POINTS is 15
-		if (standards_length < 15) { // last row is not a standard point
-			// check if we can interpolate		
+		assert(standards_length <= MAX_POINTS);	  // MAX_POINTS is 10
+		assert(sctp->curve.points <= MAX_POINTS); // MAX_POINTS is 10
+		if (standards_length < MAX_POINTS)
+		{ // last row is not a standard point
+			// check if we can interpolate
 			interpolate = (sctp->curve.absorbance[standards_length] != 0);
 		}
 		else {

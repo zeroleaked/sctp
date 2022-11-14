@@ -17,6 +17,7 @@ public:
 	virtual void arrowLeft(Sctp* sctp) = 0;
 	virtual void arrowRight(Sctp* sctp) = 0;
 	virtual void refreshLcd(Sctp* sctp, command_t command) = 0;
+	virtual bool batteryIndicator() = 0;
 	virtual void exit(Sctp* sctp) = 0;
 	virtual int id(Sctp* sctp) = 0;
 

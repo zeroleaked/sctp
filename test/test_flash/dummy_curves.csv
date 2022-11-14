@@ -1,0 +1,7 @@
+id, 1
+wavelength, 550
+index, concentration, absorbance
+1, 0.16, 0.08
+2, 0.4, 0.2
+3, 0.86, 0.42
+4, 1.04, 0.52

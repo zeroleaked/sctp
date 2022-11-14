@@ -41,6 +41,7 @@ void SpecResult::okay(Sctp* sctp)
 	if (substate == SUBSTATE_CURSOR) {
 		switch (cursor) {
 			case CURSOR_FULL: {
+				sctp_lcd_clear();
 				substate = SUBSTATE_FULL;
 				sctp_lcd_spec_result_full(sctp->spectrum_wavelength, sctp->absorbance, sctp->calibration.length);
 				break;
@@ -60,30 +61,45 @@ void SpecResult::okay(Sctp* sctp)
 			case CURSOR_REBLANK: {
 				free(sctp->sample_take);
 				sctp->sample_take = NULL;
+
 				free(sctp->absorbance);
 				sctp->absorbance = NULL;
+
+				free(sctp->blank_take->exposure);
+				sctp->blank_take->exposure = NULL;
+
 				free(sctp->blank_take->readout);
 				sctp->blank_take->readout = NULL;
+
 				free(sctp->blank_take);
 				sctp->blank_take = NULL;
+
 				sctp->setState(SpecBlank::getInstance());
 				break;
 			}
 			case CURSOR_MENU: {
 				free(sctp->sample_take);
 				sctp->sample_take = NULL;
+
 				free(sctp->absorbance);
 				sctp->absorbance = NULL;
+
+				free(sctp->blank_take->exposure);
+				sctp->blank_take->exposure = NULL;
+
 				free(sctp->blank_take->readout);
 				sctp->blank_take->readout = NULL;
+
 				free(sctp->blank_take);
 				sctp->blank_take = NULL;
+
 				sctp->setState(Menu::getInstance());
 				break;
 			}
 		}
 	}
 	else if (substate== SUBSTATE_FULL) {
+		sctp_lcd_clear();
 		substate = SUBSTATE_CURSOR;
 		sctp_lcd_spec_result(cursor, sctp->spectrum_wavelength, sctp->absorbance, sctp->calibration.length);
 	}
@@ -95,9 +111,10 @@ void SpecResult::arrowUp(Sctp* sctp)
 		sctp_lcd_spec_result_clear(this->cursor);
 		if (cursor == CURSOR_FULL) cursor = CURSOR_MENU;
 		else cursor--;
-		sctp_lcd_spec_result_cursor(cursor);
+		sctp_lcd_spec_result(cursor, sctp->spectrum_wavelength, sctp->absorbance, sctp->calibration.length);
 	}
 	else if (substate == SUBSTATE_FULL) {
+		sctp_lcd_clear();
 		substate = SUBSTATE_CURSOR;
 		sctp_lcd_spec_result(cursor, sctp->spectrum_wavelength, sctp->absorbance, sctp->calibration.length);
 	}
@@ -113,6 +130,7 @@ void SpecResult::arrowDown(Sctp* sctp)
 		// sctp_lcd_spec_result_cursor(cursor);
 	}
 	else if (substate == SUBSTATE_FULL) {
+		sctp_lcd_clear();
 		substate = SUBSTATE_CURSOR;
 		sctp_lcd_spec_result(cursor, sctp->spectrum_wavelength, sctp->absorbance, sctp->calibration.length);
 	}

@@ -325,24 +325,29 @@ void sctp_lcd_spec_sample_clear(uint8_t cursor){
 void sctp_lcd_spec_result_clear(uint8_t cursor)
 {
   switch(cursor){
-    case 0:{
-      display.fillRoundRect(365, 95, 100, 35, 5, TFT_WHITE);
+    case 0:
+    {
+      display.fillRoundRect(365, 45, 100, 35, 5, TFT_WHITE);
       break;
     }
     case 1:{
-      display.fillRoundRect(365, 145, 100, 35, 5, TFT_WHITE);
+      display.fillRoundRect(365, 95, 100, 35, 5, TFT_WHITE);
       break;
     }
     case 2:{
-      display.fillRoundRect(365, 195, 100, 35, 5, TFT_WHITE);
+      display.fillRoundRect(365, 145, 100, 35, 5, TFT_WHITE);
       break;
     }
     case 3:{
+      display.fillRoundRect(365, 195, 100, 35, 5, TFT_WHITE);
+      break;
+    }
+    case 4:{
       display.fillRoundRect(365, 245, 100, 35, 5, TFT_WHITE);
       break;
     }
     default:{
-      display.fillRoundRect(365, 95, 100, 35, 5, TFT_WHITE);
+      display.fillRoundRect(365, 45, 100, 35, 5, TFT_WHITE);
       break;
     }
   }
@@ -459,6 +464,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   else
     a_max = 1.2;
 
+  ESP_LOGI(TAG, "LCD check 1");
   display.setTextColor(TFT_TOSCA);
   display.setTextSize(1);
 
@@ -470,7 +476,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
     display.setCursor(22 + 90*i, 302);
     display.println((int)round(wl_min + (wl_max-wl_min)/4*i));
   }
-
+  ESP_LOGI(TAG, "LCD check 2");
   int i = 0;
   int i_prev;
   int x_px;
@@ -548,8 +554,10 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   else
   {
     y_prev = 297 - (absorbance[0] - a_min) / (a_max - a_min) * 270;
+    ESP_LOGI(TAG, "LCD check 3");
     for (int j = 0; j < 360; j++)
     {
+      ESP_LOGI(TAG, "j=%d", j);
       i = round(j * length / 360);
       i_prev = round((j-1) / length * 360);
       if(i == 0) i_prev = i;
@@ -754,7 +762,9 @@ void sctp_lcd_conc_curves_list(uint8_t cursor, curve_t curves[6]){
       display.setTextSize(1);
       display.drawRoundRect(x, y, 200, 35, 5, TFT_BLACK);
       display.setCursor(x_text, y_text);
-      display.println(curves[i].filename);
+      char curve_name[25];
+      sprintf(curve_name, "curve %d %dnm", curves[i].id+1, curves[i].wavelength);
+      display.println(curve_name);
 
       display.setTextColor(TFT_RED);
       display.setTextSize(1 );
@@ -1199,22 +1209,27 @@ void sctp_lcd_settings(uint8_t cursor)
   display.setCursor(145, 75);
   display.println("CHECK CALIBRATION");
   display.drawRoundRect(120, 60, 245, 40, 10, TFT_BLACK);
-  display.setCursor(150, 125);
+  display.setCursor(152, 125);
   display.println("LOAD CALIBRATION");
   display.drawRoundRect(120, 110, 245, 40, 10, TFT_BLACK);
-  display.setCursor(215, 175);
+  display.setCursor(218, 175);
   display.println("BACK");
   display.drawRoundRect(120, 160, 245, 40, 10, TFT_BLACK);
 }
 
 void sctp_lcd_settings_check(calibration_t calibration)
 {
+  display.fillRect(100, 200, 275, 75, TFT_WHITE);
   display.setTextColor(TFT_MUSTARD);
-  display.setTextSize(0.75);
-  char text[100];
-  sprintf(text, "Gain: %.3f, Bias: %.3f, Row: %d, Start: %d, Length: %d", (double)calibration.gain, (double)calibration.bias, calibration.row, calibration.start, calibration.length);
-  display.setCursor(25, 225);
-  display.println(text);
+  display.setTextSize(1);
+  char text1[60];
+  char text2[60];
+  sprintf(text1, "Gain: %.3f, Bias: %.3f,", (double)calibration.gain, (double)calibration.bias);
+  sprintf(text2, "Row: %d, Start: %d, Length: %d", calibration.row, calibration.start, calibration.length);
+  display.setCursor(128, 225);
+  display.println(text1);
+  display.setCursor(107, 250);
+  display.println(text2);
 }
 
 void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[60][25]){
@@ -1222,6 +1237,7 @@ void sctp_lcd_history_list(uint8_t cursor,  uint8_t row_offset, char filenames[6
   display.setTextSize(1.25);
   display.setCursor(60, 20);
   display.println("Filename");
+  display.fillRect(40, 50, 420, 210, TFT_WHITE);
 
   switch(cursor) {
     case 0: {

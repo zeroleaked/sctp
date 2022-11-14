@@ -8,10 +8,7 @@
 
 typedef enum {
 	COMMAND_NONE,
-	SPECTRUM_BLANK,
-	SPECTRUM_SAMPLE,
-	SPECTRUM_SAVE,
-	CURVES_LOAD
+	COMMAND_BAT_UPDATE
 } command_t;
 
 typedef struct {
@@ -29,15 +26,16 @@ typedef struct {
 typedef struct {
 	uint8_t id;
 	uint8_t measurement_mode;
+	char * filename;
 
-	// concentration mode
-	uint16_t wavelength;
-	float absorbance;
-	float concentration;
-	uint8_t curve_id;
+	// // concentration mode
+	// uint16_t wavelength;
+	// float absorbance;
+	// float concentration;
+	// uint8_t curve_id;
 
-	// spectrum mode
-	float * absorbance_buffer;
+	// // spectrum mode
+	// float * absorbance_buffer;
 	
 } history_t; // 20 bytes
 
@@ -52,7 +50,7 @@ typedef struct {
 
 typedef struct {
 	float * readout;
-	uint16_t exposure;
+	uint16_t * exposure;
 	uint16_t gain;
 } blank_take_t;
 
