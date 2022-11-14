@@ -936,7 +936,7 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
   float* conc = curve.concentration;
 
   for(int i=0;i<4;i++){
-    if(curve.points != 0 && i < curve.points) {
+    if(curve.points != 0 && (i+row_offset) < curve.points) {
       display.setCursor(x0, (y + 40*i));
       display.println(i + row_offset + 1); 
       if(ab[i+row_offset] != -1) {
