@@ -40,6 +40,10 @@ void ConcCurves::enter(Sctp* sctp)
 	for(int i=0; i < CURVE_LIST_LENGTH; i++) {
 		if(curve_list[i].wavelength == 0) {
 			curve_list[i].points = 0;
+			for(int j=0; j < MAX_POINTS; j++) {
+				curve_list[i].concentration[j] = 0;
+				curve_list[i].absorbance[j] = 0;
+			}
 		}
 	}
 
