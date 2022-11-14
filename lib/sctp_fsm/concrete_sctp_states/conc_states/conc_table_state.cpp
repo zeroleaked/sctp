@@ -214,6 +214,7 @@ void ConcTable::arrowUp(Sctp* sctp) {
 			else if (cursor == CURSOR_SAVE) {
 				if (sctp->curve.points >= 4) {
 					cursor = CURSOR_CONC_3;
+					row_offset = sctp->curve.points - 3;
 				}
 				else {
 					cursor = sctp->curve.points;
