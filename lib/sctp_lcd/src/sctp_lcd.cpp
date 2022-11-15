@@ -873,7 +873,8 @@ void sctp_lcd_conc_table_opening(uint8_t cursor){
   display.println("Loading Calibration Curve...");
 }
 
-void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curve){
+void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curve, bool lastPointIsInterpolated)
+{
   display.setTextColor(TFT_TOSCA);
   display.setTextSize(1.5);
   display.setCursor(200, 35);
@@ -948,6 +949,8 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
         sprintf(a, "%.2f", (double)ab[i + row_offset]);
         display.println(a);
       }
+      if(lastPointIsInterpolated == true && (i+row_offset == curve.points))
+        display.setTextColor(TFT_RED);
       display.setCursor(x1, (y + 40*i));
       sprintf(c, "%.3f", (double)conc[i + row_offset]);
       display.println(c);
@@ -1091,7 +1094,7 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   float c_min = 0;
   float c_max = conc[0];
 
-  for(int i=1;i<curve.points;i++) {
+  for(int i=1;i < curve.points;i++) {
     if (ab[i] >= a_max) a_max = ab[i];
     if (conc[i] >= c_max) c_max = conc[i];
   }
@@ -1115,9 +1118,9 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   float m = (*regress_line).gradient;
   float c = (*regress_line).offset;
   for(int i=1;i<329;i++) {
-    x_px = 75+i;
-    float y = m * i * c_max / 330 + c; 
-    y_px = 255 - (y - a_min) / (a_max - a_min) * 220;
+    y_px = 255 - i;
+    float x = m * i * a_max / 220 * c;
+    x_px = 75 + (x - c_min) / (c_max - c_min) * 330;
     display.fillRect(x_px-1, y_px-1, 3, 3, TFT_TOSCA);
   }
 
@@ -1126,8 +1129,10 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
     x_px = (conc[i] - c_min) / (c_max - c_min) * 330 + 75;
     y_px = 255 - (ab[i] - a_min) / (a_max - a_min) * 220;
     i = i+1;
-
-    display.fillRect(x_px-3, y_px-3, 7, 7, TFT_MUSTARD);
+    if(lastPointIsInterpolated == true && i == curve.points - 1)
+      display.fillRect(x_px-3, y_px-3, 7, 7, TFT_RED);
+    else
+      display.fillRect(x_px-3, y_px-3, 7, 7, TFT_MUSTARD);
   }
 
   switch(cursor) {

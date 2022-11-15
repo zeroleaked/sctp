@@ -133,7 +133,7 @@ void sctp_lcd_conc_wavelength_clear(uint8_t cursor);
 void sctp_lcd_conc_wavelength_number(uint16_t wavelength);
 
 void sctp_lcd_conc_table_opening(uint8_t cursor);
-void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curve);
+void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curve, bool lastPointIsInterpolated);
 void sctp_lcd_conc_table_clear(uint8_t cursor, uint8_t row_offset, curve_t curve);
 void sctp_lcd_conc_table_concentration(uint8_t cursor, float concentration);
 
