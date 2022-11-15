@@ -30,13 +30,19 @@
 static const char TAG[] = "conc_table_state";
 
 void ConcTable::enter(Sctp * sctp) {
+	ESP_LOGI(TAG, "entered ConcTable");
 	sctp_lcd_clear();
+	ESP_LOGI(TAG, "pt1");
 
 	cursor = CURSOR_CONC_0;
+	ESP_LOGI(TAG, "pt2");
 	substate = SUBSTATE_CURSOR;
+	ESP_LOGI(TAG, "pt3");
 	row_offset = 0;
 
+	ESP_LOGI(TAG, "before entering LCD display");
 	sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve);
+	ESP_LOGI(TAG, "after entering LCD display");
 }
 
 void ConcTable::okay(Sctp* sctp) {
@@ -47,6 +53,8 @@ void ConcTable::okay(Sctp* sctp) {
 			}
 			else if (cursor <= CURSOR_ABSORBANCE_3) {
 				sctp->point_sel = cursor - 4 + row_offset;
+				// if(sctp->curve.points < sctp->point_sel)
+				// 	sctp->curve.points++;
 				if (sctp->blank_take == NULL) {
                     sctp->setState(ConcBlank::getInstance());
 				}
