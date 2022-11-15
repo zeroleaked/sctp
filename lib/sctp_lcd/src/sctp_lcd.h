@@ -8,15 +8,15 @@
 #define LCD_PIN_MOSI    13
 #define LCD_PIN_SCLK    14
 
-// #define LCD_PIN_CS      36
-// #define LCD_PIN_DC      37
-// #define LCD_PIN_BL      47
-// #define LCD_PIN_RST     48
+#define LCD_PIN_CS      36
+#define LCD_PIN_DC      37
+#define LCD_PIN_BL      47
+#define LCD_PIN_RST     48
 
-#define LCD_PIN_CS      17
-#define LCD_PIN_DC      8
-#define LCD_PIN_BL      9
-#define LCD_PIN_RST     18
+// #define LCD_PIN_CS      17
+// #define LCD_PIN_DC      8
+// #define LCD_PIN_BL      9
+// #define LCD_PIN_RST     18
 
 class LGFX : public lgfx::LGFX_Device
 {

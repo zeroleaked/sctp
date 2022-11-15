@@ -122,9 +122,9 @@ void Sctp::refreshLcd()
 			// currentState->refreshLcd(this, command);
 
 			if (currentState->batteryIndicator()) {
-				sctp_battery_sample(&this->battery_percentage);
+				// sctp_battery_sample(&this->battery_percentage); // DONT FORGET TO UNCOMMENT
 				// ESP_LOGI(TAG,"perc=%d", this->battery_percentage);
-				sctp_lcd_battery(this->battery_percentage);
+				// sctp_lcd_battery(this->battery_percentage);
 			}
 
 		}

@@ -47,9 +47,11 @@ static void takeConcentrationSample(void * pvParameters) {
     float * absorbance = ((taskParam_t *) pvParameters)->absorbance;
 
 	float sample_take;
-	esp_err_t report = sctp_sensor_concentration_sample(calibration, wavelength, blank_take, &sample_take);
-	float transmission = (sample_take) / (*(blank_take->readout));
-	*absorbance = -log10(transmission);
+    esp_err_t report = ESP_OK;
+        // esp_err_t report = sctp_sensor_concentration_sample(calibration, wavelength, blank_take, &sample_take);
+        // float transmission = (sample_take) / (*(blank_take->readout));
+        // *absorbance = -log10(transmission);
+        *absorbance = 0.8; // DONT FORGET TO COMMENT, TEST CASE
 
     QueueHandle_t report_queue = ((taskParam_t *) pvParameters)->report_queue;
 	assert(xQueueSend(report_queue, &report, 0) == pdTRUE);
@@ -71,7 +73,7 @@ void ConcSample::okay(Sctp* sctp)
 
                     substate = SUBSTATE_SAMPLING;
 
-                	((taskParam_t *) taskParam)->report_queue = report_queue;
+                    ((taskParam_t *) taskParam)->report_queue = report_queue;
                 	((taskParam_t *) taskParam)->calibration = &sctp->calibration;
                 	((taskParam_t *) taskParam)->wavelength = sctp->curve.wavelength;
                 	((taskParam_t *) taskParam)->blank_take = sctp->blank_take;
@@ -179,8 +181,10 @@ void ConcSample::refreshLcd(Sctp* sctp, command_t command) {
         esp_err_t report;
         if (xQueueReceive(report_queue, &report, 0) == pdTRUE) {
             if (report == ESP_OK) {
-				sctp->curve.absorbance[sctp->point_sel] = absorbance;
+                sctp->curve.absorbance[sctp->point_sel] = absorbance;
+                sctp->curve.points++;
                 sctp_flash_nvs_save_curve(&sctp->curve);
+                ESP_LOGI(TAG, "switch to table");
                 sctp->setState(ConcTable::getInstance());
             }
 	    }
