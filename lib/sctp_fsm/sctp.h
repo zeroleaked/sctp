@@ -55,6 +55,7 @@ public:
 
 	curve_t curve;
 	uint8_t point_sel;
+	bool lastPointIsInterpolated;
 
 	uint16_t wavelength;
 

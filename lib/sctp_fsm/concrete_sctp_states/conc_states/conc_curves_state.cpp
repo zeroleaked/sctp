@@ -186,6 +186,7 @@ void ConcCurves::exit(Sctp * sctp) {
 	// free state buffers
 	free(curve_list);
 	curve_list = NULL;
+	sctp->lastPointIsInterpolated = false;
 }
 
 SctpState& ConcCurves::getInstance()

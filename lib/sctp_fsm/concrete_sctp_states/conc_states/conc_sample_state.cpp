@@ -183,7 +183,7 @@ void ConcSample::refreshLcd(Sctp* sctp, command_t command) {
             if (report == ESP_OK) {
                 sctp->curve.absorbance[sctp->point_sel] = absorbance;
                 sctp->curve.points++;
-                sctp_flash_nvs_save_curve(&sctp->curve);
+                // sctp_flash_nvs_save_curve(&sctp->curve);
                 ESP_LOGI(TAG, "switch to table");
                 sctp->setState(ConcTable::getInstance());
             }

@@ -3,6 +3,7 @@
 #include "conc_regress_state.h"
 #include "conc_table_state.h"
 #include "sctp_lcd.h"
+#include "sctp_flash.h"
 
 #define CURSOR_NULL 0
 #define CURSOR_OK 1
@@ -46,6 +47,7 @@ void ConcRegress::enter(Sctp* sctp)
 		{ // last row is not a standard point
 			// check if we can interpolate
 			interpolate = (sctp->curve.absorbance[standards_length] != 0);
+			sctp->lastPointIsInterpolated = true;
 		}
 		else {
 			interpolate = false; // last row is also a standard. Not interpolating
