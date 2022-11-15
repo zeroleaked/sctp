@@ -95,7 +95,7 @@ void row_search () {
 
 void row_print() {
     i2cdev_init();
-    uint16_t row = 490;
+    uint16_t row = 510;
     uint8_t samples = 30;
     float * arr = ( float *) malloc (sizeof (float) * 1280 * samples);
     memset(arr, 0, sizeof(float) * 1280 * samples);
@@ -115,7 +115,7 @@ void row_print() {
 
     sensor_t *s = sctp_camera_sensor_get();
     // s->set_gain(s, 8);
-    s->set_shutter_width(s, 6000);
+    s->set_shutter_width(s, 8000);
     s->set_row_start(s, 0x000C + row);
 
     camera_fb_t * take = sctp_camera_fb_get();
@@ -169,11 +169,11 @@ void test_spectrum_blank() {
     sctp_sensor_init();
 
     calibration_t calibration;
-	calibration.gain = -1.051282051;
-	calibration.bias = 1175.012821;
-	calibration.start = 250;
-	calibration.length = 500;
-    calibration.row = 493;
+	calibration.gain = -0.7666855524;
+	calibration.bias = 1013.975014;
+	calibration.start = 409;
+	calibration.length = 393;
+    calibration.row = 513;
 
     blank_take_t blank_take;
     blank_take.exposure = (uint16_t *) malloc (sizeof(uint16_t) * calibration.length);
@@ -433,7 +433,7 @@ void test_lamp() {
     uint16_t pixel = 472;
     gpio_set_level( PIN_LAMP_SWITCH, 1);
     for (int j=0; j<samples; j++) {
-        // ESP_LOGI(TAG, "j=%d", j);
+        // ESP_LOGI(TAG, "j=%d", 
         camera_fb_t * camera_fb = sctp_camera_fb_get(); 
         arr[j] = (camera_fb->buf[pixel*2] << 8) | camera_fb->buf[1 + pixel*2];
         ESP_LOGI(TAG, "%d:%d", j, arr[j]);
@@ -457,15 +457,25 @@ void test_lamp() {
 
 void test_linearity() {
     i2cdev_init();
-    uint16_t row = 471;
+    uint16_t row = 510;
     // uint16_t points[100];
     assert(sctp_camera_init(&camera_config) == ESP_OK);
 
-    uint16_t shutter_start = 2000;
-    uint16_t shutter_step = 100;
+    uint16_t shutter_start = 10;
+    uint16_t shutter_step = 10;
 
     sensor_t *s = sctp_camera_sensor_get();
     s->set_row_start(s, 0x000C + row);
+
+    gpio_config_t conf = {};
+    conf.intr_type = GPIO_INTR_DISABLE;
+    conf.mode = GPIO_MODE_OUTPUT;
+    conf.pin_bit_mask = 1LL << PIN_LAMP_SWITCH;
+    conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&conf);
+
+    gpio_set_level( PIN_LAMP_SWITCH, 1);
 
     uint16_t col = 0;
     for (int i=0; i<100; i++) {
@@ -484,17 +494,18 @@ void test_linearity() {
         for (int j=0; j<1; j++) {
             take = sctp_camera_fb_get();
             
-            if ((i==0) && (j==0)) {
-                uint16_t col_val = 0;
-                for (int k=0; k<1000; k++) {
-                    uint16_t val = (take->buf[k*2] << 8) | take->buf[1 + k*2];
-                    if (val > col_val) {
-                        col_val = val;
-                        col = k;
-                    }
-                }
-                ESP_LOGI(TAG, "col=%d", col);
-            }
+            // if ((i==0) && (j==0)) {
+            //     uint16_t col_val = 0;
+            //     for (int k=0; k<1000; k++) {
+            //         uint16_t val = (take->buf[k*2] << 8) | take->buf[1 + k*2];
+            //         if (val > col_val) {
+            //             col_val = val;
+            //             col = k;
+            //         }
+            //     }
+            //     ESP_LOGI(TAG, "col=%d", col);
+            // }
+            col = 512;
 
             uint16_t val = (take->buf[col*2] << 8) | take->buf[1 + col*2];
             total += val;
@@ -506,6 +517,7 @@ void test_linearity() {
         ESP_LOGI(TAG, "%d:%d", exposure, total);
     }
 
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
     sctp_camera_deinit();
 
 }
@@ -540,7 +552,7 @@ void app_main() {
     UNITY_BEGIN();
 
     // RUN_TEST(row_search);
-    RUN_TEST(row_print);
+    // RUN_TEST(row_print);
 
     // RUN_TEST(test_spectrum_blank);
     // RUN_TEST(test_spectrum);
