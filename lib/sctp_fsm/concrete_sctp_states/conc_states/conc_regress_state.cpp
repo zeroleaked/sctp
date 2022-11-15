@@ -36,7 +36,7 @@ void ConcRegress::enter(Sctp* sctp)
 	}
 	else {
 		uint8_t standards_length;
-		if (sctp->curve.concentration[sctp->curve.points] == 0)
+		if (sctp->curve.concentration[sctp->curve.points - 1] == 0)
 			standards_length = sctp->curve.points - 1;
 		else
 			standards_length = sctp->curve.points;
@@ -46,8 +46,9 @@ void ConcRegress::enter(Sctp* sctp)
 		if (standards_length < MAX_POINTS)
 		{ // last row is not a standard point
 			// check if we can interpolate
-			interpolate = (sctp->curve.absorbance[standards_length] != 0);
-			sctp->lastPointIsInterpolated = true;
+			interpolate = (sctp->curve.concentration[sctp->curve.points - 1] == 0);
+			if(interpolate == true)
+				sctp->lastPointIsInterpolated = true;
 		}
 		else {
 			interpolate = false; // last row is also a standard. Not interpolating

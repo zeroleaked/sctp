@@ -971,7 +971,7 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
 }
 
 void sctp_lcd_conc_table_clear(uint8_t cursor, uint8_t row_offset, curve_t curve){
-  display.fillRect(85, 75, 310, 150, TFT_WHITE);
+  display.fillRect(85, 75, 350, 150, TFT_WHITE);
   switch(cursor) {
     case 0: {
       display.fillRect(195, 75, 75, 35, TFT_WHITE);
