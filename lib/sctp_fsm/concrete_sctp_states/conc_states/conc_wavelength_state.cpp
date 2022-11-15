@@ -1,3 +1,6 @@
+#include <string.h>
+#include <esp_log.h>
+
 #include "sctp_lcd.h"
 #include "conc_curves_state.h"
 #include "conc_wavelength_state.h"
@@ -9,6 +12,10 @@
 #define CURSOR_WL 0
 #define CURSOR_NEXT 1
 #define CURSOR_BACK 2
+
+#define MAX_POINTS 10
+
+static const char TAG[] = "conc_wavelength_state";
 
 void ConcWavelength::enter(Sctp* sctp)
 {
@@ -33,6 +40,11 @@ void ConcWavelength::okay(Sctp* sctp)
             }
             case CURSOR_NEXT: {
                 sctp->curve.wavelength = wavelength;
+                for (int j = 0; j < MAX_POINTS; j++)
+                {
+                    sctp->curve.concentration[j] = 0;
+                    sctp->curve.absorbance[j] = -1;
+                }
                 // next state
                 sctp->setState(ConcTable::getInstance()); 
                 break;
@@ -40,12 +52,17 @@ void ConcWavelength::okay(Sctp* sctp)
             case CURSOR_BACK: {
                 // add curve cancels
                 // free sctp->curve buffers
-                free(sctp->curve.filename);
-                sctp->curve.filename = NULL;
-                free(sctp->curve.absorbance);
-                sctp->curve.absorbance = NULL;
-                free(sctp->curve.concentration);
-                sctp->curve.concentration = NULL;
+                if(sctp->curve.wavelength != 0) {
+                    free(sctp->curve.filename);
+                    ESP_LOGI(TAG, "free 1 done");
+                    sctp->curve.filename = NULL;
+                    free(sctp->curve.absorbance);
+                    ESP_LOGI(TAG, "free 2 done");
+                    sctp->curve.absorbance = NULL;
+                    free(sctp->curve.concentration);
+                    ESP_LOGI(TAG, "free 3 done");
+                    sctp->curve.concentration = NULL;
+                }
                 sctp->setState(ConcCurves::getInstance());
                 break;
             }

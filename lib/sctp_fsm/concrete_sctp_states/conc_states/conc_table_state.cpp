@@ -31,6 +31,7 @@ static const char TAG[] = "conc_table_state";
 
 void ConcTable::enter(Sctp * sctp) {
 	ESP_LOGI(TAG, "entered ConcTable");
+	ESP_LOGI(TAG, "address0=0x%8x", (uint32_t)sctp->curve.concentration);
 	sctp_lcd_clear();
 	ESP_LOGI(TAG, "pt1");
 
@@ -43,6 +44,12 @@ void ConcTable::enter(Sctp * sctp) {
 	ESP_LOGI(TAG, "interpolated: %d", sctp->lastPointIsInterpolated);
 	sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve, sctp->lastPointIsInterpolated);
 	ESP_LOGI(TAG, "after entering LCD display");
+
+	for (int i = 0; i < 10; i++)
+	{
+		ESP_LOGI(TAG, "%d, %f, %f", i, sctp->curve.concentration[i], sctp->curve.absorbance[i]);
+	}
+	ESP_LOGI(TAG, "address1=0x%8x", (uint32_t) sctp->curve.concentration);
 }
 
 void ConcTable::okay(Sctp* sctp) {
@@ -50,6 +57,11 @@ void ConcTable::okay(Sctp* sctp) {
 		case SUBSTATE_CURSOR: {
 			if (cursor <= CURSOR_CONC_3) {
 				substate = SUBSTATE_CONCENTRATION;
+
+				for (int i = 0; i < 10; i++)
+				{
+					ESP_LOGI(TAG, "%d, %f, %f", i, sctp->curve.concentration[i], sctp->curve.absorbance[i]);
+				}
 			}
 			else if (cursor <= CURSOR_ABSORBANCE_3) {
 				sctp->point_sel = cursor - 4 + row_offset;
@@ -108,6 +120,7 @@ void ConcTable::okay(Sctp* sctp) {
 			sctp_lcd_clear();
 			sctp_lcd_conc_table_cursor(cursor, row_offset, sctp->curve, sctp->lastPointIsInterpolated);
 			sctp_flash_nvs_save_curve(&sctp->curve);
+
 			for (int i=0; i< sctp->curve.points; i++) {
 				ESP_LOGI(TAG, "%d, %f, %f", i, sctp->curve.concentration[i], sctp->curve.absorbance[i]);
 			}

@@ -381,6 +381,13 @@ esp_err_t sctp_flash_nvs_load_curve(curve_t *curve)
     }
     // Close
     nvs_close(my_handle);
+
+    ESP_LOGI(TAG, "ID=%d", curve->id);
+    for (int i=0; i<10; i++) {
+        ESP_LOGI(TAG, "%d. C=%f, A=%f",i,curve->concentration[i], curve->absorbance[i]);
+
+    }
+
     return ESP_OK;
 }
 
