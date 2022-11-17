@@ -22,6 +22,11 @@ static int init_status(sensor_t *sensor)
 {
     uint16_t window_width = 0x0002;
     SCCB_Write(sensor->slv_addr, REG_HEIGHT, window_width);
+
+    uint16_t gain = 0x000D;
+    SCCB_Write(sensor->slv_addr, REG_GLOB_G, gain);
+
+
     // uint16_t test_data = SCCB_Read(sensor->slv_addr, REG_WIDTH);
     // ESP_LOGD(TAG, "Reg0x04: 0x%04X", test_data);
 
