@@ -47,11 +47,11 @@ static void takeConcentrationSample(void * pvParameters) {
     float * absorbance = ((taskParam_t *) pvParameters)->absorbance;
 
 	float sample_take;
-    esp_err_t report = ESP_OK;
-        // esp_err_t report = sctp_sensor_concentration_sample(calibration, wavelength, blank_take, &sample_take);
-        // float transmission = (sample_take) / (*(blank_take->readout));
-        // *absorbance = -log10(transmission);
-        *absorbance = 0.8; // DONT FORGET TO COMMENT, TEST CASE
+    // esp_err_t report = ESP_OK;
+    esp_err_t report = sctp_sensor_concentration_sample(calibration, wavelength, blank_take, &sample_take);
+    float transmission = (sample_take) / (*(blank_take->readout));
+    *absorbance = -log10(transmission);
+    // *absorbance = 0.8; // DONT FORGET TO COMMENT, TEST CASE
 
     QueueHandle_t report_queue = ((taskParam_t *) pvParameters)->report_queue;
 	assert(xQueueSend(report_queue, &report, 0) == pdTRUE);

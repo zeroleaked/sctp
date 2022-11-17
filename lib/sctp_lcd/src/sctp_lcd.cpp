@@ -265,14 +265,15 @@ void sctp_lcd_save_saving()
   display.println("Saving...");
 }
 
-void sctp_lcd_save_finish(char saved_name[255]){
+void sctp_lcd_save_finish(char saved_name[25]){
   display.fillRect(210, 120, 90, 30, TFT_WHITE);
   display.setTextColor(TFT_BLACK);
   display.setTextSize(1);
-  display.setCursor(120, 125);
-  char text[] = "Saved as ...";
+  display.setCursor(140, 125);
+  char text[] = "Saved as ...............";
   sprintf(text, "Saved as %s", saved_name);
   display.println(text);
+  display.fillRoundRect(180, 160, 120, 40, 10, TFT_LIGHTGREY);
   display.setTextColor(TFT_BLACK);
   display.setCursor(230, 175);
   display.println("OK");

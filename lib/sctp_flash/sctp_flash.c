@@ -574,12 +574,16 @@ esp_err_t sctp_flash_save_curve(curve_t curve)
     }
 
     // Create a file.
-    char file_curve[] = "/sdcard/curves/XX_XXXXXXnm.csv";
-    sprintf(file_curve, "/sdcard/curves/%d_%dnm.csv", curve.id, curve.wavelength);
-    strcpy(curve.filename, &file_curve[15]);
 
-    ESP_LOGI(TAG, "Opening file %s", file_curve);
-    FILE *f = fopen(file_curve, "w");
+    char curve_dir[] = "/sdcard/curves/";
+    char file_curve[] = "XXXX_XXXXnm.csv";
+    sprintf(file_curve, "%d_%dnm.csv", curve.id, curve.wavelength);
+    strcpy(curve.filename, file_curve);
+    strcat(curve_dir, file_curve);
+    ESP_LOGI(TAG, "file_curve: %s", curve.filename);
+
+    ESP_LOGI(TAG, "Opening file %s", curve_dir);
+    FILE *f = fopen(curve_dir, "w");
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for writing");
@@ -607,26 +611,27 @@ esp_err_t sctp_flash_load_history_list(history_t list[FILE_LEN])
     sdmmc_card_t *card;
 
     sctp_flash_init(PIN_NUM_CS, &host, &card);
-    char spec_dir[] = "/sdcard/spectrum";
+    // char spec_dir[] = "/sdcard/spectrum";
     struct dirent *de;
-    DIR *d = opendir(spec_dir);
-    if (d == NULL)
-    {
-        ESP_LOGI(TAG, "Could'nt open directory");
-    }
+    DIR * d;
+    // d = opendir(spec_dir);
+    // if (d == NULL)
+    // {
+    //     ESP_LOGI(TAG, "Could'nt open directory");
+    // }
     char *temp;
-    while ((de = readdir(d)) != NULL)
-    {
-        temp = de->d_name;
-        if (temp[0] != '_' && temp[0] != '.')
-        {
-            strcpy(list[count].filename, temp);
-            list[count].id = count + 1;
-            list[count].measurement_mode = 0;
-            ESP_LOGI(TAG, "%d, %s", list[count].id, temp);
-            count++;
-        }
-    }
+    // while ((de = readdir(d)) != NULL)
+    // {
+    //     temp = de->d_name;
+    //     if (temp[0] != '_' && temp[0] != '.')
+    //     {
+    //         strcpy(list[count].filename, temp);
+    //         list[count].id = count + 1;
+    //         list[count].measurement_mode = 0;
+    //         ESP_LOGI(TAG, "%d, %s", list[count].id, temp);
+    //         count++;
+    //     }
+    // }
     char curve_dir[] = "/sdcard/curves";
     // ESP_LOGI(TAG, "curve directory: %s", curve_dir);
     d = opendir(curve_dir);
@@ -694,9 +699,10 @@ esp_err_t sctp_flash_load_curve_floats(curve_t *curve)
     sctp_flash_init(PIN_NUM_CS, &host, &card);
 
     char line[2 * NAME_LEN];
-    char file_curves[] = "/sdcard/curves/";
+    char file_curves[] = "/sdcard/curves/XXXXXXXXXXXXXXXXXXX";
     char *temp;
-    strcat(file_curves, curve->filename);
+    sprintf(file_curves, "/sdcard/curves/%s", curve->filename);
+    ESP_LOGI(TAG, "filename: %s", curve->filename);
 
     // Open file for reading
     ESP_LOGI(TAG, "Reading file %s", file_curves);
@@ -713,11 +719,13 @@ esp_err_t sctp_flash_load_curve_floats(curve_t *curve)
         {
             temp = strtok(line, ", ");
             curve->id = atoi(strtok(NULL, ", "));
+            ESP_LOGI(TAG, "load floats 1");
         }
         else if (i == 1)
         {
             temp = strtok(line, ", ");
             curve->wavelength = atoi(strtok(NULL, ", "));
+            ESP_LOGI(TAG, "load floats 2");
         }
         else if (i == 2)
         {
@@ -727,7 +735,9 @@ esp_err_t sctp_flash_load_curve_floats(curve_t *curve)
             temp = strtok(line, ", ");
             int idx = atoi(temp);
             curve->concentration[idx - 1] = (float)atof(strtok(NULL, ", "));
+            ESP_LOGI(TAG, "load floats 3");
             curve->absorbance[idx - 1] = (float)atof(strtok(NULL, ", "));
+            ESP_LOGI(TAG, "load floats 4");
         }
         i++;
     }

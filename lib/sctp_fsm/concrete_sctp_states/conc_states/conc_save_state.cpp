@@ -17,12 +17,13 @@ static const char * TAG = "conc_save_state";
 void ConcSave::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
-	cursor = CURSOR_NULL;
+	cursor = CURSOR_OK;
 
 	// report_queue = xQueueCreate(1, sizeof(esp_err_t));
     substate = SUBSTATE_SAVING;
 
 	sctp_lcd_spec_save_saving();
+	sctp->curve.filename = (char*) malloc(25 * sizeof(char));
 	sctp_flash_save_curve(sctp->curve);
 
 	sctp_lcd_spec_save_finish(sctp->curve.filename);

@@ -112,7 +112,9 @@ void HistoryList::okay(Sctp* sctp)
 
 				if ( sctp->history.measurement_mode == MEASUREMENT_MODE_CONCENTRATION ) {
 					history_curve = (curve_t*) malloc (sizeof(curve_t));
-					history_curve->filename = (char*) malloc (40*sizeof(char));
+					history_curve->filename = (char*) malloc (25 * sizeof(char));
+					history_curve->concentration = (float*) malloc (10 * sizeof(float));
+					history_curve->absorbance = (float*) malloc(10 * sizeof(float));
 					strcpy(history_curve->filename, sctp->history.filename);
 					sctp_flash_load_curve_floats(history_curve);
 
@@ -121,6 +123,9 @@ void HistoryList::okay(Sctp* sctp)
 					sctp_lcd_clear();
 					sctp_lcd_conc_regress(cursor, *history_curve, interpolate, regress_line);
 					substate = SUBSTATE_CONC;
+					free(history_curve->filename);
+					free(history_curve->concentration);
+					free(history_curve->absorbance);
 					free(history_curve);
 				}
 				else {
