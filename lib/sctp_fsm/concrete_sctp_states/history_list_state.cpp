@@ -43,39 +43,41 @@ void sctp_flash_history(Sctp * sctp) {
 };
 
 void sctp_history_regress(curve_t * curve, conc_regression_t * regress_line) {
-	regress_line = (conc_regression_t *)malloc(sizeof(conc_regression_t));
+	uint8_t standards_length;
+	if (curve->concentration[curve->points - 1] == 0)
+		standards_length = curve->points - 1;
+	else
+		standards_length = curve->points;
+	ESP_LOGI(TAG, "detected %d standard sample points", standards_length);
+	assert(standards_length <= MAX_POINTS); // MAX_POINTS is 10
+	assert(curve->points <= MAX_POINTS);	// MAX_POINTS is 10
+	// if (standards_length < 10)
+	// { // last row is not a standard point
+	// 	// check if we can interpolate
+	// 	interpolate = (curve->absorbance[standards_length] != 0);
+	// }
+	// else
+	// {
+	// 	interpolate = false; // last row is also a standard. Not interpolating
+	// }
 
-		uint8_t standards_length = curve->points;
-		ESP_LOGI(TAG, "detected %d standard sample points", standards_length);
-		assert(standards_length <= MAX_POINTS); // MAX_POINTS is 10
-		assert(curve->points <= MAX_POINTS);	// MAX_POINTS is 10
-		// if (standards_length < 10)
-		// { // last row is not a standard point
-		// 	// check if we can interpolate
-		// 	interpolate = (curve->absorbance[standards_length] != 0);
-		// }
-		// else
-		// {
-		// 	interpolate = false; // last row is also a standard. Not interpolating
-		// }
-
-		float sum_absorbance = 0;
-		float sum_concentration = 0;
-		float sum_concentration_sq = 0;
-		float sum_product = 0;
-		for (int i = 0; i < standards_length; i++)
-		{
-			ESP_LOGI(TAG, "i=%d, (%f, %f)", i, curve->absorbance[i], curve->concentration[i]);
-			sum_absorbance += curve->absorbance[i];
-			sum_concentration += curve->concentration[i];
-			sum_concentration_sq += curve->concentration[i] * curve->concentration[i];
-			sum_product += curve->absorbance[i] * curve->concentration[i];
-		}
-		float divider = standards_length * sum_concentration_sq - sum_concentration * sum_concentration;
-		assert(divider != 0);
-		regress_line->gradient = (standards_length * sum_product - sum_concentration * sum_absorbance) / divider;
-		regress_line->offset = (sum_absorbance * sum_concentration_sq - sum_concentration * sum_product) / divider;
-		ESP_LOGI(TAG, "m=%f, b=%f", regress_line->gradient, regress_line->offset);
+	float sum_absorbance = 0;
+	float sum_concentration = 0;
+	float sum_absorbance_sq = 0;
+	float sum_product = 0;
+	for (int i = 0; i < standards_length; i++)
+	{
+		ESP_LOGI(TAG, "i=%d, (%f, %f)", i, curve->absorbance[i], curve->concentration[i]);
+		sum_absorbance += curve->absorbance[i];
+		sum_concentration += curve->concentration[i];
+		sum_absorbance_sq += curve->absorbance[i] * curve->absorbance[i];
+		sum_product += curve->absorbance[i] * curve->concentration[i];
+	}
+	float divider = standards_length * sum_absorbance_sq - sum_absorbance * sum_absorbance;
+	assert(divider != 0);
+	regress_line->gradient = (standards_length * sum_product - sum_concentration * sum_absorbance) / divider;
+	regress_line->offset = (sum_concentration * sum_absorbance_sq - sum_absorbance * sum_product) / divider;
+	ESP_LOGI(TAG, "m=%f, b=%f", regress_line->gradient, regress_line->offset);
 };
 
 void HistoryList::enter(Sctp* sctp)
@@ -111,22 +113,28 @@ void HistoryList::okay(Sctp* sctp)
 				sctp->history = sctp->history_list[sctp->history_index];
 
 				if ( sctp->history.measurement_mode == MEASUREMENT_MODE_CONCENTRATION ) {
-					history_curve = (curve_t*) malloc (sizeof(curve_t));
-					history_curve->filename = (char*) malloc (25 * sizeof(char));
-					history_curve->concentration = (float*) malloc (10 * sizeof(float));
-					history_curve->absorbance = (float*) malloc(10 * sizeof(float));
-					strcpy(history_curve->filename, sctp->history.filename);
-					sctp_flash_load_curve_floats(history_curve);
+					// history_curve = (curve_t*) malloc (sizeof(curve_t));
+					sctp->curve.filename = (char*) malloc (25 * sizeof(char));
+					sctp->curve.concentration = (float *)malloc(10 * sizeof(float));
+					sctp->curve.absorbance = (float *)malloc(10 * sizeof(float));
+					strcpy(sctp->curve.filename, sctp->history.filename);
+					sctp_flash_load_curve_floats(&sctp->curve);
 
-					sctp_history_regress(history_curve, regress_line);
+					regress_line = (conc_regression_t *)malloc(sizeof(conc_regression_t));
+					sctp_history_regress(&sctp->curve, regress_line);
+					ESP_LOGI(TAG, "m=%f, b=%f", regress_line->gradient, regress_line->offset);
 
 					sctp_lcd_clear();
-					sctp_lcd_conc_regress(cursor, *history_curve, interpolate, regress_line);
+					sctp_lcd_conc_regress(cursor, sctp->curve, interpolate, regress_line);
 					substate = SUBSTATE_CONC;
-					free(history_curve->filename);
-					free(history_curve->concentration);
-					free(history_curve->absorbance);
-					free(history_curve);
+					free(regress_line);
+					free(sctp->curve.filename);
+					free(sctp->curve.absorbance);
+					ESP_LOGI(TAG, "free 1 done");
+					sctp->curve.absorbance = NULL;
+					free(sctp->curve.concentration);
+					ESP_LOGI(TAG, "free 2 done");
+					sctp->curve.concentration = NULL;
 				}
 				else {
 					history_wavelength = (float*) malloc(450 * sizeof(float));
@@ -155,6 +163,7 @@ void HistoryList::okay(Sctp* sctp)
 			break;
 		}
 		case SUBSTATE_SPEC: {
+			substate = SUBSTATE_LIST;
 			sctp_lcd_clear();
 			offset = 0;
 			sctp_lcd_history_list(cursor, offset, filenames);
@@ -162,6 +171,7 @@ void HistoryList::okay(Sctp* sctp)
 		}
 		case SUBSTATE_CONC:
 		{
+			substate = SUBSTATE_LIST;
 			sctp_lcd_clear();
 			offset = 0;
 			sctp_lcd_history_list(cursor, offset, filenames);
@@ -201,8 +211,16 @@ void HistoryList::arrowUp(Sctp* sctp)
 			}
 		}
 		sctp_lcd_history_list(cursor, offset, filenames);
-	} 
+	}
+	else if (substate == SUBSTATE_SPEC)
+	{
+		substate = SUBSTATE_LIST;
+		sctp_lcd_clear();
+		offset = 0;
+		sctp_lcd_history_list(cursor, offset, filenames);
+	}
 	else if(substate == SUBSTATE_CONC) {
+		substate = SUBSTATE_LIST;
 		sctp_lcd_clear();
 		offset = 0;
 		sctp_lcd_history_list(cursor, offset, filenames);
@@ -239,6 +257,13 @@ void HistoryList::arrowDown(Sctp* sctp)
 				offset++;
 			}
 		}
+		else if (substate == SUBSTATE_SPEC)
+		{
+			substate = SUBSTATE_LIST;
+			sctp_lcd_clear();
+			offset = 0;
+			sctp_lcd_history_list(cursor, offset, filenames);
+		}
 		else if (cursor == CURSOR_BACK)
 		{
 			cursor = CURSOR_FILE_0;
@@ -248,6 +273,7 @@ void HistoryList::arrowDown(Sctp* sctp)
 	}
 	else if (substate == SUBSTATE_CONC)
 	{
+		substate = SUBSTATE_LIST;
 		sctp_lcd_clear();
 		offset = 0;
 		sctp_lcd_history_list(cursor, offset, filenames);
@@ -258,6 +284,14 @@ void HistoryList::arrowRight(Sctp *sctp)
 {
 	if (substate == SUBSTATE_CONC)
 	{
+		substate = SUBSTATE_LIST;
+		sctp_lcd_clear();
+		offset = 0;
+		sctp_lcd_history_list(cursor, offset, filenames);
+	}
+	else if (substate == SUBSTATE_SPEC)
+	{
+		substate = SUBSTATE_LIST;
 		sctp_lcd_clear();
 		offset = 0;
 		sctp_lcd_history_list(cursor, offset, filenames);
@@ -268,6 +302,14 @@ void HistoryList::arrowLeft(Sctp *sctp)
 {
 	if (substate == SUBSTATE_CONC)
 	{
+		substate = SUBSTATE_LIST;
+		sctp_lcd_clear();
+		offset = 0;
+		sctp_lcd_history_list(cursor, offset, filenames);
+	}
+	else if (substate == SUBSTATE_SPEC)
+	{
+		substate = SUBSTATE_LIST;
 		sctp_lcd_clear();
 		offset = 0;
 		sctp_lcd_history_list(cursor, offset, filenames);
