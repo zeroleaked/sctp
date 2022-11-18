@@ -464,10 +464,10 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
       absorbance[i] = 0;
     }
   }
-  if(a_max <= 0.8)
-    a_max = 0.8;
+  if(a_max <= 0.2)
+    a_max = 0.2;
   else
-    a_max = 1.2;
+    a_max = 0.5;
 
   ESP_LOGI(TAG, "LCD check 1");
   display.setTextColor(TFT_TOSCA);
