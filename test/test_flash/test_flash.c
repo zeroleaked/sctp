@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <math.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -156,14 +157,49 @@ void nvs_curve_load() {
     free(curve.concentration);
 }
 
+void flash_curve_load()
+{
+    curve_t * curve = (curve_t *) malloc (sizeof(curve_t));
+    curve->absorbance = malloc(sizeof(float) * 10);
+    curve->concentration = malloc(sizeof(float) * 10);
+    curve->filename = malloc(sizeof(char) * 25);
+    strcpy(curve->filename, "1_554nm.csv");
+
+    esp_err_t ret = sctp_flash_load_curve_floats(curve);
+    TEST_ASSERT_EQUAL(ESP_OK, ret);
+
+    for (int i = 0; i < 10; i++)
+    {
+        ESP_LOGI(TAG, "A[%d]=%f; C[%d]=%f", i, curve->absorbance[i], i, curve->concentration[i]);
+    }
+    free(curve->absorbance);
+    free(curve->concentration);
+    free(curve->filename);
+    free(curve);
+}
+
+void flash_save_spectrum()
+{
+    float * ab = malloc(sizeof(float) * 300);
+    float * wl = malloc(sizeof(float) * 300);
+    uint16_t length = 300;
+    for(int i=0; i<length; i++) {
+        wl[i] = 401+i;
+        ab[i] = sin((22/7)/(i+1));
+    }
+    sctp_flash_save_spectrum(ab, wl, length);
+}
+
 void app_main(void)
 {
     UNITY_BEGIN();
     // RUN_TEST(test1);
 
-    RUN_TEST(nvs_curve_save);
+    // RUN_TEST(nvs_curve_save);
     // RUN_TEST(nvs_curve_list);
     // RUN_TEST(nvs_curve_load);
+    // RUN_TEST(flash_curve_load);
+    RUN_TEST(flash_save_spectrum);
 
     UNITY_END();
 }
