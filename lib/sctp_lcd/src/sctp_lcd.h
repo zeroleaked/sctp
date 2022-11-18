@@ -8,15 +8,15 @@
 #define LCD_PIN_MOSI    13
 #define LCD_PIN_SCLK    14
 
-#define LCD_PIN_CS      36
-#define LCD_PIN_DC      37
-#define LCD_PIN_BL      47
-#define LCD_PIN_RST     48
+// #define LCD_PIN_CS      36
+// #define LCD_PIN_DC      37
+// #define LCD_PIN_BL      47
+// #define LCD_PIN_RST     48
 
-// #define LCD_PIN_CS      17
-// #define LCD_PIN_DC      8
-// #define LCD_PIN_BL      9
-// #define LCD_PIN_RST     18
+#define LCD_PIN_CS      17
+#define LCD_PIN_DC      8
+#define LCD_PIN_BL      9
+#define LCD_PIN_RST     18
 
 class LGFX : public lgfx::LGFX_Device
 {
@@ -119,7 +119,7 @@ void sctp_lcd_spec_result_clear(uint8_t cursor);
 void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t length);
 
 void sctp_lcd_spec_save_saving();
-void sctp_lcd_spec_save_finish(char saved_name[20]);
+void sctp_lcd_spec_save_finish(char saved_name[25]);
 void sctp_lcd_spec_save_finish_cursor(uint8_t cursor);
 
 // void sctp_lcd_conc_curves_opening(uint8_t cursor);

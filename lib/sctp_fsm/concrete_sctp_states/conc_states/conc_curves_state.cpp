@@ -44,7 +44,7 @@ void ConcCurves::enter(Sctp* sctp)
 				curve_list[i].concentration = (float*) malloc(MAX_POINTS * sizeof(float));
 				curve_list[i].absorbance = (float*) malloc(MAX_POINTS * sizeof(float));
 				curve_list[i].concentration[j] = 0;
-				curve_list[i].absorbance[j] = 0;
+				curve_list[i].absorbance[j] = -1;
 			}
 		}
 	}
@@ -62,14 +62,15 @@ void ConcCurves::okay(Sctp* sctp)
 		sctp->curve.concentration = (float *) malloc( MAX_POINTS * sizeof(float) );
 
 		sctp_flash_nvs_load_curve(&sctp->curve);
+		ESP_LOGI(TAG, "address1=0x%8x", (uint32_t)sctp->curve.concentration);
 
 		if (sctp->curve.wavelength == 0) {
+			ESP_LOGI(TAG, "address2=0x%8x", (uint32_t)sctp->curve.concentration);
 			sctp->setState(ConcWavelength::getInstance());
 		}
 		else {
 			sctp->setState(ConcTable::getInstance());
 		}
-
 	}
 	else if (cursor <= CURSOR_DEL_CURVE_5) {
 		uint8_t curve_id = cursor - CURVE_LIST_LENGTH;
@@ -186,6 +187,7 @@ void ConcCurves::exit(Sctp * sctp) {
 	// free state buffers
 	free(curve_list);
 	curve_list = NULL;
+	sctp->lastPointIsInterpolated = false;
 }
 
 SctpState& ConcCurves::getInstance()

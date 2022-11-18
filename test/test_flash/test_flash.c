@@ -100,23 +100,24 @@ void nvs_curve_save() {
     curve_t curve;
     curve.absorbance = malloc(sizeof(float) * 10);
     curve.concentration = malloc(sizeof(float) * 10);
-    curve.id = 1;
-    curve.points = 6;
-    curve.wavelength = 554;
-
-    for (int i=0; i< 10; i++) {
-        if (i<curve.points) {
-            curve.absorbance[i] = (i+1);
-            curve.concentration[i] = (i+1)*0.1;
+    for(int j=0; j<6; j++) {
+        curve.id = j;
+        curve.points = 0;
+        curve.wavelength = 0;
+        
+        for (int i=0; i< 10; i++) {
+            if (i<curve.points) {
+                curve.absorbance[i] = -1;
+                curve.concentration[i] = 0;
+            }
+            else {
+                curve.absorbance[i] = -1;
+                curve.concentration[i] = 0;
+            }
         }
-        else {
-            curve.absorbance[i] = -1;
-            curve.concentration[i] = 0;
-        }
+        esp_err_t ret = sctp_flash_nvs_save_curve(&curve);
+        TEST_ASSERT_EQUAL(ESP_OK, ret);
     }
-
-    esp_err_t ret = sctp_flash_nvs_save_curve(&curve);
-    TEST_ASSERT_EQUAL(ESP_OK, ret);
 
     free(curve.absorbance);
     free(curve.concentration);

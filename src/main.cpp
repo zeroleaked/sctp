@@ -52,7 +52,7 @@ void buttons_task(void * param) {
             sctp->arrowUp();
             vTaskDelay(100/portTICK_PERIOD_MS);
         }
-        vTaskDelay(50/portTICK_PERIOD_MS);
+        vTaskDelay(75/portTICK_PERIOD_MS);
         // ESP_LOGI(TAG, "state=%d", sctp->getCurrentStateId());
     }
 }
@@ -82,7 +82,7 @@ void app_main() {
 
     //sctp_buttons_init(&button_events);
 
-    xTaskCreate(buttons_task, "button_handler", CONFIG_ESP32_BUTTON_TASK_STACK_SIZE, NULL, 10, NULL);
+    xTaskCreate(buttons_task, "button_handler", 4096, NULL, 10, NULL);
     //xTaskCreatePinnedToCore( lcdTask, "lcdTask", 8192, NULL, 1, NULL, 1 );
 
     while (1){vTaskDelay(10000/portTICK_PERIOD_MS);}

@@ -265,14 +265,15 @@ void sctp_lcd_save_saving()
   display.println("Saving...");
 }
 
-void sctp_lcd_save_finish(char saved_name[255]){
+void sctp_lcd_save_finish(char saved_name[25]){
   display.fillRect(210, 120, 90, 30, TFT_WHITE);
   display.setTextColor(TFT_BLACK);
   display.setTextSize(1);
-  display.setCursor(120, 125);
-  char text[] = "Saved as ...";
+  display.setCursor(140, 125);
+  char text[] = "Saved as ...............";
   sprintf(text, "Saved as %s", saved_name);
   display.println(text);
+  display.fillRoundRect(180, 160, 120, 40, 10, TFT_LIGHTGREY);
   display.setTextColor(TFT_BLACK);
   display.setCursor(230, 175);
   display.println("OK");
@@ -949,7 +950,7 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
         sprintf(a, "%.2f", (double)ab[i + row_offset]);
         display.println(a);
       }
-      if(lastPointIsInterpolated == true && (i+row_offset == curve.points))
+      if(lastPointIsInterpolated == true && (i+row_offset == curve.points - 1))
         display.setTextColor(TFT_RED);
       display.setCursor(x1, (y + 40*i));
       sprintf(c, "%.3f", (double)conc[i + row_offset]);
@@ -971,7 +972,7 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
 }
 
 void sctp_lcd_conc_table_clear(uint8_t cursor, uint8_t row_offset, curve_t curve){
-  display.fillRect(85, 75, 310, 150, TFT_WHITE);
+  display.fillRect(85, 75, 350, 150, TFT_WHITE);
   switch(cursor) {
     case 0: {
       display.fillRect(195, 75, 75, 35, TFT_WHITE);
@@ -1083,7 +1084,7 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   display.setTextSize(1);
   display.setCursor(75, 10);
   display.println("CONC VS. ABS");
-  display.drawRect(75, 31, 335, 225, TFT_BLACK);
+  display.drawRect(75, 30, 336, 226, TFT_BLACK);
 
   float* conc = curve.concentration;
   float* ab = curve.absorbance;
@@ -1116,11 +1117,11 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
 
   //float m = 100; //test case
   float m = (*regress_line).gradient;
-  float c = (*regress_line).offset;
+  float offset = (*regress_line).offset;
   for(int i=1;i<329;i++) {
-    y_px = 255 - i;
-    float x = m * i * a_max / 220 * c;
-    x_px = 75 + (x - c_min) / (c_max - c_min) * 330;
+    x_px = 75+i;
+    float y = (i * c_max / 330 - offset) / m;
+    y_px = 255 - (y - a_min) / (a_max - a_min) * 220;
     display.fillRect(x_px-1, y_px-1, 3, 3, TFT_TOSCA);
   }
 
@@ -1128,11 +1129,11 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   while(i < curve.points){
     x_px = (conc[i] - c_min) / (c_max - c_min) * 330 + 75;
     y_px = 255 - (ab[i] - a_min) / (a_max - a_min) * 220;
-    i = i+1;
     if(lastPointIsInterpolated == true && i == curve.points - 1)
-      display.fillRect(x_px-3, y_px-3, 7, 7, TFT_RED);
+      display.fillRect(x_px-4, y_px-4, 9, 9, TFT_RED);
     else
-      display.fillRect(x_px-3, y_px-3, 7, 7, TFT_MUSTARD);
+      display.fillRect(x_px-4, y_px-4, 9, 9, TFT_MUSTARD);
+    i = i + 1;
   }
 
   switch(cursor) {

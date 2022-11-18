@@ -46,10 +46,10 @@ static void takeConcentrationBlank(void * pvParameters) {
 	assert(blank_take->readout != NULL);
 	*blank_take->exposure = 7800;
 	blank_take->gain = 1;
-	// esp_err_t report = sctp_sensor_concentration_blank(calibration, wavelength, blank_take);
+	esp_err_t report = sctp_sensor_concentration_blank(calibration, wavelength, blank_take);
 	
-    // QueueHandle_t report_queue = ((taskParam_t *) pvParameters)->report_queue;
-	// assert(xQueueSend(report_queue, &report, 0) == pdTRUE);
+    QueueHandle_t report_queue = ((taskParam_t *) pvParameters)->report_queue;
+	assert(xQueueSend(report_queue, &report, 0) == pdTRUE);
 	ESP_LOGI(TAG, "takeConcentrationBlank() sended to queue");
 	vTaskDelete( NULL );
 
