@@ -18,7 +18,13 @@ Sctp::Sctp()
     i2cdev_init();
 	sctp_battery_init();
 
-	sctp_flash_nvs_load_calibration(&calibration);
+	calibration.gain = -0.9490740741;
+	calibration.bias = 1104.138889;
+	calibration.start = 425;
+	calibration.length = 317;
+    calibration.row = 507;
+
+	// sctp_flash_nvs_load_calibration(&calibration);
 	ESP_LOGI(TAG, "nvs loading passed");
 	// todo load calibration
 	// calibration.row = 490;

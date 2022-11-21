@@ -150,7 +150,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     ESP_LOGI(TAG, "row set to %d", calibration->row);
     int exposure = blank_take->exposure[0];
 
-    int setpoint = 950;
+    int setpoint = 900;
     int error = setpoint;
     const int tolerance = 50;
     gpio_set_level( PIN_LAMP_SWITCH, 1);
@@ -294,7 +294,7 @@ esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t 
     ESP_LOGI(TAG, "row set to %d", calibration->row);
 
     int exposure = *blank_take->exposure;
-    int setpoint = 550;
+    int setpoint = 900;
     int error = setpoint;
     float kp = 1;
     int tolerance = 50;
