@@ -444,8 +444,8 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   display.setTextColor(TFT_TOSCA);
   display.setTextSize(0.75);
   display.setCursor(5, 8);
-  display.println("Absorbance");
-  display.drawRect(35, 27, 363, 270, TFT_BLACK);
+  display.println("Absorbance (x0.001) VS. Wavelength (nm)");
+  display.drawRect(35, 27, 363, 271, TFT_BLACK);
 
   float a_max = absorbance[0];
   float a_min = 0;
@@ -464,10 +464,18 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
       absorbance[i] = 0;
     }
   }
-  if(a_max <= 0.2)
+  if (a_max <= 0.01)
+    a_max = 0.01;
+  else if (a_max <= 0.02)
+    a_max = 0.02;
+  else if (a_max <= 0.04)
+    a_max = 0.04;
+  else if(a_max <= 0.1)
+    a_max = 0.1;
+  else if (a_max <= 0.2)
     a_max = 0.2;
   else
-    a_max = 0.5;
+    a_max = 0.4;
 
   ESP_LOGI(TAG, "LCD check 1");
   display.setTextColor(TFT_TOSCA);
@@ -631,13 +639,12 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
       y_prev = y_px;
     }
   }
-
-  display.setTextColor(TFT_TOSCA);
-  display.setTextSize(0.75);
-  display.setCursor(404, 260);
-  display.println("Wavelength");
-  display.setCursor(404, 275);
-  display.println("(nm)");
+  // display.setTextColor(TFT_TOSCA);
+  // display.setTextSize(0.75);
+  // display.setCursor(404, 260);
+  // display.println("Wavelength");
+  // display.setCursor(404, 275);
+  // display.println("(nm)");
 }
 
 void sctp_lcd_conc_curves_loading_floats(uint8_t cursor){}
