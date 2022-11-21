@@ -589,8 +589,8 @@ esp_err_t sctp_flash_save_curve(curve_t curve)
         ESP_LOGE(TAG, "Failed to open file for writing");
         return ESP_FAIL;
     }
-    fprintf(f, "id, %d", curve.id);
-    fprintf(f, "wavelength, %d", curve.wavelength);
+    fprintf(f, "id, %d\n", curve.id);
+    fprintf(f, "wavelength, %d\n", curve.wavelength);
     fprintf(f, "index, concentration, absorbance\n");
     for (int i = 0; i < curve.points; i++)
     {
@@ -611,27 +611,29 @@ esp_err_t sctp_flash_load_history_list(history_t list[FILE_LEN])
     sdmmc_card_t *card;
 
     sctp_flash_init(PIN_NUM_CS, &host, &card);
-    // char spec_dir[] = "/sdcard/spectrum";
+    
     struct dirent *de;
     DIR * d;
-    // d = opendir(spec_dir);
-    // if (d == NULL)
-    // {
-    //     ESP_LOGI(TAG, "Could'nt open directory");
-    // }
     char *temp;
-    // while ((de = readdir(d)) != NULL)
-    // {
-    //     temp = de->d_name;
-    //     if (temp[0] != '_' && temp[0] != '.')
-    //     {
-    //         strcpy(list[count].filename, temp);
-    //         list[count].id = count + 1;
-    //         list[count].measurement_mode = 0;
-    //         ESP_LOGI(TAG, "%d, %s", list[count].id, temp);
-    //         count++;
-    //     }
-    // }
+    char spec_dir[] = "/sdcard/spectrum";
+    d = opendir(spec_dir);
+    if (d == NULL)
+    {
+        ESP_LOGI(TAG, "Could'nt open directory");
+    }
+    
+    while ((de = readdir(d)) != NULL)
+    {
+        temp = de->d_name;
+        if (temp[0] != '_' && temp[0] != '.')
+        {
+            strcpy(list[count].filename, temp);
+            list[count].id = count + 1;
+            list[count].measurement_mode = 0;
+            ESP_LOGI(TAG, "%d, %s", list[count].id, temp);
+            count++;
+        }
+    }
     char curve_dir[] = "/sdcard/curves";
     // ESP_LOGI(TAG, "curve directory: %s", curve_dir);
     d = opendir(curve_dir);
@@ -743,6 +745,7 @@ esp_err_t sctp_flash_load_curve_floats(curve_t *curve)
     }
     fclose(f);
     curve->points = i - 3;
+    ESP_LOGI(TAG, "points: %d", curve->points);
 
     sctp_flash_deinit(&host, card);
     return ESP_OK;

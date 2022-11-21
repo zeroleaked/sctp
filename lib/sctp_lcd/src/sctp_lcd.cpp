@@ -1116,8 +1116,8 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   int y_px;
 
   //float m = 100; //test case
-  float m = (*regress_line).gradient;
-  float offset = (*regress_line).offset;
+  float m = regress_line->gradient;
+  float offset = regress_line->offset;
   for(int i=1;i<329;i++) {
     x_px = 75+i;
     float y = (i * c_max / 330 - offset) / m;
@@ -1145,6 +1145,7 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
       break;
     }
   }
+  display.fillRoundRect(180, 280, 120, 30, 10, TFT_LIGHTGREY);
   display.setTextColor(TFT_BLACK);
   display.setTextSize(1);
   display.setCursor(230, 287);
