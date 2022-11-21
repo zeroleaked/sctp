@@ -687,7 +687,8 @@ esp_err_t sctp_flash_load_spectrum(char *filename, float *absorbance, float *wav
         }
         i++;
     }
-    *length = i + 1;
+    *length = i - 1;
+    ESP_LOGI(TAG, "length: %d", *length);
     fclose(f);
     sctp_flash_deinit(&host, card);
     return ESP_OK;

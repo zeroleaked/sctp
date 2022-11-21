@@ -139,16 +139,16 @@ void HistoryList::okay(Sctp* sctp)
 				else {
 					history_wavelength = (float*) malloc(450 * sizeof(float));
 					history_absorbance = (float*) malloc(450 * sizeof(float));
-					spectrum_length = (uint16_t*) malloc(sizeof(uint16_t));
-					sctp_flash_load_spectrum(sctp->history.filename, history_absorbance, history_wavelength, spectrum_length);
-					ESP_LOGI(TAG, "spec file loading passed.");
-
+					sctp_flash_load_spectrum(sctp->history.filename, history_absorbance, history_wavelength, &sctp->spectrum_length);
+					ESP_LOGI(TAG, "length: %d", sctp->spectrum_length);
+					for(int i=0; i < sctp->spectrum_length; i++) {
+						ESP_LOGI(TAG, "%d, %.3f, %.3f", i, (double)history_wavelength[i - 1], (double)history_absorbance[i - 1]);
+					}
 					sctp_lcd_clear();
-					sctp_lcd_spec_result_full(history_wavelength, history_absorbance, *spectrum_length);
+					sctp_lcd_spec_result_full(history_wavelength, history_absorbance, sctp->spectrum_length);
 					ESP_LOGI(TAG, "lcd passed.");
 					substate = SUBSTATE_SPEC;
 					ESP_LOGI(TAG, "changing substate passed.");
-					free(spectrum_length);
 					free(history_absorbance);
 					free(history_wavelength);
 				}

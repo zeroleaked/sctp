@@ -65,8 +65,7 @@ public:
 	uint8_t history_list_length;
 	uint8_t history_index;
 	history_t history;
-
-
+	uint16_t spectrum_length;
 
 private:
 	SctpState* currentState;
