@@ -570,7 +570,6 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
     ESP_LOGI(TAG, "LCD check 3");
     for (int j = 0; j < 360; j++)
     {
-      ESP_LOGI(TAG, "j=%d", j);
       i = round(j * length / 360);
       i_prev = round((j-1) / length * 360);
       if(i == 0) i_prev = i;
