@@ -185,7 +185,7 @@ void flash_save_spectrum()
     uint16_t length = 300;
     for(int i=0; i<length; i++) {
         wl[i] = 401+i;
-        ab[i] = sin((22/7)/(i+1));
+        ab[i] = (length-i)*sin((22/7)/(i+1));
     }
     sctp_flash_save_spectrum(ab, wl, length);
 }
