@@ -16,13 +16,13 @@
 void SpecSave::enter(Sctp* sctp)
 {
 	sctp_lcd_clear();
-	cursor = CURSOR_NULL;
+	cursor = CURSOR_OK;
 
     substate = SUBSTATE_SAVING;
 	
 	sctp_lcd_spec_save_saving();
 
-	sctp_flash_save_spectrum(sctp->absorbance, sctp->spectrum_wavelength, sctp->calibration.length);
+	sctp_flash_save_spectrum(sctp->absorbance, sctp->spectrum_wavelength, sctp->calibration.length, sctp->saved_name);
 
 	sctp_lcd_spec_save_finish(sctp->saved_name);
 }

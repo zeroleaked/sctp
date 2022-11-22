@@ -65,8 +65,8 @@ void ConcTable::okay(Sctp* sctp) {
 			}
 			else if (cursor <= CURSOR_ABSORBANCE_3) {
 				sctp->point_sel = cursor - 4 + row_offset;
-				// if(sctp->curve.points < sctp->point_sel)
-				// 	sctp->curve.points++;
+				if(sctp->curve.points <= sctp->point_sel)
+					sctp->curve.points++;
 				if (sctp->blank_take == NULL) {
                     sctp->setState(ConcBlank::getInstance());
 				}

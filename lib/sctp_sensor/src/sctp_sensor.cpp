@@ -325,12 +325,12 @@ esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t 
         else if (exposure > 100) exposure = exposure + 0.3 * error;
         else exposure = exposure + 0.1 * error;
         if (exposure <= 3) {
-            islast = true;
+            // islast = true;
             exposure = 3;
             ESP_LOGW(TAG, "lowest exposure");
         }
         else if (exposure > 8000) {
-            islast = true; // make this the last take
+            // islast = true; // make this the last take
             exposure = 8000;
             ESP_LOGW(TAG, "highest exposure");
         }
@@ -346,6 +346,12 @@ esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t 
         uint16_t readout = (take->buf[px * 2] << 8) | (take->buf[px*2 + 1]);
         error = setpoint - readout;     
         ESP_LOGI(TAG, "readout=%d, error=%d", readout, error);
+        if ((exposure == 3) && (error<0)) {
+            islast = true;
+        }
+        else if ((exposure == 8000) && error>tolerance) {
+            islast = true;
+        }
     }
     gpio_set_level( PIN_LAMP_SWITCH, 0);
     *blank_take->readout = take->buf[px * 2] << 8 | take->buf[px*2 +1];
@@ -379,12 +385,15 @@ esp_err_t sctp_sensor_concentration_sample(calibration_t * calibration, uint16_t
 
     ESP_LOGI(TAG, "exposure set to %d", *blank_take->exposure);
 
+
     buffer_flush();
 
     camera_fb_t * take = sctp_camera_fb_get();
     gpio_set_level( PIN_LAMP_SWITCH, 0);
     *sample_take = take->buf[px * 2] << 8 | take->buf[px*2 +1];
     sctp_camera_fb_return(take);
+
+    ESP_LOGI(TAG, "%f", *sample_take);
 
     sctp_camera_deinit();
 

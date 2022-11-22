@@ -18,20 +18,14 @@ Sctp::Sctp()
     i2cdev_init();
 	sctp_battery_init();
 
-	calibration.gain = -0.9490740741;
-	calibration.bias = 1104.138889;
-	calibration.start = 425;
-	calibration.length = 317;
-    calibration.row = 507;
+	// calibration.gain = -0.9490740741;
+	// calibration.bias = 1104.138889;
+	// calibration.start = 425;
+	// calibration.length = 317;
+    // calibration.row = 507;
 
-	// sctp_flash_nvs_load_calibration(&calibration);
+	sctp_flash_nvs_load_calibration(&calibration);
 	ESP_LOGI(TAG, "nvs loading passed");
-	// todo load calibration
-	// calibration.row = 490;
-	// calibration.gain = -0.7666855524;
-	// calibration.bias = 1013.975014;
-	// calibration.start = 409;
-	// calibration.length = 393;
 
 	lcd_refresh_queue = xQueueCreate(1, sizeof(command_t));
 	assert(lcd_refresh_queue != NULL);
@@ -128,9 +122,9 @@ void Sctp::refreshLcd()
 			// currentState->refreshLcd(this, command);
 
 			if (currentState->batteryIndicator()) {
-				// sctp_battery_sample(&this->battery_percentage); // DONT FORGET TO UNCOMMENT
+				sctp_battery_sample(&this->battery_percentage);
 				// ESP_LOGI(TAG,"perc=%d", this->battery_percentage);
-				// sctp_lcd_battery(this->battery_percentage);
+				sctp_lcd_battery(this->battery_percentage);
 			}
 
 		}

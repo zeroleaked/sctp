@@ -499,7 +499,7 @@ const char mockup_curves_filename[][20] = {
     "curve4_700nm.csv",
     "NaN"};
 
-esp_err_t sctp_flash_save_spectrum(float *absorbance, float *wavelength, uint16_t length)
+esp_err_t sctp_flash_save_spectrum(float *absorbance, float *wavelength, uint16_t length, char filename[20])
 {
     uint8_t check;
     uint8_t count = 0;
@@ -533,8 +533,11 @@ esp_err_t sctp_flash_save_spectrum(float *absorbance, float *wavelength, uint16_
     closedir(dir);
 
     // Create a file.
-    char file_spec[] = "/sdcard/spectrum/spec_XXXX.csv";
-    sprintf(file_spec, "/sdcard/spectrum/spec_%d.csv", count + 1);
+    char spec_dir[] = "/sdcard/spec/spec_XXXX.csv";
+    char file_spec[] = "spec_XXXX.csv";
+    sprintf(file_spec, "spec_%d.csv", count + 1);
+    strcpy(filename, file_spec);
+    sprintf(spec_dir, "/sdcard/spec/%s", file_spec);
 
     ESP_LOGI(TAG, "Opening file %s", file_spec);
     FILE *f = fopen(file_spec, "w");
@@ -575,11 +578,11 @@ esp_err_t sctp_flash_save_curve(curve_t curve)
 
     // Create a file.
 
-    char curve_dir[] = "/sdcard/curves/";
+    char curve_dir[] = "/sdcard/curves/XXXX_XXXXnm.csv";
     char file_curve[] = "XXXX_XXXXnm.csv";
     sprintf(file_curve, "%d_%dnm.csv", curve.id, curve.wavelength);
     strcpy(curve.filename, file_curve);
-    strcat(curve_dir, file_curve);
+    sprintf(curve_dir, "/sdcard/curves/%s", file_curve);
     ESP_LOGI(TAG, "file_curve: %s", curve.filename);
 
     ESP_LOGI(TAG, "Opening file %s", curve_dir);
@@ -603,10 +606,8 @@ esp_err_t sctp_flash_save_curve(curve_t curve)
     return ESP_OK;
 }
 
-esp_err_t sctp_flash_load_history_list(history_t list[FILE_LEN])
+uint8_t sctp_flash_load_history_list(history_t list[FILE_LEN], uint8_t count)
 {
-    uint8_t count = 0;
-
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t *card;
 
@@ -654,19 +655,19 @@ esp_err_t sctp_flash_load_history_list(history_t list[FILE_LEN])
         }
     }
     sctp_flash_deinit(&host, card);
-    return ESP_OK;
+    return count;
 }
 
-esp_err_t sctp_flash_load_spectrum(char *filename, float *absorbance, float *wavelength, uint16_t *length)
+uint16_t sctp_flash_load_spectrum(char *filename, float *absorbance, float *wavelength, uint16_t length)
 {
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t *card;
 
     sctp_flash_init(PIN_NUM_CS, &host, &card);
-    *length = 0;
+    length = 0;
     char line[NAME_LEN];
-    char file_spec[] = "/sdcard/spectrum/";
-    strcat(file_spec, filename);
+    char file_spec[] = "/sdcard/spectrum/XXXXXXXXXXXXXXXXX";
+    sprintf(file_spec, "/sdcard/spectrum/%s", filename);
 
     // Open file for reading
     ESP_LOGI(TAG, "Reading file %s", file_spec);
@@ -674,7 +675,7 @@ esp_err_t sctp_flash_load_spectrum(char *filename, float *absorbance, float *wav
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for reading");
-        return ESP_FAIL;
+        return 0;
     }
     int i = 0;
     while (fgets(line, sizeof(line), f))
@@ -683,15 +684,17 @@ esp_err_t sctp_flash_load_spectrum(char *filename, float *absorbance, float *wav
         {
             wavelength[i - 1] = (float)atof(strtok(line, ", "));
             absorbance[i - 1] = (float)atof(strtok(NULL, ", "));
-            ESP_LOGI(TAG, "%d, %.3f, %.3f", i, (double)wavelength[i - 1], (double)absorbance[i - 1]);
+            // ESP_LOGI(TAG, "%d, %.3f, %.3f", i, (double)wavelength[i - 1], (double)absorbance[i - 1]);
         }
         i++;
     }
-    *length = i - 1;
-    ESP_LOGI(TAG, "length: %d", *length);
+    length = i - 1;
+    ESP_LOGI(TAG, "length: %d", length);
+    // vTaskDelay(1000 / portTICK_PERIOD_MS);
+    // ESP_LOGI(TAG, "0x%8x", (uint32_t) &length);
     fclose(f);
     sctp_flash_deinit(&host, card);
-    return ESP_OK;
+    return length;
 }
 
 esp_err_t sctp_flash_load_curve_floats(curve_t *curve)
