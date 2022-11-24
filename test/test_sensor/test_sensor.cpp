@@ -95,7 +95,7 @@ void row_search () {
 
 void row_print() {
     i2cdev_init();
-    uint16_t row = 509;
+    uint16_t row = 507;
     uint8_t samples = 30;
     float * arr = ( float *) malloc (sizeof (float) * 1280 * samples);
     memset(arr, 0, sizeof(float) * 1280 * samples);
@@ -115,7 +115,7 @@ void row_print() {
 
     sensor_t *s = sctp_camera_sensor_get();
     // s->set_gain(s, 8);
-    s->set_shutter_width(s, 8000);
+    s->set_shutter_width(s, 50);
     s->set_row_start(s, 0x000C + row);
 
     camera_fb_t * take = sctp_camera_fb_get();
@@ -553,10 +553,10 @@ void app_main() {
     UNITY_BEGIN();
 
     // RUN_TEST(row_search);
-    // RUN_TEST(row_print);
+    RUN_TEST(row_print);
 
     // RUN_TEST(test_spectrum_blank);
-    RUN_TEST(test_spectrum);
+    // RUN_TEST(test_spectrum);
     // RUN_TEST(test_quant_blank);
     // RUN_TEST(test_quant_sample);
     // RUN_TEST(test_quant);

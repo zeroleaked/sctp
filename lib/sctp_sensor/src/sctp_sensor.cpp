@@ -117,8 +117,8 @@ esp_err_t sctp_sensor_check(calibration_t * calibration, uint16_t * result) {
     camera_sensor->set_row_start(camera_sensor, calibration->row);
     ESP_LOGI(TAG, "row set to %d", calibration->row);
 
-    ESP_LOGI(TAG, "setting to %d exposure", 100);
-    camera_sensor->set_shutter_width(camera_sensor, 100);
+    ESP_LOGI(TAG, "setting to %d exposure", 50);
+    camera_sensor->set_shutter_width(camera_sensor, 50);
 
     uint16_t pixel = calibration->start;
     gpio_set_level( PIN_LAMP_SWITCH, 1);
@@ -187,9 +187,9 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
             if (exposure > 6000) exposure = exposure + 20 * error;
             else if (exposure > 5000) exposure = exposure + 8 * error;
             else if (exposure > 3000) exposure = exposure + 8 * error;
-            else if (exposure > 1500) exposure = exposure + 5 * error;
+            else if (exposure > 1500) exposure = exposure + 3 * error;
             else if (exposure > 1000) exposure = exposure + 1 * error;
-            else if (exposure > 100) exposure = exposure + 0.1 * error;
+            else if (exposure > 100) exposure = exposure + 0.2 * error;
             else exposure = exposure + 0.05 * error;
             if (exposure <= 3) {
                 islast = true;
@@ -278,7 +278,7 @@ esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t 
 
 
     for (int i=0; i<calibration->length; i++) {
-        ESP_LOGI(TAG, "%d:%f:%f:%d:", i, blank_take->readout[i], sample_take[i], blank_take->exposure[i]);
+        ESP_LOGI(TAG, "%d:%d:%f:%f:%d:", i,  calibration->start + calibration->length-1 - i, blank_take->readout[i], sample_take[i], blank_take->exposure[i]);
         vTaskDelay(10 /portTICK_PERIOD_MS);
     }
 
