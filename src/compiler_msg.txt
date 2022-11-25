@@ -20,4 +20,4 @@ Dependency Graph
 |   |-- sctp_types
 
 RAM:   [          ]   4.6% (used 15112 bytes from 327680 bytes)
-Flash: [====      ]  41.8% (used 438001 bytes from 1048576 bytes)
+Flash: [====      ]  42.8% (used 448309 bytes from 1048576 bytes)

@@ -893,7 +893,7 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
   int x1 = 200;
   int x2 = 340;
   int y = 80;
-  char a[] = "X.XX";
+  char a[] = "X.XXX";
   char c[] = "X.XXX";
   display.setTextColor(TFT_BLACK);
 
@@ -953,7 +953,7 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
       display.println(i + row_offset + 1); 
       if(ab[i+row_offset] != -1) {
         display.setCursor(x2, (y + 40*i));
-        sprintf(a, "%.2f", (double)ab[i + row_offset]);
+        sprintf(a, "%.3f", (double)ab[i + row_offset]);
         display.println(a);
       }
       if(lastPointIsInterpolated == true && (i+row_offset == curve.points - 1))
