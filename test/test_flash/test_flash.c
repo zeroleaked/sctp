@@ -101,24 +101,27 @@ void nvs_curve_save() {
     curve_t curve;
     curve.absorbance = malloc(sizeof(float) * 10);
     curve.concentration = malloc(sizeof(float) * 10);
-    for(int j=0; j<6; j++) {
-        curve.id = j;
-        curve.points = 0;
-        curve.wavelength = 0;
-        
-        for (int i=0; i< 10; i++) {
-            if (i<curve.points) {
-                curve.absorbance[i] = -1;
-                curve.concentration[i] = 0;
-            }
-            else {
-                curve.absorbance[i] = -1;
-                curve.concentration[i] = 0;
-            }
+    // for(int j=0; j<6; j++) {
+        curve.id = 2;
+        curve.points = 4;
+        curve.wavelength = 426;
+
+        curve.concentration[0] = 0.1;
+        curve.absorbance[0] = 0.1;
+        curve.concentration[1] = 0.067;
+        curve.absorbance[1] = 0.07;
+        curve.concentration[2] = 0.05;
+        curve.absorbance[2] = 0.04;
+        curve.concentration[3] = 0.033;
+        curve.absorbance[3] = 0.03;
+        for(int i=4; i<10; i++) {
+            curve.concentration[i] = 0;
+            curve.absorbance[i] = 0;
         }
+        
         esp_err_t ret = sctp_flash_nvs_save_curve(&curve);
         TEST_ASSERT_EQUAL(ESP_OK, ret);
-    }
+    // }
 
     free(curve.absorbance);
     free(curve.concentration);
@@ -182,12 +185,13 @@ void flash_save_spectrum()
 {
     float * ab = malloc(sizeof(float) * 300);
     float * wl = malloc(sizeof(float) * 300);
+    float * filename = malloc(sizeof(char) * 25);
     uint16_t length = 300;
     for(int i=0; i<length; i++) {
         wl[i] = 401+i;
         ab[i] = (length-i)*sin((22/7)/(i+1));
     }
-    sctp_flash_save_spectrum(ab, wl, length);
+    sctp_flash_save_spectrum(ab, wl, length, filename);
 }
 
 void app_main(void)
@@ -195,11 +199,11 @@ void app_main(void)
     UNITY_BEGIN();
     // RUN_TEST(test1);
 
-    // RUN_TEST(nvs_curve_save);
+    RUN_TEST(nvs_curve_save);
     // RUN_TEST(nvs_curve_list);
     // RUN_TEST(nvs_curve_load);
     // RUN_TEST(flash_curve_load);
-    RUN_TEST(flash_save_spectrum);
+    // RUN_TEST(flash_save_spectrum);
 
     UNITY_END();
 }

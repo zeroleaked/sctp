@@ -14,10 +14,6 @@ void sctp_lcd_clear() {
   ESP_LOGI(TAG, "pt4");
   display.fillScreen(TFT_WHITE);
   ESP_LOGI(TAG, "pt5");
-  display.drawFastVLine(479, 1, 315, TFT_BLUE);
-  ESP_LOGI(TAG, "pt6");
-  display.drawFastHLine(0, 319, 480, TFT_RED);
-  ESP_LOGI(TAG, "pt7");
 };
 
 void sctp_lcd_start() {
