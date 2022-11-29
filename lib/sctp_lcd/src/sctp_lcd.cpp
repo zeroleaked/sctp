@@ -166,12 +166,17 @@ void sctp_lcd_blank_waiting(uint8_t cursor, uint16_t result)
   display.drawRoundRect(340, 265, 120, 40, 10, TFT_BLACK);
 }
 
-void sctp_lcd_blank_sampling(uint8_t cursor)
+void sctp_lcd_blank_sampling(uint8_t cursor, uint8_t percentage)
 {
   display.fillRect(85, 170, 350, 80, TFT_WHITE);
   display.setTextColor(TFT_MUSTARD);
   display.setCursor(140, 175);
   display.println("Measuring Reference...");
+  char progress[] = "xxx% complete";
+  sprintf(progress, "%d% complete", percentage);
+  display.fillRect(150, 190, 150, 20, TFT_WHITE);
+  display.setCursor(155, 195);
+  display.println(progress);
 }
 
 void sctp_lcd_sample_clear(uint8_t cursor)
@@ -245,12 +250,17 @@ void sctp_lcd_sample_waiting(uint8_t cursor, uint16_t result)
   display.drawRoundRect(340, 265, 120, 40, 10, TFT_BLACK);
 }
 
-void sctp_lcd_sample_sampling(uint8_t cursor)
+void sctp_lcd_sample_sampling(uint8_t cursor, uint8_t percentage)
 {
   display.fillRect(95, 170, 350, 80, TFT_WHITE);
   display.setTextColor(TFT_MUSTARD);
   display.setCursor(150, 175);
   display.println("Measuring Sample...");
+  char progress[] = "xxx% complete";
+  sprintf(progress, "%d% complete", percentage);
+  display.fillRect(150, 190, 150, 20, TFT_WHITE);
+  display.setCursor(155, 195);
+  display.println(progress);
 }
 
 void sctp_lcd_save_saving()
@@ -297,8 +307,9 @@ void sctp_lcd_spec_save_finish_cursor(uint8_t cursor){
   sctp_lcd_save_finish_cursor(cursor);
 }
 
-void sctp_lcd_spec_blank_sampling(uint8_t cursor){
-  sctp_lcd_blank_sampling(cursor);
+void sctp_lcd_spec_blank_sampling(uint8_t cursor, uint8_t percentage)
+{
+  sctp_lcd_blank_sampling(cursor, percentage);
 }
 
 void sctp_lcd_spec_blank_waiting(uint8_t cursor, uint16_t result)
@@ -310,8 +321,9 @@ void sctp_lcd_spec_blank_clear(uint8_t cursor){
   sctp_lcd_blank_clear(cursor);
 }
 
-void sctp_lcd_spec_sample_sampling(uint8_t cursor){
-  sctp_lcd_sample_sampling(cursor);
+void sctp_lcd_spec_sample_sampling(uint8_t cursor, uint8_t percentage)
+{
+  sctp_lcd_sample_sampling(cursor, percentage);
 }
 
 void sctp_lcd_spec_sample_waiting(uint8_t cursor, uint16_t result)
@@ -447,18 +459,13 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   float a_min = 0;
   float wl_min = wavelength[0];
   float wl_max = wavelength[length-1];
-  if (absorbance[0] == 0)
-  {
-    absorbance[0] = 0;
-  }
+
   for (int i = 1; i < length; i++)
   {
     if (absorbance[i] >= a_max)
       a_max = absorbance[i];
-    if (absorbance[i] < 0)
-    {
-      absorbance[i] = 0;
-    }
+    if (absorbance[i] <= a_min)
+      a_min = absorbance[i];
   }
   if (a_max <= 0.01)
     a_max = 0.01;
@@ -486,7 +493,7 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
 
   for(int i=0; i<5; i++) {
     char a[] = "XXXXX";
-    sprintf(a, "%d", (int)(a_max*1000 - a_max*1000/4*i));
+    sprintf(a, "%d", (int)((a_max - a_min) * 1000 - (a_max - a_min) * 1000 / 4 * i));
     display.setCursor(13, 30 + 65*i);
     display.println(a);
     display.setCursor(52 + 90*i, 302);
@@ -504,8 +511,6 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   {
     for (i = 0; i < length; i++)
     {
-      // if(absorbance[i] == 0)
-      //   absorbance[i] = 0;
       x_px = (wavelength[i] - wl_min) / (wl_max - wl_min) * 360 + 61;
       x_next = (wavelength[i+1] - wl_min) / (wl_max - wl_min) * 360 + 61;
       y_px = 297 - (absorbance[i] - a_min) / (a_max - a_min) * 270;
@@ -1168,8 +1173,9 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   display.drawRoundRect(180, 280, 120, 30, 10, TFT_BLACK);
 }
 
-void sctp_lcd_conc_blank_sampling(uint8_t cursor){
-  sctp_lcd_blank_sampling(cursor);
+void sctp_lcd_conc_blank_sampling(uint8_t cursor, uint8_t percentage)
+{
+  sctp_lcd_blank_sampling(cursor, percentage);
 }
 
 void sctp_lcd_conc_blank_waiting(uint8_t cursor, uint16_t result)
@@ -1181,8 +1187,9 @@ void sctp_lcd_conc_blank_clear(uint8_t cursor){
   sctp_lcd_blank_clear(cursor);
 }
 
-void sctp_lcd_conc_sample_sampling(uint8_t cursor){
-  sctp_lcd_sample_sampling(cursor);
+void sctp_lcd_conc_sample_sampling(uint8_t cursor, uint8_t percentage)
+{
+  sctp_lcd_sample_sampling(cursor, percentage);
 }
 
 void sctp_lcd_conc_sample_waiting(uint8_t cursor, uint16_t result)
