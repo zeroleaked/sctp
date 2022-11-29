@@ -15,7 +15,8 @@ public:
 	void arrowDown(Sctp* sctp);
 	void arrowLeft(Sctp* sctp);
 	void arrowRight(Sctp* sctp);
-	void refreshLcd(Sctp* sctp, command_t command);
+	void refreshLcd(Sctp* sctp, command_t command) {};
+	bool batteryIndicator() {return true;};
 	void exit(Sctp* sctp);
 	int id(Sctp* sctp) { return 4; }
 	static SctpState& getInstance();
@@ -30,8 +31,4 @@ private:
 	uint8_t cursor;
 
 	curve_t * curve_list;
-	QueueHandle_t report_queue;
-
-	TaskHandle_t taskHandle;
-	void * taskParam; // necessary for freeing...
 };

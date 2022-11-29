@@ -13,6 +13,7 @@ public:
 	void arrowRight(Sctp* sctp) { toggle(sctp); }
 	void okay(Sctp* sctp) { toggle(sctp); }
 	void refreshLcd(Sctp* sctp, command_t command) {};
+	bool batteryIndicator() {return false;};
 	void exit(Sctp* sctp) {}
 	int id(Sctp* sctp) { return 1; };
 	static SctpState& getInstance();

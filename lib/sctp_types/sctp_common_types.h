@@ -8,10 +8,7 @@
 
 typedef enum {
 	COMMAND_NONE,
-	SPECTRUM_BLANK,
-	SPECTRUM_SAMPLE,
-	SPECTRUM_SAVE,
-	CURVES_LOAD
+	COMMAND_BAT_UPDATE
 } command_t;
 
 typedef struct {
@@ -53,7 +50,7 @@ typedef struct {
 
 typedef struct {
 	float * readout;
-	uint16_t exposure;
+	uint16_t * exposure;
 	uint16_t gain;
 } blank_take_t;
 

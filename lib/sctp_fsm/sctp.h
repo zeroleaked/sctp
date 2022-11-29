@@ -36,8 +36,9 @@ public:
 	// This will get called by the current state
 	void setState(SctpState& newState);
 
-
     int getCurrentStateId();
+
+	uint8_t battery_percentage = 0;
 
 	static void refreshLcdWrapper(void * pvParameter);
 
@@ -54,6 +55,7 @@ public:
 
 	curve_t curve;
 	uint8_t point_sel;
+	bool lastPointIsInterpolated;
 
 	uint16_t wavelength;
 
@@ -63,8 +65,7 @@ public:
 	uint8_t history_list_length;
 	uint8_t history_index;
 	history_t history;
-
-
+	uint16_t spectrum_length;
 
 private:
 	SctpState* currentState;

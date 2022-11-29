@@ -6,13 +6,14 @@
 class ConcSave : public SctpState
 {
 public:
-	void enter(Sctp* sctp) {};
-	void okay(Sctp* sctp) {};
-	void arrowUp(Sctp* sctp) { arrowLeft(sctp); };
-	void arrowDown(Sctp* sctp) { arrowLeft(sctp); };
-	void arrowLeft(Sctp* sctp) {};
-	void arrowRight(Sctp* sctp) { arrowLeft(sctp); };
+	void enter(Sctp* sctp);
+	void okay(Sctp* sctp);
+	void arrowUp(Sctp* sctp) { arrowDown(sctp); };
+	void arrowDown(Sctp* sctp);
+	void arrowLeft(Sctp* sctp) { arrowDown(sctp); };
+	void arrowRight(Sctp* sctp) { arrowDown(sctp); };
 	void refreshLcd(Sctp* sctp, command_t command) {};
+	bool batteryIndicator() {return true;};
 	void exit(Sctp* sctp) {};
 	int id(Sctp* sctp) { return 15; };
 	static SctpState& getInstance();
