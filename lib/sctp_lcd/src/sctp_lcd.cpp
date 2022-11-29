@@ -464,14 +464,22 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
     a_max = 0.01;
   else if (a_max <= 0.02)
     a_max = 0.02;
-  else if (a_max <= 0.04)
+  else if (a_max <= 0.06)
     a_max = 0.04;
   else if(a_max <= 0.1)
     a_max = 0.1;
   else if (a_max <= 0.2)
     a_max = 0.2;
-  else
+  else if (a_max <= 0.6)
     a_max = 0.4;
+  else if (a_max <= 1)
+    a_max = 1;
+  else if (a_max <= 1.2)
+    a_max = 1.2;
+  else if (a_max <= 1.6)
+    a_max = 1.2;
+  else
+    a_max = 2;
 
   display.setTextColor(TFT_TOSCA);
   display.setTextSize(1);
@@ -496,11 +504,13 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   {
     for (i = 0; i < length; i++)
     {
-      if(absorbance[i] == 0)
-        absorbance[i] = 0;
+      // if(absorbance[i] == 0)
+      //   absorbance[i] = 0;
       x_px = (wavelength[i] - wl_min) / (wl_max - wl_min) * 360 + 61;
       x_next = (wavelength[i+1] - wl_min) / (wl_max - wl_min) * 360 + 61;
       y_px = 297 - (absorbance[i] - a_min) / (a_max - a_min) * 270;
+      if(y_px > 297)
+        y_px = 297;
       display.fillRect(x_px - 1, y_px - 1, 3, 3, TFT_TOSCA);
       if (i == 0)
         y_prev = y_px;
@@ -577,6 +587,8 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
         y_px = 297 - (absorbance[i] - a_min) / (a_max - a_min) * 270;
       }
       // ESP_LOGI(TAG, "i=%d, x=%d, y=%d", i, x_px, y_px);
+      if (y_px > 297)
+        y_px = 297;
       display.fillRect(x_px - 1, y_px - 1, 3, 3, TFT_TOSCA);
       int dy = abs(y_px - y_prev);
       if (dy > 3 && dy < 6)
