@@ -21,6 +21,7 @@ public:
 	uint8_t substate;
 	uint8_t cursor;
 	uint16_t * check_result;
+	uint8_t *percentage;
 private:
 	ConcSample() {}
 	ConcSample(const ConcSample& other);
