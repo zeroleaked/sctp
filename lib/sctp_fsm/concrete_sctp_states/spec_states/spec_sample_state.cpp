@@ -129,20 +129,6 @@ void SpecSample::okay(Sctp* sctp)
         case SUBSTATE_SAMPLING: {
             switch (cursor) {
                 case CURSOR_CANCEL: {
-                    vTaskDelete(taskHandle);
-                    taskHandle = NULL;
-                    vQueueDelete(report_queue);
-                    report_queue = NULL;
-
-                    free(sctp->sample_take);
-                    sctp->sample_take = NULL;
-                    free(sctp->absorbance);
-                    sctp->absorbance = NULL;
-                    free(taskParam);
-                    taskParam = NULL;
-
-                    substate = SUBSTATE_WAITING;
-                    sctp_lcd_spec_sample_waiting(cursor, *check_result);
                     break;
                 }
             }

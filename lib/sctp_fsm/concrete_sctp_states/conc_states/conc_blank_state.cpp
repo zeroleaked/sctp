@@ -97,16 +97,6 @@ void ConcBlank::okay(Sctp* sctp)
         case SUBSTATE_SAMPLING: {
             switch (cursor) {
                 case CURSOR_CANCEL: {
-                    vTaskDelete(taskHandle);
-                    taskHandle = NULL;
-
-                    free(sctp->blank_take->readout);
-                    sctp->blank_take->readout = NULL;
-                    free(sctp->blank_take);
-                    sctp->blank_take = NULL;
-
-                    substate = SUBSTATE_WAITING;
-                    sctp_lcd_conc_blank_waiting(cursor, *check_result);
                     break;
                 }
             }
