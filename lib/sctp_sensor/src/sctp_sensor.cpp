@@ -117,8 +117,8 @@ esp_err_t sctp_sensor_check(calibration_t * calibration, uint16_t * result) {
     camera_sensor->set_row_start(camera_sensor, calibration->row);
     ESP_LOGI(TAG, "row set to %d", calibration->row);
 
-    ESP_LOGI(TAG, "setting to %d exposure", 50);
-    camera_sensor->set_shutter_width(camera_sensor, 50);
+    ESP_LOGI(TAG, "setting to %d exposure", 25);
+    camera_sensor->set_shutter_width(camera_sensor, 25);
 
     uint16_t pixel = calibration->start;
     gpio_set_level( PIN_LAMP_SWITCH, 1);
