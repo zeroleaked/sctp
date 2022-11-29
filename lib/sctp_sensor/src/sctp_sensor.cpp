@@ -117,8 +117,8 @@ esp_err_t sctp_sensor_check(calibration_t * calibration, uint16_t * result) {
     camera_sensor->set_row_start(camera_sensor, calibration->row);
     ESP_LOGI(TAG, "row set to %d", calibration->row);
 
-    ESP_LOGI(TAG, "setting to %d exposure", 100);
-    camera_sensor->set_shutter_width(camera_sensor, 100);
+    ESP_LOGI(TAG, "setting to %d exposure", 25);
+    camera_sensor->set_shutter_width(camera_sensor, 25);
 
     uint16_t pixel = calibration->start;
     gpio_set_level( PIN_LAMP_SWITCH, 1);
@@ -150,7 +150,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     ESP_LOGI(TAG, "row set to %d", calibration->row);
     int exposure = blank_take->exposure[0];
 
-    int setpoint = 950;
+    int setpoint = 900;
     int error = setpoint;
     const int tolerance = 50;
     gpio_set_level( PIN_LAMP_SWITCH, 1);
@@ -187,9 +187,9 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
             if (exposure > 6000) exposure = exposure + 20 * error;
             else if (exposure > 5000) exposure = exposure + 8 * error;
             else if (exposure > 3000) exposure = exposure + 8 * error;
-            else if (exposure > 1500) exposure = exposure + 5 * error;
+            else if (exposure > 1500) exposure = exposure + 3 * error;
             else if (exposure > 1000) exposure = exposure + 1 * error;
-            else if (exposure > 100) exposure = exposure + 0.1 * error;
+            else if (exposure > 100) exposure = exposure + 0.2 * error;
             else exposure = exposure + 0.05 * error;
             if (exposure <= 3) {
                 islast = true;
@@ -278,7 +278,7 @@ esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t 
 
 
     for (int i=0; i<calibration->length; i++) {
-        ESP_LOGI(TAG, "%d:%f:%f:%d:", i, blank_take->readout[i], sample_take[i], blank_take->exposure[i]);
+        ESP_LOGI(TAG, "%d:%d:%f:%f:%d:", i,  calibration->start + calibration->length-1 - i, blank_take->readout[i], sample_take[i], blank_take->exposure[i]);
         vTaskDelay(10 /portTICK_PERIOD_MS);
     }
 
@@ -294,7 +294,7 @@ esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t 
     ESP_LOGI(TAG, "row set to %d", calibration->row);
 
     int exposure = *blank_take->exposure;
-    int setpoint = 550;
+    int setpoint = 900;
     int error = setpoint;
     float kp = 1;
     int tolerance = 50;
@@ -325,12 +325,12 @@ esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t 
         else if (exposure > 100) exposure = exposure + 0.3 * error;
         else exposure = exposure + 0.1 * error;
         if (exposure <= 3) {
-            islast = true;
+            // islast = true;
             exposure = 3;
             ESP_LOGW(TAG, "lowest exposure");
         }
         else if (exposure > 8000) {
-            islast = true; // make this the last take
+            // islast = true; // make this the last take
             exposure = 8000;
             ESP_LOGW(TAG, "highest exposure");
         }
@@ -346,6 +346,12 @@ esp_err_t sctp_sensor_concentration_blank(calibration_t * calibration, uint16_t 
         uint16_t readout = (take->buf[px * 2] << 8) | (take->buf[px*2 + 1]);
         error = setpoint - readout;     
         ESP_LOGI(TAG, "readout=%d, error=%d", readout, error);
+        if ((exposure == 3) && (error<0)) {
+            islast = true;
+        }
+        else if ((exposure == 8000) && error>tolerance) {
+            islast = true;
+        }
     }
     gpio_set_level( PIN_LAMP_SWITCH, 0);
     *blank_take->readout = take->buf[px * 2] << 8 | take->buf[px*2 +1];
@@ -379,12 +385,15 @@ esp_err_t sctp_sensor_concentration_sample(calibration_t * calibration, uint16_t
 
     ESP_LOGI(TAG, "exposure set to %d", *blank_take->exposure);
 
+
     buffer_flush();
 
     camera_fb_t * take = sctp_camera_fb_get();
     gpio_set_level( PIN_LAMP_SWITCH, 0);
     *sample_take = take->buf[px * 2] << 8 | take->buf[px*2 +1];
     sctp_camera_fb_return(take);
+
+    ESP_LOGI(TAG, "%f", *sample_take);
 
     sctp_camera_deinit();
 

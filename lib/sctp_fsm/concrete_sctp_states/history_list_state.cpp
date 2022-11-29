@@ -38,8 +38,7 @@ void sctp_flash_history(Sctp * sctp) {
 		sctp->history_list_length = 0;
 		return;
 	}
-	sctp_flash_load_history_list(sctp->history_list);
-
+	sctp->history_list_length = sctp_flash_load_history_list(sctp->history_list, sctp->history_list_length);
 };
 
 void sctp_history_regress(curve_t * curve, conc_regression_t * regress_line) {
@@ -139,16 +138,14 @@ void HistoryList::okay(Sctp* sctp)
 				else {
 					history_wavelength = (float*) malloc(450 * sizeof(float));
 					history_absorbance = (float*) malloc(450 * sizeof(float));
-					spectrum_length = (uint16_t*) malloc(sizeof(uint16_t));
-					sctp_flash_load_spectrum(sctp->history.filename, history_absorbance, history_wavelength, spectrum_length);
-					ESP_LOGI(TAG, "spec file loading passed.");
-
+					sctp->spectrum_length = sctp_flash_load_spectrum(sctp->history.filename, history_absorbance, history_wavelength, sctp->spectrum_length);
+					// ESP_LOGI(TAG, "length: %d", sctp->spectrum_length);
+					// ESP_LOGI(TAG, "0x%8x", (uint32_t) &sctp->spectrum_length);
 					sctp_lcd_clear();
-					sctp_lcd_spec_result_full(history_wavelength, history_absorbance, *spectrum_length);
-					ESP_LOGI(TAG, "lcd passed.");
+					sctp_lcd_spec_result_full(history_wavelength, history_absorbance, sctp->spectrum_length);
+					// ESP_LOGI(TAG, "lcd passed.");
 					substate = SUBSTATE_SPEC;
-					ESP_LOGI(TAG, "changing substate passed.");
-					free(spectrum_length);
+					// ESP_LOGI(TAG, "changing substate passed.");
 					free(history_absorbance);
 					free(history_wavelength);
 				}
@@ -238,7 +235,7 @@ void HistoryList::arrowDown(Sctp* sctp)
 			{
 				cursor = CURSOR_BACK;
 			}
-			else if (offset == MAX_FILES - 6)
+			else if (offset == sctp->history_list_length - 6)
 			{
 				cursor = CURSOR_BACK;
 			}
@@ -254,7 +251,7 @@ void HistoryList::arrowDown(Sctp* sctp)
 			}
 			else
 			{
-				offset++;
+				cursor++;
 			}
 		}
 		else if (substate == SUBSTATE_SPEC)

@@ -14,10 +14,6 @@ void sctp_lcd_clear() {
   ESP_LOGI(TAG, "pt4");
   display.fillScreen(TFT_WHITE);
   ESP_LOGI(TAG, "pt5");
-  display.drawFastVLine(479, 1, 315, TFT_BLUE);
-  ESP_LOGI(TAG, "pt6");
-  display.drawFastHLine(0, 319, 480, TFT_RED);
-  ESP_LOGI(TAG, "pt7");
 };
 
 void sctp_lcd_start() {
@@ -443,9 +439,9 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
 void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t length) {
   display.setTextColor(TFT_TOSCA);
   display.setTextSize(0.75);
-  display.setCursor(5, 8);
+  display.setCursor(13, 8);
   display.println("Absorbance (x0.001) VS. Wavelength (nm)");
-  display.drawRect(35, 27, 363, 271, TFT_BLACK);
+  display.drawRect(60, 27, 363, 271, TFT_BLACK);
 
   float a_max = absorbance[0];
   float a_min = 0;
@@ -477,19 +473,18 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   else
     a_max = 0.4;
 
-  ESP_LOGI(TAG, "LCD check 1");
   display.setTextColor(TFT_TOSCA);
   display.setTextSize(1);
 
   for(int i=0; i<5; i++) {
-    char a[] = "X.X";
-    sprintf(a, "%.1f", (double)a_max - a_max/4*i);
-    display.setCursor(5, 30 + 65*i);
+    char a[] = "XXXXX";
+    sprintf(a, "%d", (int)(a_max*1000 - a_max*1000/4*i));
+    display.setCursor(13, 30 + 65*i);
     display.println(a);
-    display.setCursor(22 + 90*i, 302);
-    display.println((int)round(wl_min + (wl_max-wl_min)/4*i));
+    display.setCursor(52 + 90*i, 302);
+    display.println((int)floor(wl_min + (wl_max-wl_min)/4*i));
   }
-  ESP_LOGI(TAG, "LCD check 2");
+
   int i = 0;
   int i_prev;
   int x_px;
@@ -501,8 +496,10 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   {
     for (i = 0; i < length; i++)
     {
-      x_px = (wavelength[i] - wl_min) / (wl_max - wl_min) * 360 + 36;
-      x_next = (wavelength[i+1] - wl_min) / (wl_max - wl_min) * 360 + 36;
+      if(absorbance[i] == 0)
+        absorbance[i] = 0;
+      x_px = (wavelength[i] - wl_min) / (wl_max - wl_min) * 360 + 61;
+      x_next = (wavelength[i+1] - wl_min) / (wl_max - wl_min) * 360 + 61;
       y_px = 297 - (absorbance[i] - a_min) / (a_max - a_min) * 270;
       display.fillRect(x_px - 1, y_px - 1, 3, 3, TFT_TOSCA);
       if (i == 0)
@@ -567,15 +564,13 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   else
   {
     y_prev = 297 - (absorbance[0] - a_min) / (a_max - a_min) * 270;
-    ESP_LOGI(TAG, "LCD check 3");
     for (int j = 0; j < 360; j++)
     {
-      ESP_LOGI(TAG, "j=%d", j);
       i = round(j * length / 360);
       i_prev = round((j-1) / length * 360);
       if(i == 0) i_prev = i;
-      x_px = (wavelength[i] - wl_min) / (wl_max - wl_min) * 360 + 36;
-      // x_next = (wavelength[i + 1] - wl_min) / (wl_max - wl_min) * 360 + 36;
+      x_px = (wavelength[i] - wl_min) / (wl_max - wl_min) * 360 + 61;
+      // x_next = (wavelength[i + 1] - wl_min) / (wl_max - wl_min) * 360 + 61;
       if(i == i_prev) {
         y_px = 297 - ((absorbance[i]+absorbance[i+1])/2 - a_min) / (a_max - a_min) * 270;
       } else {
@@ -894,7 +889,7 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
   int x1 = 200;
   int x2 = 340;
   int y = 80;
-  char a[] = "X.XX";
+  char a[] = "X.XXX";
   char c[] = "X.XXX";
   display.setTextColor(TFT_BLACK);
 
@@ -954,7 +949,7 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
       display.println(i + row_offset + 1); 
       if(ab[i+row_offset] != -1) {
         display.setCursor(x2, (y + 40*i));
-        sprintf(a, "%.2f", (double)ab[i + row_offset]);
+        sprintf(a, "%.3f", (double)ab[i + row_offset]);
         display.println(a);
       }
       if(lastPointIsInterpolated == true && (i+row_offset == curve.points - 1))
@@ -1090,7 +1085,7 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   display.setTextColor(TFT_TOSCA);
   display.setTextSize(1);
   display.setCursor(75, 10);
-  display.println("CONC VS. ABS");
+  display.println("Concentration VS. Absorbance");
   display.drawRect(75, 30, 336, 226, TFT_BLACK);
 
   float* conc = curve.concentration;
@@ -1129,7 +1124,8 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
     x_px = 75+i;
     float y = (i * c_max / 330 - offset) / m;
     y_px = 255 - (y - a_min) / (a_max - a_min) * 220;
-    display.fillRect(x_px-1, y_px-1, 3, 3, TFT_TOSCA);
+    if(y_px >= 31 && y_px < 255 && x_px >= 76 && x_px < 409)
+      display.fillRect(x_px-1, y_px-1, 3, 3, TFT_TOSCA);
   }
 
   //Scatter plot of points
@@ -1239,7 +1235,7 @@ void sctp_lcd_settings(uint8_t cursor)
 
 void sctp_lcd_settings_check(calibration_t calibration)
 {
-  display.fillRect(100, 200, 275, 75, TFT_WHITE);
+  display.fillRect(100, 200, 300, 75, TFT_WHITE);
   display.setTextColor(TFT_MUSTARD);
   display.setTextSize(1);
   char text1[60];
