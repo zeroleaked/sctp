@@ -117,6 +117,7 @@ void ConcRegress::arrowDown(Sctp* sctp)
 
 void ConcRegress::exit(Sctp* sctp)
 {
+	sctp_flash_nvs_save_curve(&sctp->curve);
 	if (regress_line != NULL) {
 		free(regress_line);
 		regress_line = NULL;

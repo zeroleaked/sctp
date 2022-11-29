@@ -14,10 +14,6 @@ void sctp_lcd_clear() {
   ESP_LOGI(TAG, "pt4");
   display.fillScreen(TFT_WHITE);
   ESP_LOGI(TAG, "pt5");
-  display.drawFastVLine(479, 1, 315, TFT_BLUE);
-  ESP_LOGI(TAG, "pt6");
-  display.drawFastHLine(0, 319, 480, TFT_RED);
-  ESP_LOGI(TAG, "pt7");
 };
 
 void sctp_lcd_start() {
@@ -893,7 +889,7 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
   int x1 = 200;
   int x2 = 340;
   int y = 80;
-  char a[] = "X.XX";
+  char a[] = "X.XXX";
   char c[] = "X.XXX";
   display.setTextColor(TFT_BLACK);
 
@@ -953,7 +949,7 @@ void sctp_lcd_conc_table_cursor(uint8_t cursor, uint8_t row_offset, curve_t curv
       display.println(i + row_offset + 1); 
       if(ab[i+row_offset] != -1) {
         display.setCursor(x2, (y + 40*i));
-        sprintf(a, "%.2f", (double)ab[i + row_offset]);
+        sprintf(a, "%.3f", (double)ab[i + row_offset]);
         display.println(a);
       }
       if(lastPointIsInterpolated == true && (i+row_offset == curve.points - 1))

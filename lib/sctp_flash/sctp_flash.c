@@ -533,14 +533,14 @@ esp_err_t sctp_flash_save_spectrum(float *absorbance, float *wavelength, uint16_
     closedir(dir);
 
     // Create a file.
-    char spec_dir[] = "/sdcard/spec/spec_XXXX.csv";
+    char spec_dir[] = "/sdcard/spectrum/spec_XXXX.csv";
     char file_spec[] = "spec_XXXX.csv";
     sprintf(file_spec, "spec_%d.csv", count + 1);
     strcpy(filename, file_spec);
-    sprintf(spec_dir, "/sdcard/spec/%s", file_spec);
+    sprintf(spec_dir, "/sdcard/spectrum/%s", file_spec);
 
-    ESP_LOGI(TAG, "Opening file %s", file_spec);
-    FILE *f = fopen(file_spec, "w");
+    ESP_LOGI(TAG, "Opening file %s", spec_dir);
+    FILE *f = fopen(spec_dir, "w");
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for writing");
@@ -612,11 +612,20 @@ uint8_t sctp_flash_load_history_list(history_t list[FILE_LEN], uint8_t count)
     sdmmc_card_t *card;
 
     sctp_flash_init(PIN_NUM_CS, &host, &card);
-    
+
+    struct stat sb;
+    uint8_t check;
     struct dirent *de;
     DIR * d;
     char *temp;
     char spec_dir[] = "/sdcard/spectrum";
+    if (stat(spec_dir, &sb) == 0 && S_ISDIR(sb.st_mode))
+    {
+    }
+    else
+    {
+        check = mkdir(spec_dir, 0777);
+    }
     d = opendir(spec_dir);
     if (d == NULL)
     {
@@ -637,6 +646,13 @@ uint8_t sctp_flash_load_history_list(history_t list[FILE_LEN], uint8_t count)
     }
     char curve_dir[] = "/sdcard/curves";
     // ESP_LOGI(TAG, "curve directory: %s", curve_dir);
+    if (stat(curve_dir, &sb) == 0 && S_ISDIR(sb.st_mode))
+    {
+    }
+    else
+    {
+        check = mkdir(curve_dir, 0777);
+    }
     d = opendir(curve_dir);
     if (d == NULL)
     {
