@@ -561,8 +561,10 @@ esp_err_t sctp_flash_save_spectrum(float *absorbance, float *wavelength, uint16_
 esp_err_t sctp_flash_save_curve(curve_t curve)
 {
     uint8_t check;
+    uint8_t count = 0;
     char *dir_name = "/sdcard/curves";
     struct stat sb;
+    struct dirent *de;
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     sdmmc_card_t *card;
@@ -575,12 +577,25 @@ esp_err_t sctp_flash_save_curve(curve_t curve)
     {
         check = mkdir(dir_name, 0777);
     }
+    DIR *dir = opendir(dir_name);
+    if (dir == NULL)
+    {
+        ESP_LOGI(TAG, "Could'nt open directory");
+    }
+    char *temp;
+    while ((de = readdir(dir)) != NULL)
+    {
+        temp = de->d_name;
+        if (temp[0] != '_' && temp[0] != '.')
+            count++;
+    }
+    closedir(dir);
 
     // Create a file.
 
     char curve_dir[] = "/sdcard/curves/XXXX_XXXXnm.csv";
     char file_curve[] = "XXXX_XXXXnm.csv";
-    sprintf(file_curve, "%d_%dnm.csv", curve.id, curve.wavelength);
+    sprintf(file_curve, "%d_%dnm.csv", count, curve.wavelength);
     strcpy(curve.filename, file_curve);
     sprintf(curve_dir, "/sdcard/curves/%s", file_curve);
     ESP_LOGI(TAG, "file_curve: %s", curve.filename);

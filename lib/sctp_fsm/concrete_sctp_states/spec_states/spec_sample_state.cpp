@@ -33,6 +33,7 @@ void SpecSample::enter(Sctp* sctp)
 	cursor = CURSOR_CHECK;
     check_result = (uint16_t *)malloc(sizeof(uint16_t));
     *check_result = 0;
+    *percentage = 0;
     sctp_lcd_spec_sample_waiting(cursor, *check_result);
 }
 
@@ -92,9 +93,9 @@ void SpecSample::okay(Sctp* sctp)
                     sctp_lcd_spec_sample_clear(cursor);
                     sctp_lcd_spec_sample_waiting(cursor, *check_result);
                     cursor = CURSOR_NULL;
-                    sctp_lcd_spec_sample_sampling(cursor);
+                    sctp_lcd_spec_sample_sampling(cursor, *percentage);
 
-	                report_queue = xQueueCreate(1, sizeof(esp_err_t));
+                    report_queue = xQueueCreate(1, sizeof(esp_err_t));
                     substate = SUBSTATE_SAMPLING;
                     
                     assert(sctp->sample_take == NULL);
@@ -129,20 +130,6 @@ void SpecSample::okay(Sctp* sctp)
         case SUBSTATE_SAMPLING: {
             switch (cursor) {
                 case CURSOR_CANCEL: {
-                    vTaskDelete(taskHandle);
-                    taskHandle = NULL;
-                    vQueueDelete(report_queue);
-                    report_queue = NULL;
-
-                    free(sctp->sample_take);
-                    sctp->sample_take = NULL;
-                    free(sctp->absorbance);
-                    sctp->absorbance = NULL;
-                    free(taskParam);
-                    taskParam = NULL;
-
-                    substate = SUBSTATE_WAITING;
-                    sctp_lcd_spec_sample_waiting(cursor, *check_result);
                     break;
                 }
             }
@@ -176,7 +163,7 @@ void SpecSample::arrowLeft(Sctp* sctp)
             switch (cursor) {
                 case CURSOR_NULL: {
                     cursor = CURSOR_CANCEL;
-	                sctp_lcd_spec_sample_sampling(cursor);
+                    sctp_lcd_spec_sample_sampling(cursor, *percentage);
                     break;
                 }
             }
