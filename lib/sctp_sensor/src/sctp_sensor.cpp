@@ -150,7 +150,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     ESP_LOGI(TAG, "row set to %d", calibration->row);
     int exposure = blank_take->exposure[0];
 
-    int setpoint = 900;
+    int setpoint = 850;
     int error = setpoint;
     const int tolerance = 50;
     gpio_set_level( PIN_LAMP_SWITCH, 1);
@@ -184,7 +184,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
             // ESP_LOGI(TAG, "pixel %d retake", pixel);
             sctp_camera_fb_return(take);
 
-            if (exposure > 6000) exposure = exposure + 20 * error;
+            if (exposure > 6000) exposure = exposure + 10 * error;
             else if (exposure > 5000) exposure = exposure + 8 * error;
             else if (exposure > 3000) exposure = exposure + 8 * error;
             else if (exposure > 1500) exposure = exposure + 3 * error;
