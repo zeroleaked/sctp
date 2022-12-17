@@ -173,7 +173,7 @@ void sctp_lcd_blank_sampling(uint8_t cursor, uint8_t percentage)
   display.setCursor(140, 175);
   display.println("Measuring Reference...");
   char progress[] = "xxx% complete";
-  sprintf(progress, "%d% complete", percentage);
+  sprintf(progress, "%d%% complete", percentage);
   display.fillRect(150, 190, 150, 20, TFT_WHITE);
   display.setCursor(155, 195);
   display.println(progress);
@@ -257,7 +257,7 @@ void sctp_lcd_sample_sampling(uint8_t cursor, uint8_t percentage)
   display.setCursor(150, 175);
   display.println("Measuring Sample...");
   char progress[] = "xxx% complete";
-  sprintf(progress, "%d% complete", percentage);
+  sprintf(progress, "%d%% complete", percentage);
   display.fillRect(150, 190, 150, 20, TFT_WHITE);
   display.setCursor(155, 195);
   display.println(progress);
@@ -497,7 +497,12 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
     display.setCursor(13, 30 + 65*i);
     display.println(a);
     display.setCursor(52 + 90*i, 302);
-    display.println((int)floor(wl_min + (wl_max-wl_min)/4*i));
+    if (((int)round(wl_min + (wl_max - wl_min) / 4 * i)) % 5 == 0)
+      display.println((int)round(wl_min + (wl_max - wl_min) / 4 * i));
+    else if (((int)floor(wl_min + (wl_max - wl_min) / 4 * i)) % 5 == 0)
+      display.println((int)floor(wl_min + (wl_max - wl_min) / 4 * i));
+    else
+      display.println((int)ceil(wl_min + (wl_max - wl_min) / 4 * i));
   }
 
   int i = 0;
