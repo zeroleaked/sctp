@@ -11,9 +11,7 @@ static LGFX display;
 static LGFX_Sprite sprite(&display);
 
 void sctp_lcd_clear() {
-  ESP_LOGI(TAG, "pt4");
   display.fillScreen(TFT_WHITE);
-  ESP_LOGI(TAG, "pt5");
 };
 
 void sctp_lcd_start() {
@@ -175,8 +173,17 @@ void sctp_lcd_blank_sampling(uint8_t cursor, uint8_t percentage)
   char progress[] = "xxx% complete";
   sprintf(progress, "%d%% complete", percentage);
   display.fillRect(150, 190, 150, 20, TFT_WHITE);
-  display.setCursor(155, 195);
+  display.setCursor(180, 195);
   display.println(progress);
+}
+
+void sctp_lcd_blank_sampling_percentage(uint8_t percentage)
+{
+  display.setTextColor(TFT_MUSTARD);
+  char progress[] = "xxx%";
+  sprintf(progress, "%d%%", percentage);
+  display.fillRect(165, 195, 47, 15, TFT_WHITE);
+  display.setCursor(170, 195);
 }
 
 void sctp_lcd_sample_clear(uint8_t cursor)
@@ -259,7 +266,7 @@ void sctp_lcd_sample_sampling(uint8_t cursor, uint8_t percentage)
   char progress[] = "xxx% complete";
   sprintf(progress, "%d%% complete", percentage);
   display.fillRect(150, 190, 150, 20, TFT_WHITE);
-  display.setCursor(155, 195);
+  display.setCursor(180, 195);
   display.println(progress);
 }
 
@@ -310,6 +317,11 @@ void sctp_lcd_spec_save_finish_cursor(uint8_t cursor){
 void sctp_lcd_spec_blank_sampling(uint8_t cursor, uint8_t percentage)
 {
   sctp_lcd_blank_sampling(cursor, percentage);
+}
+
+void sctp_lcd_spec_blank_sampling_percentage(uint8_t percentage)
+{
+  sctp_lcd_blank_sampling_percentage(percentage);
 }
 
 void sctp_lcd_spec_blank_waiting(uint8_t cursor, uint16_t result)

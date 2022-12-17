@@ -106,6 +106,7 @@ void sctp_lcd_menu(uint8_t cursor);
 void sctp_lcd_menu_clear(uint8_t cursor);
 
 void sctp_lcd_spec_blank_sampling(uint8_t cursor, uint8_t percentage);
+void sctp_lcd_spec_blank_sampling_percentage(uint8_t percentage);
 void sctp_lcd_spec_blank_waiting(uint8_t cursor, uint16_t result);
 void sctp_lcd_spec_blank_clear(uint8_t cursor);
 

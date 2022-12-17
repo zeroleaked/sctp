@@ -24,6 +24,7 @@ typedef struct {
     blank_take_t *blank_take;
     float *sample_take;
     float *absorbance;
+    uint8_t * percentage;
 } taskParam_t;
 
 void SpecSample::enter(Sctp* sctp)
@@ -33,6 +34,7 @@ void SpecSample::enter(Sctp* sctp)
 	cursor = CURSOR_CHECK;
     check_result = (uint16_t *)malloc(sizeof(uint16_t));
     *check_result = 0;
+    percentage = (uint8_t*)malloc(sizeof(uint8_t));
     *percentage = 0;
     sctp_lcd_spec_sample_waiting(cursor, *check_result);
 }
@@ -60,8 +62,9 @@ static void takeSpectrumSample(void * pvParameters) {
     blank_take_t * blank_take = ((taskParam_t *) pvParameters)->blank_take;
     float * sample_take = ((taskParam_t *) pvParameters)->sample_take;
     calibration_t * calibration = ((taskParam_t *) pvParameters)->calibration;
+    uint8_t * percentage = ((taskParam_t *) pvParameters)->percentage;
 
-	esp_err_t report = sctp_sensor_spectrum_sample(calibration, blank_take, sample_take);
+	esp_err_t report = sctp_sensor_spectrum_sample(calibration, blank_take, sample_take, percentage);
 
     float * absorbance = ((taskParam_t *) pvParameters)->absorbance;
 
@@ -108,6 +111,7 @@ void SpecSample::okay(Sctp* sctp)
                 	((taskParam_t *) taskParam)->blank_take = sctp->blank_take;
                 	((taskParam_t *) taskParam)->sample_take = sctp->sample_take;
                 	((taskParam_t *) taskParam)->absorbance = sctp->absorbance;
+                	((taskParam_t *) taskParam)->percentage = percentage;
 
                     xTaskCreatePinnedToCore(takeSpectrumSample, "takeSpectrumSample", 4096, taskParam, 4, &taskHandle, 1);
                     break;
@@ -212,6 +216,8 @@ void SpecSample::refreshLcd(Sctp* sctp, command_t command) {
                 report_queue = NULL;
                 sctp->setState(SpecResult::getInstance());
             }
+        } else {
+           sctp_lcd_spec_blank_sampling_percentage(*percentage);
         }
     }
 }
@@ -219,6 +225,7 @@ void SpecSample::refreshLcd(Sctp* sctp, command_t command) {
 void SpecSample::exit(Sctp *sctp)
 {
     free(check_result);
+    free(percentage);
 }
 
 SctpState& SpecSample::getInstance()
