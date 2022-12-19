@@ -1119,9 +1119,9 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   // float conc[] = {0.16, 0.4, 0.86, 1.04}; 
   // float ab[] = {0.08, 0.2, 0.42, 0.52};
   float a_min = 0;
-  float a_max = ab[0];
+  float a_max = (((int)(ab[0]/0.05)) + 1) * 0.05;
   float c_min = 0;
-  float c_max = conc[0];
+  float c_max = (((int)(conc[0] / 0.005)) + 1) * 0.005;
 
   for(int i=1;i < curve.points;i++) {
     if (ab[i] >= a_max) a_max = ab[i];
