@@ -170,11 +170,6 @@ void sctp_lcd_blank_sampling(uint8_t cursor, uint8_t percentage)
   display.setTextColor(TFT_MUSTARD);
   display.setCursor(140, 175);
   display.println("Measuring Reference...");
-  char progress[] = "xxx% complete";
-  sprintf(progress, "%d%% complete", percentage);
-  display.fillRect(150, 190, 150, 20, TFT_WHITE);
-  display.setCursor(180, 195);
-  display.println(progress);
 }
 
 void sctp_lcd_blank_sampling_percentage(uint8_t percentage)
@@ -263,11 +258,6 @@ void sctp_lcd_sample_sampling(uint8_t cursor, uint8_t percentage)
   display.setTextColor(TFT_MUSTARD);
   display.setCursor(150, 175);
   display.println("Measuring Sample...");
-  char progress[] = "xxx% complete";
-  sprintf(progress, "%d%% complete", percentage);
-  display.fillRect(150, 190, 150, 20, TFT_WHITE);
-  display.setCursor(180, 195);
-  display.println(progress);
 }
 
 void sctp_lcd_save_saving()
@@ -412,8 +402,10 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
   display.setCursor(35, 145);
   display.println("PEAK ABSORBANCE: ");
   display.setTextColor(TFT_TOSCA);
+  char res_abs[10];
+  sprintf(res_abs, "%.3f", (double)peak_abs);
   display.setCursor(250, 145);
-  display.println(peak_abs);
+  display.println(res_abs);
 
   switch(cursor){
     case 0:{
