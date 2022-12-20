@@ -595,7 +595,7 @@ esp_err_t sctp_flash_save_curve(curve_t curve)
 
     char curve_dir[] = "/sdcard/curves/XXXX_XXXXnm.csv";
     char file_curve[] = "XXXX_XXXXnm.csv";
-    sprintf(file_curve, "%d_%dnm.csv", count, curve.wavelength);
+    sprintf(file_curve, "%d_%dnm.csv", count + 1, curve.wavelength);
     strcpy(curve.filename, file_curve);
     sprintf(curve_dir, "/sdcard/curves/%s", file_curve);
     ESP_LOGI(TAG, "file_curve: %s", curve.filename);
