@@ -141,6 +141,11 @@ esp_err_t sctp_sensor_check(calibration_t * calibration, uint16_t * result) {
     return ESP_OK;
 }
 
+static void lampTimer(void * pvParameters) {
+	vTaskDelay(300000 / portTICK_RATE_MS );
+    gpio_set_level( PIN_LAMP_SWITCH, 0);
+}
+
 esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t * blank_take, uint8_t * percentage) {
     standby_end();
 
@@ -155,6 +160,11 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     const int tolerance = 50;
     gpio_set_level( PIN_LAMP_SWITCH, 1);
     // vTaskDelay(30000 / portTICK_PERIOD_MS);
+
+    TaskHandle_t taskHandle;
+    xTaskCreatePinnedToCore(lampTimer, "lampTimer", 2048, NULL, 4, &taskHandle, 1);
+
+
 
     ESP_LOGI(TAG, "setting to %d exposure", 100);
     camera_sensor->set_shutter_width(camera_sensor, 100);
@@ -233,6 +243,8 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     blank_take->gain = 1;
     
     standby_start();
+
+    vTaskDelete(taskHandle);
 
     return ESP_OK;
 };
