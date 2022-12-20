@@ -11,9 +11,7 @@ static LGFX display;
 static LGFX_Sprite sprite(&display);
 
 void sctp_lcd_clear() {
-  ESP_LOGI(TAG, "pt4");
   display.fillScreen(TFT_WHITE);
-  ESP_LOGI(TAG, "pt5");
 };
 
 void sctp_lcd_start() {
@@ -172,10 +170,15 @@ void sctp_lcd_blank_sampling(uint8_t cursor, uint8_t percentage)
   display.setTextColor(TFT_MUSTARD);
   display.setCursor(140, 175);
   display.println("Measuring Reference...");
+}
+
+void sctp_lcd_blank_sampling_percentage(uint8_t percentage)
+{
+  display.setTextColor(TFT_MUSTARD);
   char progress[] = "xxx% complete";
-  sprintf(progress, "%d% complete", percentage);
-  display.fillRect(150, 190, 150, 20, TFT_WHITE);
-  display.setCursor(155, 195);
+  sprintf(progress, "%d%% complete", percentage);
+  display.fillRect(165, 195, 200, 25, TFT_WHITE);
+  display.setCursor(175, 195);
   display.println(progress);
 }
 
@@ -256,11 +259,6 @@ void sctp_lcd_sample_sampling(uint8_t cursor, uint8_t percentage)
   display.setTextColor(TFT_MUSTARD);
   display.setCursor(150, 175);
   display.println("Measuring Sample...");
-  char progress[] = "xxx% complete";
-  sprintf(progress, "%d% complete", percentage);
-  display.fillRect(150, 190, 150, 20, TFT_WHITE);
-  display.setCursor(155, 195);
-  display.println(progress);
 }
 
 void sctp_lcd_save_saving()
@@ -310,6 +308,11 @@ void sctp_lcd_spec_save_finish_cursor(uint8_t cursor){
 void sctp_lcd_spec_blank_sampling(uint8_t cursor, uint8_t percentage)
 {
   sctp_lcd_blank_sampling(cursor, percentage);
+}
+
+void sctp_lcd_spec_blank_sampling_percentage(uint8_t percentage)
+{
+  sctp_lcd_blank_sampling_percentage(percentage);
 }
 
 void sctp_lcd_spec_blank_waiting(uint8_t cursor, uint16_t result)
@@ -400,8 +403,10 @@ void sctp_lcd_spec_result(uint8_t cursor, float * wavelength, float * absorbance
   display.setCursor(35, 145);
   display.println("PEAK ABSORBANCE: ");
   display.setTextColor(TFT_TOSCA);
+  char res_abs[10];
+  sprintf(res_abs, "%.3f", (double)peak_abs);
   display.setCursor(250, 145);
-  display.println(peak_abs);
+  display.println(res_abs);
 
   switch(cursor){
     case 0:{
@@ -467,6 +472,9 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
     if (absorbance[i] <= a_min)
       a_min = absorbance[i];
   }
+  int y_0 = 297 - (0 - a_min) / (a_max - a_min) * 270;
+  display.drawFastHLine(61, y_0, 361, TFT_MUSTARD);
+
   if (a_max <= 0.01)
     a_max = 0.01;
   else if (a_max <= 0.02)
@@ -488,16 +496,23 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   else
     a_max = 2;
 
+  ESP_LOGI(TAG, "a_min = %.3f", (double)a_min);
+  ESP_LOGI(TAG, "a_max = %.3f", (double)a_max);
   display.setTextColor(TFT_TOSCA);
   display.setTextSize(1);
 
   for(int i=0; i<5; i++) {
     char a[] = "XXXXX";
-    sprintf(a, "%d", (int)((a_max - a_min) * 1000 - (a_max - a_min) * 1000 / 4 * i));
+    sprintf(a, "%d", (int)(((a_max - a_min) * 1000 - (a_max - a_min) * 1000 / 4 * i) + a_min * 1000));
     display.setCursor(13, 30 + 65*i);
     display.println(a);
     display.setCursor(52 + 90*i, 302);
-    display.println((int)floor(wl_min + (wl_max-wl_min)/4*i));
+    if (((int)round(wl_min + (wl_max - wl_min) / 4 * i)) % 5 == 0)
+      display.println((int)round(wl_min + (wl_max - wl_min) / 4 * i));
+    else if (((int)floor(wl_min + (wl_max - wl_min) / 4 * i)) % 5 == 0)
+      display.println((int)floor(wl_min + (wl_max - wl_min) / 4 * i));
+    else
+      display.println((int)ceil(wl_min + (wl_max - wl_min) / 4 * i));
   }
 
   int i = 0;
@@ -1118,6 +1133,8 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
     if (ab[i] >= a_max) a_max = ab[i];
     if (conc[i] >= c_max) c_max = conc[i];
   }
+  a_max = (floor((a_max / 0.04)) + 1) * 0.04;
+  c_max = (floor((c_max / 0.005)) + 1) * 0.005;
   //c_max = c_max * 1000; //CHANGE LATER MULTIPLICATIONS BY 1000
   ESP_LOGI(TAG, "c_max=%.3f", (double)c_max);
 
@@ -1137,7 +1154,7 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   //float m = 100; //test case
   float m = regress_line->gradient;
   float offset = regress_line->offset;
-  for(int i=1;i<329;i++) {
+  for(int i=1;i<335;i++) {
     x_px = 75+i;
     float y = (i * c_max / 330 - offset) / m;
     y_px = 255 - (y - a_min) / (a_max - a_min) * 220;

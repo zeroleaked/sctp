@@ -552,8 +552,8 @@ void app_main();
 void app_main() {
     UNITY_BEGIN();
 
-    // RUN_TEST(row_search);
-    RUN_TEST(row_print);
+    RUN_TEST(row_search);
+    // RUN_TEST(row_print);
 
     // RUN_TEST(test_spectrum_blank);
     // RUN_TEST(test_spectrum);

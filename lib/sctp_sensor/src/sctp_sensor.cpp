@@ -141,7 +141,7 @@ esp_err_t sctp_sensor_check(calibration_t * calibration, uint16_t * result) {
     return ESP_OK;
 }
 
-esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t * blank_take) {
+esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t * blank_take, uint8_t * percentage) {
     standby_end();
 
     sctp_camera_init(&camera_config);
@@ -150,7 +150,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     ESP_LOGI(TAG, "row set to %d", calibration->row);
     int exposure = blank_take->exposure[0];
 
-    int setpoint = 900;
+    int setpoint = 850;
     int error = setpoint;
     const int tolerance = 50;
     gpio_set_level( PIN_LAMP_SWITCH, 1);
@@ -168,23 +168,25 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     camera_fb_t * take = sctp_camera_fb_get();
     assert(take != NULL);
 
+    *percentage = 0;
+
     for (int i=0; i<calibration->length; i++) {
         ESP_LOGI(TAG, "blank->readout[%d]", i);
+        *percentage = (i*100)/calibration->length;
 
         uint16_t pixel = calibration->start + calibration->length-1 - i;
 
         uint16_t readout = (take->buf[pixel * 2] << 8) | (take->buf[pixel*2 + 1]);
         error = setpoint - readout;     
-        ESP_LOGI(TAG, "readout=%d, error=%d", readout, error);
+        // ESP_LOGI(TAG, "readout=%d, error=%d", readout, error);
 
         bool islast = false;
         if ((error > 0) && (exposure == 8000)) islast = true;
         if ((error < 0) && (exposure == 3)) islast = true;
         while (((error > tolerance) || (error < -tolerance)) && !islast) {
-            // ESP_LOGI(TAG, "pixel %d retake", pixel);
             sctp_camera_fb_return(take);
 
-            if (exposure > 6000) exposure = exposure + 20 * error;
+            if (exposure > 6000) exposure = exposure + 10 * error;
             else if (exposure > 5000) exposure = exposure + 8 * error;
             else if (exposure > 3000) exposure = exposure + 8 * error;
             else if (exposure > 1500) exposure = exposure + 3 * error;
@@ -194,15 +196,15 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
             if (exposure <= 3) {
                 islast = true;
                 exposure = 3;
-                ESP_LOGW(TAG, "lowest exposure");
+                // ESP_LOGW(TAG, "lowest exposure");
             }
             else if (exposure > 8000) {
                 islast = true; // make this the last take
                 exposure = 8000;
-                ESP_LOGW(TAG, "highest exposure");
+                // ESP_LOGW(TAG, "highest exposure");
             }
 
-            ESP_LOGI(TAG, "setting to %d exposure", exposure);
+            // ESP_LOGI(TAG, "setting to %d exposure", exposure);
 
             camera_sensor->set_shutter_width(camera_sensor, exposure);
             // flush
@@ -212,7 +214,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
 
             readout = (take->buf[pixel * 2] << 8) | (take->buf[pixel*2 + 1]);
             error = setpoint - readout;     
-            ESP_LOGI(TAG, "readout=%d, error=%d", readout, error);
+            // ESP_LOGI(TAG, "readout=%d, error=%d", readout, error);
         }
         
 
@@ -235,7 +237,7 @@ esp_err_t sctp_sensor_spectrum_blank(calibration_t * calibration, blank_take_t *
     return ESP_OK;
 };
 
-esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t * blank_take, float * sample_take) {
+esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t * blank_take, float * sample_take, uint8_t * percentage) {
     standby_end();
 
     sctp_camera_init(&camera_config);
@@ -251,7 +253,9 @@ esp_err_t sctp_sensor_spectrum_sample(calibration_t * calibration, blank_take_t 
     
     camera_fb_t * take = NULL;
     uint16_t last_exp = 0;
+    *percentage = 0;
     for (int i=0; i < calibration->length; i++) {
+        *percentage = (i*100)/calibration->length;
         uint16_t pixel = calibration->start + calibration->length-1 - i;
         if (last_exp != blank_take->exposure[i]) {
             if (take != NULL) {

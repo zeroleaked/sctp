@@ -20,6 +20,7 @@ typedef struct {
     QueueHandle_t report_queue;
     calibration_t * calibration;
     blank_take_t * blank_take;
+    uint8_t * percentage;
 } taskParam_t;
 
 void SpecBlank::enter(Sctp* sctp)
@@ -29,17 +30,20 @@ void SpecBlank::enter(Sctp* sctp)
 	cursor = CURSOR_CHECK;
     check_result = (uint16_t*)malloc(sizeof(uint16_t));
     *check_result = 0;
+    percentage = (uint8_t*)malloc(sizeof(uint8_t));
+    *percentage = 0;
 	sctp_lcd_spec_blank_waiting(cursor, *check_result);
 }
 
 static void takeSpectrumBlank(void * pvParameters) {
     blank_take_t * blank_take = ((taskParam_t *) pvParameters)->blank_take;
     calibration_t * calibration = ((taskParam_t *) pvParameters)->calibration;
+    uint8_t * percentage = ((taskParam_t *) pvParameters)->percentage;
 
 	assert(blank_take->readout != NULL);
 	blank_take->exposure[0] = 7800;
 	blank_take->gain = 1;
-	esp_err_t report = sctp_sensor_spectrum_blank(calibration, blank_take);
+	esp_err_t report = sctp_sensor_spectrum_blank(calibration, blank_take, percentage);
 	
     QueueHandle_t report_queue = ((taskParam_t *) pvParameters)->report_queue;
 	assert(xQueueSend(report_queue, &report, 0) == pdTRUE);
@@ -56,7 +60,7 @@ void SpecBlank::okay(Sctp* sctp)
                     sctp_lcd_spec_blank_clear(cursor);
                     sctp_lcd_spec_blank_waiting(cursor, *check_result);
                     cursor = CURSOR_NULL;
-                    sctp_lcd_spec_blank_sampling(cursor);
+                    sctp_lcd_spec_blank_sampling(cursor, *percentage);
 
 	                report_queue = xQueueCreate(1, sizeof(esp_err_t));
                     substate = SUBSTATE_SAMPLING;
@@ -69,6 +73,7 @@ void SpecBlank::okay(Sctp* sctp)
                 	((taskParam_t *) taskParam)->report_queue = report_queue;
                 	((taskParam_t *) taskParam)->calibration = &sctp->calibration;
                 	((taskParam_t *) taskParam)->blank_take = sctp->blank_take;
+                	((taskParam_t *) taskParam)->percentage = percentage;
                     
                     xTaskCreatePinnedToCore(takeSpectrumBlank, "takeSpectrumBlank", 8192, taskParam, 4, &taskHandle, 1);
                     break;
@@ -136,11 +141,11 @@ void SpecBlank::arrowLeft(Sctp* sctp)
             switch (cursor) {
                 case CURSOR_NULL: {
                     cursor = CURSOR_CANCEL;
-	                sctp_lcd_spec_blank_sampling(cursor);
+	                sctp_lcd_spec_blank_sampling(cursor, *percentage);
                     break;
                 }
                 case CURSOR_CANCEL: {
-	                sctp_lcd_spec_blank_sampling(cursor);
+                    sctp_lcd_spec_blank_sampling(cursor, *percentage);
                 }
             }
         }
@@ -185,13 +190,16 @@ void SpecBlank::refreshLcd(Sctp* sctp, command_t command) {
                 report_queue = NULL;
                 sctp->setState(SpecSample::getInstance());
             }
-	    }
+	    } else {
+           sctp_lcd_spec_blank_sampling_percentage(*percentage);
+        }
     }
 }
 
 void SpecBlank::exit(Sctp *sctp)
 {
     free(check_result);
+    free(percentage);
 }
 
 SctpState& SpecBlank::getInstance()
