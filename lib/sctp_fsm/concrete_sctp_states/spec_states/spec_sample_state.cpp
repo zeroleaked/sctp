@@ -159,7 +159,7 @@ void SpecSample::okay(Sctp* sctp)
                     sctp_lcd_spec_sample_clear(cursor);
                     sctp_lcd_spec_sample_waiting(cursor, *check_result);
                     cursor = CURSOR_NULL;
-                    sctp_lcd_spec_sample_sampling(cursor, *percentage);
+                    sctp_lcd_spec_sample_sampling(cursor);
 
                     report_queue = xQueueCreate(1, sizeof(esp_err_t));
                     substate = SUBSTATE_SAMPLING;
@@ -230,7 +230,7 @@ void SpecSample::arrowLeft(Sctp* sctp)
             switch (cursor) {
                 case CURSOR_NULL: {
                     cursor = CURSOR_CANCEL;
-                    sctp_lcd_spec_sample_sampling(cursor, *percentage);
+                    sctp_lcd_spec_sample_sampling(cursor);
                     break;
                 }
             }

@@ -35,7 +35,6 @@ void ConcBlank::enter(Sctp* sctp)
 
     check_result = (uint16_t *)malloc(sizeof(uint16_t));
     *check_result = 0;
-    *percentage = 0;
     sctp_lcd_conc_blank_waiting(cursor, *check_result);
 }
 
@@ -65,7 +64,7 @@ void ConcBlank::okay(Sctp* sctp)
                     sctp_lcd_conc_blank_clear(cursor);
                     sctp_lcd_conc_blank_waiting(cursor, *check_result);
                     cursor = CURSOR_NULL;
-                    sctp_lcd_conc_blank_sampling(cursor, *percentage);
+                    sctp_lcd_conc_blank_sampling(cursor);
 
                     substate = SUBSTATE_SAMPLING;
 
@@ -135,7 +134,7 @@ void ConcBlank::arrowLeft(Sctp* sctp)
                     break;
                 }
             }
-            sctp_lcd_conc_blank_sampling(cursor, *percentage);
+            sctp_lcd_conc_blank_sampling(cursor);
             break;
         }
     }

@@ -164,7 +164,7 @@ void sctp_lcd_blank_waiting(uint8_t cursor, uint16_t result)
   display.drawRoundRect(340, 265, 120, 40, 10, TFT_BLACK);
 }
 
-void sctp_lcd_blank_sampling(uint8_t cursor, uint8_t percentage)
+void sctp_lcd_blank_sampling(uint8_t cursor)
 {
   display.fillRect(85, 170, 350, 80, TFT_WHITE);
   display.setTextColor(TFT_MUSTARD);
@@ -253,7 +253,7 @@ void sctp_lcd_sample_waiting(uint8_t cursor, uint16_t result)
   display.drawRoundRect(340, 265, 120, 40, 10, TFT_BLACK);
 }
 
-void sctp_lcd_sample_sampling(uint8_t cursor, uint8_t percentage)
+void sctp_lcd_sample_sampling(uint8_t cursor)
 {
   display.fillRect(95, 170, 350, 80, TFT_WHITE);
   display.setTextColor(TFT_MUSTARD);
@@ -305,9 +305,9 @@ void sctp_lcd_spec_save_finish_cursor(uint8_t cursor){
   sctp_lcd_save_finish_cursor(cursor);
 }
 
-void sctp_lcd_spec_blank_sampling(uint8_t cursor, uint8_t percentage)
+void sctp_lcd_spec_blank_sampling(uint8_t cursor)
 {
-  sctp_lcd_blank_sampling(cursor, percentage);
+  sctp_lcd_blank_sampling(cursor);
 }
 
 void sctp_lcd_spec_blank_sampling_percentage(uint8_t percentage)
@@ -324,9 +324,9 @@ void sctp_lcd_spec_blank_clear(uint8_t cursor){
   sctp_lcd_blank_clear(cursor);
 }
 
-void sctp_lcd_spec_sample_sampling(uint8_t cursor, uint8_t percentage)
+void sctp_lcd_spec_sample_sampling(uint8_t cursor)
 {
-  sctp_lcd_sample_sampling(cursor, percentage);
+  sctp_lcd_sample_sampling(cursor);
 }
 
 void sctp_lcd_spec_sample_waiting(uint8_t cursor, uint16_t result)
@@ -1190,9 +1190,9 @@ void sctp_lcd_conc_regress(uint8_t cursor, curve_t curve, bool lastPointIsInterp
   display.drawRoundRect(180, 280, 120, 30, 10, TFT_BLACK);
 }
 
-void sctp_lcd_conc_blank_sampling(uint8_t cursor, uint8_t percentage)
+void sctp_lcd_conc_blank_sampling(uint8_t cursor)
 {
-  sctp_lcd_blank_sampling(cursor, percentage);
+  sctp_lcd_blank_sampling(cursor);
 }
 
 void sctp_lcd_conc_blank_waiting(uint8_t cursor, uint16_t result)
@@ -1204,9 +1204,9 @@ void sctp_lcd_conc_blank_clear(uint8_t cursor){
   sctp_lcd_blank_clear(cursor);
 }
 
-void sctp_lcd_conc_sample_sampling(uint8_t cursor, uint8_t percentage)
+void sctp_lcd_conc_sample_sampling(uint8_t cursor)
 {
-  sctp_lcd_sample_sampling(cursor, percentage);
+  sctp_lcd_sample_sampling(cursor);
 }
 
 void sctp_lcd_conc_sample_waiting(uint8_t cursor, uint16_t result)
