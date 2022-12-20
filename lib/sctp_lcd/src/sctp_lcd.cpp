@@ -473,7 +473,11 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
       a_min = absorbance[i];
   }
   int y_0 = 297 - (0 - a_min) / (a_max - a_min) * 270;
+  int y_a0 = 297 - (absorbance[0] - a_min) / (a_max - a_min) * 270;
   display.drawFastHLine(61, y_0, 361, TFT_MUSTARD);
+  ESP_LOGI(TAG, "%d", y_0);
+  ESP_LOGI(TAG, "%d", y_a0);
+  ESP_LOGI(TAG, "%.3f", (double)absorbance[0]);
 
   if (a_max <= 0.01)
     a_max = 0.01;
@@ -504,7 +508,12 @@ void sctp_lcd_spec_result_full(float * wavelength, float * absorbance, uint16_t 
   for(int i=0; i<5; i++) {
     char a[] = "XXXXX";
     sprintf(a, "%d", (int)(((a_max - a_min) * 1000 - (a_max - a_min) * 1000 / 4 * i) + a_min * 1000));
-    display.setCursor(13, 30 + 65*i);
+    if (i<4) {
+      display.drawFastHLine(56, 27+66*i, 9, TFT_BLACK);
+    } else {
+      display.drawFastHLine(56, 297, 9, TFT_BLACK);
+    }
+    display.setCursor(13, 25 + 66*i);
     display.println(a);
     display.setCursor(52 + 90*i, 302);
     if (((int)round(wl_min + (wl_max - wl_min) / 4 * i)) % 5 == 0)
